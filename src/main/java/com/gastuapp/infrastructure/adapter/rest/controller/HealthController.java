@@ -1,4 +1,4 @@
-package com.gastuapp.infraestructure.adapter.rest.controller;
+package com.gastuapp.infrastructure.adapter.rest.controller;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

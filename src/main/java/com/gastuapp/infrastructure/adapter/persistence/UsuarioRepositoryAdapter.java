@@ -1,9 +1,9 @@
-package com.gastuapp.infraestructure.adapter.persistence;
+package com.gastuapp.infrastructure.adapter.persistence;
 
 import com.gastuapp.domain.model.Usuario;
 import com.gastuapp.domain.port.UsuarioRepositoryPort;
-import com.gastuapp.infraestructure.adapter.persistence.mapper.UsuarioEntityMapper;
-import com.gastuapp.infraestructure.adapter.persistence.repository.UsuarioJpaRepository;
+import com.gastuapp.infrastructure.adapter.persistence.mapper.UsuarioEntityMapper;
+import com.gastuapp.infrastructure.adapter.persistence.repository.UsuarioJpaRepository;
 import com.gastuapp.infrastructure.adapter.persistence.entity.UsuarioEntity;
 import org.springframework.stereotype.Component;
 
@@ -165,7 +165,7 @@ public class UsuarioRepositoryAdapter implements UsuarioRepositoryPort {
      */
     @Override
     public boolean existsByEmail(String email) {
-        return jpaRepository.existByEmail(email);
+        return jpaRepository.existsByEmail(email);
     }
 
     /**
@@ -176,7 +176,7 @@ public class UsuarioRepositoryAdapter implements UsuarioRepositoryPort {
      */
     @Override
     public boolean existsByTelefono(String telefono) {
-        return jpaRepository.existByTelefono(telefono);
+        return jpaRepository.existsByTelefono(telefono);
     }
 
     //  ============ ELIMINACIÓN (SOFT DELETE) ============
@@ -227,6 +227,6 @@ public class UsuarioRepositoryAdapter implements UsuarioRepositoryPort {
      * @return true si existe, false si no
      */
     public boolean existsByPublicId(String publicId) {
-        return jpaRepository.existByPublicId(publicId);
+        return jpaRepository.existsByPublicId(publicId);
     }
 }

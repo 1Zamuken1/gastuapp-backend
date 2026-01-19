@@ -1,4 +1,4 @@
-package com.gastuapp.infraestructure.adapter.persistence.mapper;
+package com.gastuapp.infrastructure.adapter.persistence.mapper;
 
 import com.gastuapp.domain.model.RolUsuario;
 import com.gastuapp.domain.model.TipologiaUsuario;

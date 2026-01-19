@@ -1,4 +1,4 @@
-package com.gastuapp.infraestructure.adapter.persistence.repository;
+package com.gastuapp.infrastructure.adapter.persistence.repository;
 
 import com.gastuapp.infrastructure.adapter.persistence.entity.UsuarioEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -91,7 +91,7 @@ public interface UsuarioJpaRepository extends JpaRepository<UsuarioEntity, Long>
      * @param email Email a verificar
      * @return true si existe, false si no
      */
-    boolean existByEmail(String email);
+    boolean existsByEmail(String email);
 
     /**
      * Verifica si existe un usuario con ese teléfono.
@@ -102,7 +102,7 @@ public interface UsuarioJpaRepository extends JpaRepository<UsuarioEntity, Long>
      * @param telefono Teléfono a verificar
      * @return true si existe, false si no
      */
-    boolean existByTelefono(String telefono);
+    boolean existsByTelefono(String telefono);
 
     /**
      * Verifica si existe un usuario con ese publicId.
@@ -113,7 +113,7 @@ public interface UsuarioJpaRepository extends JpaRepository<UsuarioEntity, Long>
      * @param publicId UUID a verificar
      * @return true si existe, false si no
      */
-    boolean existByPublicId(String publicId);
+    boolean existsByPublicId(String publicId);
 
     // ============ Relaciones ============
     /**

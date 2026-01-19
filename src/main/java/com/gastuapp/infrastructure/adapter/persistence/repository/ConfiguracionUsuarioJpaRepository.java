@@ -1,4 +1,4 @@
-package com.gastuapp.infraestructure.adapter.persistence.repository;
+package com.gastuapp.infrastructure.adapter.persistence.repository;
 
 import com.gastuapp.infrastructure.adapter.persistence.entity.ConfiguracionUsuarioEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
