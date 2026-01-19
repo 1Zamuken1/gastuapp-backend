@@ -45,7 +45,8 @@ public class Usuario {
     // ==================== ATRIBUTOS ====================
 
     // Identificación
-    private Long id;
+    private Long id; // ID interno (solo para infraestructura)
+    private String publicId; // ID público (UUID para APIs)
     private String nombre;
     private String apellido;
     private String email;
