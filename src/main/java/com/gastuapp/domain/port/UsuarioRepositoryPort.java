@@ -50,6 +50,15 @@ public interface UsuarioRepositoryPort {
     Optional<Usuario> findById(Long id);
 
     /**
+     * Busca un usuario por su publicId (UUID).
+     * Este método debe usarse en APIs públicas en lugar de findById.
+     *
+     * @param publicId UUID del usuario
+     * @return Optional con el usuario si existe
+     */
+    Optional<Usuario> findByPublicId(String publicId);
+
+    /**
      * Busca un usuario por su email.
      * Usado principalmente para login y validación de duplicados.
      *
