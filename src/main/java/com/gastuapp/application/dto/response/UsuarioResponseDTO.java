@@ -28,18 +28,18 @@ import java.time.LocalDateTime;
  *
  * EJEMPLO JSON DE RESPUESTA:
  * {
- *   "publicId": "550e8400-e29b-41d4-a716-446655440000",
- *   "nombre": "Juan",
- *   "apellido": "Pérez",
- *   "email": "juan@example.com",
- *   "telefono": "3001234567",
- *   "rol": "USER",
- *   "tipologia": "TRABAJADOR",
- *   "activo": true,
- *   "fechaCreacion": "2025-01-19T10:30:00",
- *   "profesion": "Ingeniero",
- *   "institucion": "Tech Corp",
- *   "tutorId": null
+ * "publicId": "550e8400-e29b-41d4-a716-446655440000",
+ * "nombre": "Juan",
+ * "apellido": "Pérez",
+ * "email": "juan@example.com",
+ * "telefono": "3001234567",
+ * "rol": "USER",
+ * "tipologia": "TRABAJADOR",
+ * "activo": true,
+ * "fechaCreacion": "2025-01-19T10:30:00",
+ * "profesion": "Ingeniero",
+ * "institucion": "Tech Corp",
+ * "tutorId": null
  * }
  *
  * @author Juan Esteban Barrios Portela
@@ -50,7 +50,14 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UsuarioResponseDTO {
-    //  ============ Identificación pública ============
+    // ============ Identificación pública ============
+    /**
+     * ID interno del usuario (BIGINT).
+     * NOTA: Este campo NO debe exponerse en APIs públicas.
+     * Solo se usa internamente para validaciones de permisos.
+     */
+    private Long id;
+
     /**
      * UUID público del usuario.
      * Este es el ID que se usa en URLs y referencias externas.
@@ -58,23 +65,23 @@ public class UsuarioResponseDTO {
      */
     private String publicId;
 
-    //  ============ Datos básicos ============
+    // ============ Datos básicos ============
     private String nombre;
     private String apellido;
     private String email;
     private String telefono;
 
-    //  ============ Roles y estado ============
+    // ============ Roles y estado ============
     private RolUsuario rol;
     private TipologiaUsuario tipologia;
     private Boolean activo;
     private LocalDateTime fechaCreacion;
 
-    //  ============ Información demográfica ============
+    // ============ Información demográfica ============
     private String profesion;
     private String institucion;
 
-    //  ============ Relación Padre-Hijo ============
+    // ============ Relación Padre-Hijo ============
     /**
      * ID interno del tutor.
      * Nota: Aquí exponemos el id interno porque es una FK.
@@ -82,6 +89,6 @@ public class UsuarioResponseDTO {
      */
     private Long tutorId;
 
-    //  ============ OAtuth ============
+    // ============ OAtuth ============
     private String googleId;
 }
