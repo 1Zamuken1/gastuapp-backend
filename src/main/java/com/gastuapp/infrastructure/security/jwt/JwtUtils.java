@@ -27,18 +27,18 @@ import java.util.Map;
  * ESTRUCTURA DEL TOKEN:
  * Header:
  * {
- *   "alg": "HS256",
- *   "typ": "JWT"
+ * "alg": "HS256",
+ * "typ": "JWT"
  * }
  *
  * Payload (Claims):
  * {
- *   "sub": "user@example.com",           // Subject: email del usuario
- *   "publicId": "550e8400-...",          // ID público del usuario
- *   "rol": "USER",                       // Rol del usuario
- *   "iat": 1674567890,                   // Issued At: cuándo se generó
- *   "exp": 1674654290,                   // Expiration: cuándo expira
- *   "iss": "GastuApp"                    // Issuer: quién lo generó
+ * "sub": "user@example.com", // Subject: email del usuario
+ * "publicId": "550e8400-...", // ID público del usuario
+ * "rol": "USER", // Rol del usuario
+ * "iat": 1674567890, // Issued At: cuándo se generó
+ * "exp": 1674654290, // Expiration: cuándo expira
+ * "iss": "GastuApp" // Issuer: quién lo generó
  * }
  *
  * Signature:
@@ -78,8 +78,7 @@ public class JwtUtils {
         // Crear SecretKey a partir del string configurado
         // JJWT 0.12+ requiere SecretKey en lugar de string directo
         this.secretKey = Keys.hmacShaKeyFor(
-                jwtProperties.getSecret().getBytes(StandardCharsets.UTF_8)
-        );
+                jwtProperties.getSecret().getBytes(StandardCharsets.UTF_8));
 
         logger.info("JwtUtils inicializado. Expiration: {}ms, Issuer: {}",
                 jwtProperties.getExpiration(),
@@ -102,12 +101,12 @@ public class JwtUtils {
      * - exp (expiration): timestamp de expiración
      * - iss (issuer): nombre de la aplicación
      *
-     * @param email Email del usuario (subject del token)
+     * @param email    Email del usuario (subject del token)
      * @param publicId UUID público del usuario
-     * @param rol Rol del usuario
+     * @param rol      Rol del usuario
      * @return Token JWT firmado
      */
-    public String generateToken(String email, String publicId, String rol) {
+    public String generateToken(String email, String publicId, String rol, Long userId) {
         // Timestamps
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtProperties.getExpiration());
@@ -116,15 +115,16 @@ public class JwtUtils {
         Map<String, Object> claims = new HashMap<>();
         claims.put("publicId", publicId);
         claims.put("rol", rol);
+        claims.put("userId", userId); // NUEVO
 
         // Construir y firmar el token
         String token = Jwts.builder()
-                .claims(claims)                          // Claims personalizados
-                .subject(email)                          // Subject: email del usuario
-                .issuedAt(now)                          // Timestamp de creación
-                .expiration(expiryDate)                 // Timestamp de expiración
-                .issuer(jwtProperties.getIssuer())      // Emisor del token
-                .signWith(secretKey)                    // Firma con HS256
+                .claims(claims) // Claims personalizados
+                .subject(email) // Subject: email del usuario
+                .issuedAt(now) // Timestamp de creación
+                .expiration(expiryDate) // Timestamp de expiración
+                .issuer(jwtProperties.getIssuer()) // Emisor del token
+                .signWith(secretKey) // Firma con HS256
                 .compact();
 
         logger.debug("Token generado para usuario: {} (rol: {})", email, rol);
@@ -148,7 +148,7 @@ public class JwtUtils {
     public boolean validateToken(String token) {
         try {
             Jwts.parser()
-                    .verifyWith(secretKey)  // Validar firma
+                    .verifyWith(secretKey) // Validar firma
                     .build()
                     .parseSignedClaims(token); // Parsear y validar
 
@@ -202,6 +202,25 @@ public class JwtUtils {
     public String getRolFromToken(String token) {
         Claims claims = getAllClaimsFromToken(token);
         return claims.get("rol", String.class);
+    }
+
+    /**
+     * Extrae el userId del token.
+     *
+     * @param token Token JWT
+     * @return ID del usuario (Long)
+     */
+    public Long getUserIdFromToken(String token) {
+        Claims claims = getAllClaimsFromToken(token);
+        Object userIdObj = claims.get("userId");
+
+        if (userIdObj instanceof Integer) {
+            return ((Integer) userIdObj).longValue();
+        } else if (userIdObj instanceof Long) {
+            return (Long) userIdObj;
+        }
+
+        return null;
     }
 
     /**
@@ -265,7 +284,8 @@ public class JwtUtils {
         return generateToken(
                 "test@gastuapp.com",
                 "550e8400-e29b-41d4-a716-446655440000",
-                "USER"
+                "USER",
+                1L // userId de prueba
         );
     }
 }

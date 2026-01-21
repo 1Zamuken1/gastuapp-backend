@@ -94,17 +94,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             // 2. Si hay token y es válido
             if (token != null && jwtUtils.validateToken(token)) {
-                // 3. Extraer email del token
+                // 3. Extraer datos del token
                 String email = jwtUtils.getEmailFromToken(token);
+                Long userId = jwtUtils.getUserIdFromToken(token); // NUEVO
 
-                // 4. Buscar usuario en BD
-                Usuario usuario = usuarioRepository.findByEmail(email).orElse(null);
+                // 4. Buscar usuario en BD (solo para verificar que sigue activo)
+                Usuario usuario = usuarioRepository.findById(userId).orElse(null); // CAMBIO: Buscar por ID
 
                 // 5. Si usuario existe y está activo
                 if (usuario != null && usuario.getActivo()) {
-                    // 6. Crear autenticación con rol
+                    // 6. Crear autenticación con userId como principal
                     UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                            usuario.getEmail(),
+                            userId.toString(), // CAMBIO: Guardar userId como String
                             null,
                             List.of(new SimpleGrantedAuthority("ROLE_" + usuario.getRol().name())));
 
@@ -113,7 +114,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     // 7. Establecer en SecurityContext
                     SecurityContextHolder.getContext().setAuthentication(authentication);
 
-                    logger.debug("Usuario autenticado: {} con rol: {}", email, usuario.getRol());
+                    logger.debug("Usuario autenticado: {} (id: {}) con rol: {}", email, userId, usuario.getRol());
                 }
             }
         } catch (Exception e) {

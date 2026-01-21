@@ -114,7 +114,8 @@ public class AuthService {
         String token = jwtUtils.generateToken(
                 usuario.getEmail(),
                 usuario.getPublicId(),
-                usuario.getRol().name());
+                usuario.getRol().name(),
+                usuario.getId());
 
         // 5. Construir y retornar respuesta
         return new AuthResponseDTO(
@@ -144,19 +145,18 @@ public class AuthService {
 
         // 2. Generar token JWT (auto-login)
         String token = jwtUtils.generateToken(
-            usuarioCreado.getEmail(),
-            usuarioCreado.getPublicId(),
-            usuarioCreado.getRol().name()
-        );
+                usuarioCreado.getEmail(),
+                usuarioCreado.getPublicId(),
+                usuarioCreado.getRol().name(),
+                usuarioCreado.getId());
 
         // 3. Construir y retornar respuesta
         return new AuthResponseDTO(
-            token,
-            "Bearer",
-            usuarioCreado.getPublicId(),
-            usuarioCreado.getEmail(),
-            usuarioCreado.getRol().name()
-        );
+                token,
+                "Bearer",
+                usuarioCreado.getPublicId(),
+                usuarioCreado.getEmail(),
+                usuarioCreado.getRol().name());
     }
 
     // ==================== UTILIDADES ====================

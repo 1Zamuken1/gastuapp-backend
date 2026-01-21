@@ -68,7 +68,7 @@ public class UsuarioService {
         this.usuarioMapper = usuarioMapper;
     }
 
-    //  ============ Caso de uso 1: Registro público ============
+    // ============ Caso de uso 1: Registro público ============
     /**
      * Registra un nuevo usuario con rol USER (registro público).
      *
@@ -86,20 +86,18 @@ public class UsuarioService {
      * @return UsuarioResponseDTO con el usuario creado
      * @throws IllegalArgumentException si el email o teléfono ya existen
      */
-    public UsuarioResponseDTO registrarUsuario(RegistroRequestDTO dto){
+    public UsuarioResponseDTO registrarUsuario(RegistroRequestDTO dto) {
         // 1. Validar que el email no exista
-        if (usuarioRepository.existsByEmail(dto.getEmail())){
+        if (usuarioRepository.existsByEmail(dto.getEmail())) {
             throw new IllegalArgumentException(
-                    "El email ya está registrado en el sistema"
-            );
+                    "El email ya está registrado en el sistema");
         }
 
         // 2. Validar que el teléfono no exista (en caso de ser proporcionado)
-        if (dto.getTelefono() != null && !dto.getTelefono().trim().isEmpty()){
-            if (usuarioRepository.existsByTelefono(dto.getTelefono())){
+        if (dto.getTelefono() != null && !dto.getTelefono().trim().isEmpty()) {
+            if (usuarioRepository.existsByTelefono(dto.getTelefono())) {
                 throw new IllegalArgumentException(
-                        "El teléfono ya está registrado en el sistema"
-                );
+                        "El teléfono ya está registrado en el sistema");
             }
         }
 
@@ -116,13 +114,14 @@ public class UsuarioService {
         return usuarioMapper.toResponseDTO(usuarioGuardado);
     }
 
-    //  ============ Caso de uso 2: Crear Hijo ============
+    // ============ Caso de uso 2: Crear Hijo ============
     /**
      * Crea un usuario hijo supervisado (USER_HIJO).
      * Solo puede ser llamado por un usuario autenticado con rol USER.
      *
      * FLUJO:
-     * POST /api/usuarios/hijo → Controller (obtiene tutorId del JWT) → [ESTE MÉTODO] → Repository → BD
+     * POST /api/usuarios/hijo → Controller (obtiene tutorId del JWT) → [ESTE
+     * MÉTODO] → Repository → BD
      *
      * VALIDACIONES:
      * - Email no debe existir
@@ -132,7 +131,7 @@ public class UsuarioService {
      * ROL ASIGNADO: USER_HIJO (automático)
      * TIPOLOGÍA: ESTUDIANTE (automático)
      *
-     * @param dto CrearHijoRequestDTO del cliente
+     * @param dto     CrearHijoRequestDTO del cliente
      * @param tutorId ID del padre (obtenido del JWT del usuario autenticado)
      * @return UsuarioResponseDTO con el hijo creado
      * @throws IllegalArgumentException si validaciones fallan
@@ -141,29 +140,25 @@ public class UsuarioService {
         // 1. Validar que el tutor exista
         Usuario tutor = usuarioRepository.findById(tutorId)
                 .orElseThrow(() -> new IllegalArgumentException(
-                        "El tutor no existe"
-                ));
+                        "El tutor no existe"));
 
         // 2. Validar que el tutor sea USER (Puede tener hijos)
-        if (!tutor.puedeTenerHijos()){
+        if (!tutor.puedeTenerHijos()) {
             throw new IllegalArgumentException(
-                    "Solo usuarios con rol USER pueden tener hijos supervisados"
-            );
+                    "Solo usuarios con rol USER pueden tener hijos supervisados");
         }
 
         // 3. Validar que el email no exista
-        if (usuarioRepository.existsByEmail(dto.getEmail())){
+        if (usuarioRepository.existsByEmail(dto.getEmail())) {
             throw new IllegalArgumentException(
-                    "El email ya está registrado en el sistema"
-            );
+                    "El email ya está registrado en el sistema");
         }
 
         // 4. Validar que el teléfono no exista (si se proporciona)
         if (dto.getTelefono() != null && !dto.getTelefono().trim().isEmpty()) {
-            if (usuarioRepository.existsByTelefono(dto.getTelefono())){
+            if (usuarioRepository.existsByTelefono(dto.getTelefono())) {
                 throw new IllegalArgumentException(
-                        "El teléfono ya está registrado en el sistema"
-                );
+                        "El teléfono ya está registrado en el sistema");
             }
         }
 
@@ -180,13 +175,14 @@ public class UsuarioService {
         return usuarioMapper.toResponseDTO(hijoGuardado);
     }
 
-    //  ============ Caso de uso 3: Admin Crea Usuario ============
+    // ============ Caso de uso 3: Admin Crea Usuario ============
     /**
      * Crea un usuario con rol específico (solo ADMIN).
      * El ADMIN puede elegir cualquier rol.
      *
      * FLUJO:
-     * POST /api/admin/usuarios → Controller (verifica rol ADMIN) → [ESTE MÉTODO] → Repository → BD
+     * POST /api/admin/usuarios → Controller (verifica rol ADMIN) → [ESTE MÉTODO] →
+     * Repository → BD
      *
      * VALIDACIONES:
      * - Email no debe existir
@@ -201,16 +197,14 @@ public class UsuarioService {
         // 1. Validar que el email no exista
         if (usuarioRepository.existsByEmail(dto.getEmail())) {
             throw new IllegalArgumentException(
-                    "El email " + dto.getEmail() + " ya está registrado en el sistema"
-            );
+                    "El email " + dto.getEmail() + " ya está registrado en el sistema");
         }
 
         // 2. Validar que el teléfono no exista (si se proporciona)
         if (dto.getTelefono() != null && !dto.getTelefono().trim().isEmpty()) {
             if (usuarioRepository.existsByTelefono(dto.getTelefono())) {
                 throw new IllegalArgumentException(
-                        "El teléfono " + dto.getTelefono() + " ya está registrado en el sistema"
-                );
+                        "El teléfono " + dto.getTelefono() + " ya está registrado en el sistema");
             }
         }
 
@@ -218,13 +212,11 @@ public class UsuarioService {
         if (dto.getRol() == RolUsuario.USER_HIJO && dto.getTutorId() != null) {
             Usuario tutor = usuarioRepository.findById(dto.getTutorId())
                     .orElseThrow(() -> new IllegalArgumentException(
-                            "El tutor con ID " + dto.getTutorId() + " no existe"
-                    ));
+                            "El tutor con ID " + dto.getTutorId() + " no existe"));
 
             if (!tutor.puedeTenerHijos()) {
                 throw new IllegalArgumentException(
-                        "El tutor debe tener rol USER"
-                );
+                        "El tutor debe tener rol USER");
             }
         }
 
@@ -241,7 +233,7 @@ public class UsuarioService {
         return usuarioMapper.toResponseDTO(usuarioGuardado);
     }
 
-    //  ============ Caso de uso 4: Buscar por public Id ============
+    // ============ Caso de uso 4: Buscar por public Id ============
     /**
      * Busca un usuario por su publicId (UUID).
      * Este es el método que deben usar los Controllers públicos.
@@ -257,13 +249,29 @@ public class UsuarioService {
     public UsuarioResponseDTO buscarPorPublicId(String publicId) {
         Usuario usuario = usuarioRepository.findByPublicId(publicId)
                 .orElseThrow(() -> new IllegalArgumentException(
-                        "Usuario con publicId no encontrado"
-                ));
+                        "Usuario con publicId no encontrado"));
 
         return usuarioMapper.toResponseDTO(usuario);
     }
 
-    //  ============ Caso de uso 5: Buscar por email ============
+    /**
+     * Busca un usuario por su ID interno.
+     * Usado para obtener el perfil del usuario autenticado.
+     *
+     * @param id ID interno del usuario
+     * @return UsuarioResponseDTO
+     * @throws IllegalArgumentException si no existe
+     */
+    @Transactional(readOnly = true)
+    public UsuarioResponseDTO buscarPorId(Long id) {
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Usuario con ID " + id + " no encontrado"));
+
+        return usuarioMapper.toResponseDTO(usuario);
+    }
+
+    // ============ Caso de uso 5: Buscar por email ============
     /**
      * Busca un usuario por su email.
      * Usado principalmente para login.
@@ -276,13 +284,12 @@ public class UsuarioService {
     public UsuarioResponseDTO buscarPorEmail(String email) {
         Usuario usuario = usuarioRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException(
-                        "Usuario con email " + email + " no encontrado"
-                ));
+                        "Usuario con email " + email + " no encontrado"));
 
         return usuarioMapper.toResponseDTO(usuario);
     }
 
-    //  ============ Caso de uso 6: Listar activos ============
+    // ============ Caso de uso 6: Listar activos ============
     /**
      * Lista todos los usuarios activos.
      * Usado por ADMIN para gestión de usuarios.
@@ -296,7 +303,7 @@ public class UsuarioService {
                 .collect(Collectors.toList());
     }
 
-    //  ============ Caso de uso 7: Listar hijos de un tutor ============
+    // ============ Caso de uso 7: Listar hijos de un tutor ============
     /**
      * Lista todos los hijos de un tutor.
      * Usado por un padre (USER) para ver sus hijos supervisados.
@@ -309,21 +316,20 @@ public class UsuarioService {
         // Validar que el tutor exista
         usuarioRepository.findById(tutorId)
                 .orElseThrow(() -> new IllegalArgumentException(
-                        "Tutor con ID " + tutorId + " no encontrado"
-                ));
+                        "Tutor con ID " + tutorId + " no encontrado"));
 
         return usuarioRepository.findByTutorId(tutorId).stream()
                 .map(usuarioMapper::toResponseDTO)
                 .collect(Collectors.toList());
     }
 
-    //  ============ Caso de uso 8: Actualizar usuario ============
+    // ============ Caso de uso 8: Actualizar usuario ============
     /**
      * Actualiza los datos de un usuario existente.
      * NO permite cambiar: id, publicId, rol, fechaCreacion.
      *
-     * @param id ID interno del usuario
-     * @param nombre Nuevo nombre (opcional)
+     * @param id       ID interno del usuario
+     * @param nombre   Nuevo nombre (opcional)
      * @param apellido Nuevo apellido (opcional)
      * @param telefono Nuevo teléfono (opcional)
      * @return UsuarioResponseDTO actualizado
@@ -338,8 +344,7 @@ public class UsuarioService {
         // 1. Buscar usuario existente
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException(
-                        "Usuario con ID " + id + " no encontrado"
-                ));
+                        "Usuario con ID " + id + " no encontrado"));
 
         // 2. Actualizar campos (solo si no son null)
         if (nombre != null && !nombre.trim().isEmpty()) {
@@ -355,8 +360,7 @@ public class UsuarioService {
             Optional<Usuario> usuarioConTelefono = usuarioRepository.findByTelefono(telefono);
             if (usuarioConTelefono.isPresent() && !usuarioConTelefono.get().getId().equals(id)) {
                 throw new IllegalArgumentException(
-                        "El teléfono " + telefono + " ya está registrado por otro usuario"
-                );
+                        "El teléfono " + telefono + " ya está registrado por otro usuario");
             }
             usuario.setTelefono(telefono);
         }
@@ -370,7 +374,8 @@ public class UsuarioService {
         // 5. Convertir a DTO
         return usuarioMapper.toResponseDTO(usuarioActualizado);
     }
-    //  ============ Caso de uso 9: Eliminar Usuario (Soft Delete) ============
+
+    // ============ Caso de uso 9: Eliminar Usuario (Soft Delete) ============
     /**
      * Elimina un usuario (soft delete: marca como inactivo).
      * No borra físicamente de la BD.
@@ -382,14 +387,13 @@ public class UsuarioService {
         // Verificar que el usuario exista
         usuarioRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException(
-                        "Usuario con ID " + id + " no encontrado"
-                ));
+                        "Usuario con ID " + id + " no encontrado"));
 
         // Soft delete (marca activo = false)
         usuarioRepository.deleteById(id);
     }
 
-    //  ============ Métodos Auxiliares ============
+    // ============ Métodos Auxiliares ============
     /**
      * Verifica si un email ya existe en el sistema.
      *

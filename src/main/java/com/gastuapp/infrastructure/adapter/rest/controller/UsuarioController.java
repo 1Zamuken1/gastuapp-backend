@@ -73,8 +73,8 @@ public class UsuarioController {
      */
     @GetMapping("/me")
     public ResponseEntity<UsuarioResponseDTO> obtenerPerfil() {
-        String email = obtenerEmailAutenticado();
-        UsuarioResponseDTO usuario = usuarioService.buscarPorEmail(email);
+        Long usuarioId = obtenerUsuarioIdAutenticado();
+        UsuarioResponseDTO usuario = usuarioService.buscarPorId(usuarioId);
         return ResponseEntity.ok(usuario);
     }
 
@@ -108,12 +108,11 @@ public class UsuarioController {
             @RequestParam(required = false) String nombre,
             @RequestParam(required = false) String apellido,
             @RequestParam(required = false) String telefono) {
-        String email = obtenerEmailAutenticado();
-        UsuarioResponseDTO usuario = usuarioService.buscarPorEmail(email);
+        Long usuarioId = obtenerUsuarioIdAutenticado();
 
-        // Actualizar usando el id interno
+        // Actualizar directamente con el id
         UsuarioResponseDTO actualizado = usuarioService.actualizarUsuario(
-                usuario.getId(),
+                usuarioId,
                 nombre,
                 apellido,
                 telefono);
@@ -139,8 +138,8 @@ public class UsuarioController {
      */
     @GetMapping("/{publicId}")
     public ResponseEntity<UsuarioResponseDTO> obtenerUsuario(@PathVariable String publicId) {
-        String emailAutenticado = obtenerEmailAutenticado();
-        UsuarioResponseDTO usuarioAutenticado = usuarioService.buscarPorEmail(emailAutenticado);
+        Long usuarioIdAutenticado = obtenerUsuarioIdAutenticado();
+        UsuarioResponseDTO usuarioAutenticado = usuarioService.buscarPorId(usuarioIdAutenticado);
         UsuarioResponseDTO usuarioSolicitado = usuarioService.buscarPorPublicId(publicId);
 
         // Validar permisos
@@ -173,15 +172,15 @@ public class UsuarioController {
      */
     @GetMapping("/hijos")
     public ResponseEntity<List<UsuarioResponseDTO>> listarHijos() {
-        String email = obtenerEmailAutenticado();
-        UsuarioResponseDTO usuario = usuarioService.buscarPorEmail(email);
+        Long usuarioId = obtenerUsuarioIdAutenticado();
+        UsuarioResponseDTO usuario = usuarioService.buscarPorId(usuarioId);
 
         // Validar que sea USER (Puede tener hijos)
         if (!usuario.getRol().name().equals("USER")) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
-        List<UsuarioResponseDTO> hijos = usuarioService.listarHijosDeTutor(usuario.getId());
+        List<UsuarioResponseDTO> hijos = usuarioService.listarHijosDeTutor(usuarioId);
         return ResponseEntity.ok(hijos);
     }
 
@@ -210,8 +209,8 @@ public class UsuarioController {
      */
     @PostMapping("/hijo")
     public ResponseEntity<UsuarioResponseDTO> crearHijo(@Valid @RequestBody CrearHijoRequestDTO dto) {
-        String email = obtenerEmailAutenticado();
-        UsuarioResponseDTO usuario = usuarioService.buscarPorEmail(email);
+        Long usuarioId = obtenerUsuarioIdAutenticado();
+        UsuarioResponseDTO usuario = usuarioService.buscarPorId(usuarioId);
 
         // Validar que sea USER (puede tener hijos)
         if (!usuario.getRol().name().equals("USER")) {
@@ -220,7 +219,7 @@ public class UsuarioController {
         }
 
         // Crear hijo con tutorId del usuario autenticado
-        UsuarioResponseDTO hijo = usuarioService.crearHijo(dto, usuario.getId());
+        UsuarioResponseDTO hijo = usuarioService.crearHijo(dto, usuarioId);
         return new ResponseEntity<>(hijo, HttpStatus.CREATED);
     }
 
@@ -230,9 +229,10 @@ public class UsuarioController {
      *
      * @return Email del usuario autenticado
      */
-    private String obtenerEmailAutenticado() {
+    private Long obtenerUsuarioIdAutenticado() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        return authentication.getName(); // El email está en el "name" del Authentication
+        String userIdStr = authentication.getName(); // Ahora es userId como String
+        return Long.parseLong(userIdStr);
     }
 
     /**
