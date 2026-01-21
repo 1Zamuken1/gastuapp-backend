@@ -1,6 +1,6 @@
 package com.gastuapp.application.dto.request;
 
-import com.gastuapp.domain.model.TipologiaUsuario;
+import com.gastuapp.domain.model.usuario.TipologiaUsuario;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

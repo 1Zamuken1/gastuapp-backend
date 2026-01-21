@@ -5,9 +5,9 @@ import com.gastuapp.application.dto.request.CrearHijoRequestDTO;
 import com.gastuapp.application.dto.request.RegistroRequestDTO;
 import com.gastuapp.application.dto.response.UsuarioResponseDTO;
 import com.gastuapp.application.mapper.UsuarioMapper;
-import com.gastuapp.domain.model.RolUsuario;
-import com.gastuapp.domain.model.Usuario;
-import com.gastuapp.domain.port.UsuarioRepositoryPort;
+import com.gastuapp.domain.model.usuario.RolUsuario;
+import com.gastuapp.domain.model.usuario.Usuario;
+import com.gastuapp.domain.port.usuario.UsuarioRepositoryPort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

@@ -1,7 +1,7 @@
 package com.gastuapp.infrastructure.adapter.persistence;
 
-import com.gastuapp.domain.model.Usuario;
-import com.gastuapp.domain.port.UsuarioRepositoryPort;
+import com.gastuapp.domain.model.usuario.Usuario;
+import com.gastuapp.domain.port.usuario.UsuarioRepositoryPort;
 import com.gastuapp.infrastructure.adapter.persistence.mapper.UsuarioEntityMapper;
 import com.gastuapp.infrastructure.adapter.persistence.repository.UsuarioJpaRepository;
 import com.gastuapp.infrastructure.adapter.persistence.entity.UsuarioEntity;

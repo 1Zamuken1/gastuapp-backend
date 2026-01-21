@@ -1,8 +1,8 @@
 package com.gastuapp.infrastructure.adapter.persistence.mapper;
 
-import com.gastuapp.domain.model.RolUsuario;
-import com.gastuapp.domain.model.TipologiaUsuario;
-import com.gastuapp.domain.model.Usuario;
+import com.gastuapp.domain.model.usuario.RolUsuario;
+import com.gastuapp.domain.model.usuario.TipologiaUsuario;
+import com.gastuapp.domain.model.usuario.Usuario;
 import com.gastuapp.infrastructure.adapter.persistence.entity.UsuarioEntity;
 import org.springframework.stereotype.Component;
 

@@ -1,7 +1,7 @@
 package com.gastuapp.infrastructure.security.jwt;
 
-import com.gastuapp.domain.model.Usuario;
-import com.gastuapp.domain.port.UsuarioRepositoryPort;
+import com.gastuapp.domain.model.usuario.Usuario;
+import com.gastuapp.domain.port.usuario.UsuarioRepositoryPort;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

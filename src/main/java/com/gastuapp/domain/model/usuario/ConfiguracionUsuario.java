@@ -1,6 +1,7 @@
-package com.gastuapp.domain.model;
+package com.gastuapp.domain.model.usuario;
 
 // Preferencias y configuración personalizada de cada usuario
+import com.gastuapp.domain.model.usuario.TipoOnboarding;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -1,7 +1,7 @@
 package com.gastuapp.application.dto.response;
 
-import com.gastuapp.domain.model.RolUsuario;
-import com.gastuapp.domain.model.TipologiaUsuario;
+import com.gastuapp.domain.model.usuario.RolUsuario;
+import com.gastuapp.domain.model.usuario.TipologiaUsuario;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

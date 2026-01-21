@@ -4,9 +4,9 @@ import com.gastuapp.application.dto.request.AdminCrearUsuarioRequestDTO;
 import com.gastuapp.application.dto.request.CrearHijoRequestDTO;
 import com.gastuapp.application.dto.request.RegistroRequestDTO;
 import com.gastuapp.application.dto.response.UsuarioResponseDTO;
-import com.gastuapp.domain.model.RolUsuario;
-import com.gastuapp.domain.model.TipologiaUsuario;
-import com.gastuapp.domain.model.Usuario;
+import com.gastuapp.domain.model.usuario.RolUsuario;
+import com.gastuapp.domain.model.usuario.TipologiaUsuario;
+import com.gastuapp.domain.model.usuario.Usuario;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 

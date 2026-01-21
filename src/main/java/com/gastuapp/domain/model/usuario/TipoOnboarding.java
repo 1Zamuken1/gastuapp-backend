@@ -1,4 +1,4 @@
-package com.gastuapp.domain.model;
+package com.gastuapp.domain.model.usuario;
 
 /**
  * Estado del Onboarding (Vigila el paso a paso del usuario durante el registro)

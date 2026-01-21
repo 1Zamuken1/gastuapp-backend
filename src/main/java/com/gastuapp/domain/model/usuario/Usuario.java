@@ -1,4 +1,4 @@
-package com.gastuapp.domain.model;
+package com.gastuapp.domain.model.usuario;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

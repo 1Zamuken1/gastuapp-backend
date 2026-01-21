@@ -1,6 +1,6 @@
-package com.gastuapp.domain.port;
+package com.gastuapp.domain.port.usuario;
 
-import com.gastuapp.domain.model.Usuario;
+import com.gastuapp.domain.model.usuario.Usuario;
 
 import java.util.List;
 import java.util.Optional;

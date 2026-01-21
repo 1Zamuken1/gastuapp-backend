@@ -1,4 +1,4 @@
-package com.gastuapp.domain.model;
+package com.gastuapp.domain.model.usuario;
 
 /**
  * Tipología del usuario, no afecta permisos
