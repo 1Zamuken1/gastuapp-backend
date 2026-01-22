@@ -1,22 +1,129 @@
-<div class="container p-4">
-  <p-card header="GastuApp v2.0" subheader="Angular 21 + PrimeNG">
-    <div class="text-center">
-      <h2>¡Bienvenido a GastuApp!</h2>
-      <p class="text-secondary mt-2">Frontend configurado correctamente con Angular 21 y PrimeNG</p>
+<!--
+  GastuApp - Componente Principal (Prueba de Estilos)
 
-      <div class="flex justify-content-center gap-2 mt-3">
-        <p-button label="Botón Primary" icon="pi pi-check"></p-button>
-        <p-button label="Botón Success" icon="pi pi-heart" severity="success"></p-button>
-        <p-button label="Botón Danger" icon="pi pi-times" severity="danger"></p-button>
+  PROPÓSITO:
+  Este template muestra los componentes del sistema de diseño Calm Design
+  para verificar que PrimeNG + estilos personalizados funcionan correctamente.
+
+  NOTA:
+  Este contenido es temporal y será reemplazado por el layout principal
+  cuando implementemos el routing y la navegación.
+
+  @author Juan Esteban Barrios Portela
+  @version 1.0
+  @since 2026-01-21
+-->
+
+<div class="page-container">
+  <!-- Header de prueba -->
+  <div class="text-center mb-4">
+    <h1 class="page-title">🎉 GastuApp v2.0</h1>
+    <p class="page-subtitle">Angular 21 + PrimeNG con Calm Design Framework</p>
+  </div>
+
+  <!-- Card principal con PrimeNG -->
+  <p-card styleClass="card-calm">
+    <ng-template #header>
+      <div class="p-3">
+        <h2 class="text-lg font-semibold">Sistema de Diseño Configurado</h2>
       </div>
+    </ng-template>
 
-      <div class="mt-4 flex justify-content-center gap-4">
-        <i class="pi pi-home" style="font-size: 2rem"></i>
-        <i class="pi pi-wallet" style="font-size: 2rem"></i>
-        <i class="pi pi-chart-line" style="font-size: 2rem"></i>
+    <!-- Sección: Paleta de Colores -->
+    <div class="mb-4">
+      <h3 class="text-base font-medium mb-3">Paleta de Colores</h3>
+      <div class="flex gap-3 flex-wrap">
+        <div class="flex align-items-center gap-2">
+          <div
+            style="width: 24px; height: 24px; border-radius: 4px; background: var(--primary-500)"
+          ></div>
+          <span class="text-sm">Primary</span>
+        </div>
+        <div class="flex align-items-center gap-2">
+          <div
+            style="width: 24px; height: 24px; border-radius: 4px; background: var(--income-color)"
+          ></div>
+          <span class="text-sm">Ingresos</span>
+        </div>
+        <div class="flex align-items-center gap-2">
+          <div
+            style="width: 24px; height: 24px; border-radius: 4px; background: var(--expense-color)"
+          ></div>
+          <span class="text-sm">Egresos</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sección: Badges de Transacciones -->
+    <div class="mb-4">
+      <h3 class="text-base font-medium mb-3">Badges de Transacciones</h3>
+      <div class="flex gap-3 flex-wrap">
+        <span class="badge-income">
+          <i class="pi pi-arrow-up"></i>
+          Ingreso
+        </span>
+        <span class="badge-expense">
+          <i class="pi pi-arrow-down"></i>
+          Egreso
+        </span>
+      </div>
+    </div>
+
+    <!-- Sección: Ejemplo de Montos -->
+    <div class="mb-4">
+      <h3 class="text-base font-medium mb-3">Montos</h3>
+      <div class="flex gap-4">
+        <span class="amount-positive">+ $1,500,000</span>
+        <span class="amount-negative">- $350,000</span>
+      </div>
+    </div>
+
+    <!-- Sección: Botones PrimeNG -->
+    <div class="mb-4">
+      <h3 class="text-base font-medium mb-3">Botones PrimeNG</h3>
+      <div class="flex gap-2 flex-wrap">
+        <p-button label="Primary" icon="pi pi-check"></p-button>
+        <p-button label="Ingreso" icon="pi pi-plus" severity="success"></p-button>
+        <p-button label="Egreso" icon="pi pi-minus" severity="warn"></p-button>
+        <p-button
+          label="Eliminar"
+          icon="pi pi-trash"
+          severity="danger"
+          [outlined]="true"
+        ></p-button>
+      </div>
+    </div>
+
+    <!-- Sección: Iconos Principales -->
+    <div>
+      <h3 class="text-base font-medium mb-3">Iconos de Navegación</h3>
+      <div class="flex gap-4">
+        <div class="flex flex-column align-items-center gap-1">
+          <i class="pi pi-home text-2xl" style="color: var(--primary-500)"></i>
+          <span class="text-xs text-color-secondary">Dashboard</span>
+        </div>
+        <div class="flex flex-column align-items-center gap-1">
+          <i class="pi pi-arrow-circle-up text-2xl" style="color: var(--income-color)"></i>
+          <span class="text-xs text-color-secondary">Ingresos</span>
+        </div>
+        <div class="flex flex-column align-items-center gap-1">
+          <i class="pi pi-arrow-circle-down text-2xl" style="color: var(--expense-color)"></i>
+          <span class="text-xs text-color-secondary">Egresos</span>
+        </div>
+        <div class="flex flex-column align-items-center gap-1">
+          <i class="pi pi-wallet text-2xl" style="color: var(--surface-600)"></i>
+          <span class="text-xs text-color-secondary">Balance</span>
+        </div>
       </div>
     </div>
   </p-card>
+
+  <!-- Footer informativo -->
+  <div class="text-center mt-4">
+    <p class="text-sm" style="color: var(--text-secondary)">
+      ✅ PrimeNG v21 con tema Aura + Calm Design Framework
+    </p>
+  </div>
 </div>
 
 <router-outlet />
