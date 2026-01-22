@@ -1,0 +1,173 @@
+<!--
+  EgresosComponent - Template HTML
+
+  ESTRUCTURA:
+  - Header con título y total
+  - Botón para nuevo egreso
+  - Tabla PrimeNG con datos
+  - Dialogs de confirmación y mensajes
+
+  NOTA PARA EGRESOS:
+  Para crear EgresosComponent, copia este archivo y cambia:
+  - "Ingresos" → "Egresos"
+  - "ingreso" → "egreso"
+  - "income" → "expense" (en clases CSS)
+  - Icono pi-arrow-up → pi-arrow-down
+
+  @author Juan Esteban Barrios Portela
+  @version 1.0
+  @since 2026-01-21
+-->
+
+<!-- Toast para mensajes -->
+<p-toast></p-toast>
+
+<!-- Dialog de confirmación -->
+<p-confirmDialog></p-confirmDialog>
+
+<div class="egresos-page">
+  <!-- ==================== HEADER ==================== -->
+  <div class="page-header">
+    <div class="header-left">
+      <h1 class="page-title">
+        <i class="pi pi-arrow-circle-down expense-icon"></i>
+        Egresos
+      </h1>
+      <p class="page-subtitle">Gastos realizados</p>
+    </div>
+
+    <div class="page-subtitle">
+      <!-- Total de egresos -->
+      <div class="total-card">
+        <span class="total-label">Total</span>
+        <span class="total-value amount-negative">
+          {{ formatCurrency(totalEgresos()) }}
+        </span>
+      </div>
+
+      <!-- Botón nuevo-->
+      <button
+        pButton
+        type="button"
+        label="Nuevo Egreso"
+        icon="pi pi-plus"
+        class="p-button-expense"
+        (click)="nuevoEgreso()"
+      ></button>
+    </div>
+  </div>
+
+  <!-- ==================== TABLA ==================== -->
+  <div class="card-calm">
+    @if (loading()) {
+      <!-- Skeleton mientras carga-->
+      <div class="skeleton-table">
+        @for (i of [1, 2, 3, 4, 5]; track i) {
+          <div class="skeleton-row">
+            <p-skeleton width="100px" height="1rem"></p-skeleton>
+            <p-skeleton width="200px" height="1rem"></p-skeleton>
+            <p-skeleton width="80px" height="1rem"></p-skeleton>
+            <p-skeleton width="100px" height="1rem"></p-skeleton>
+          </div>
+        }
+      </div>
+    } @else if (egresos().length === 0) {
+      <!-- Estado vacío-->
+      <div class="empty-state">
+        <i class="pi pi-inbox empty-icon"></i>
+        <h3>No hay egresos registrados</h3>
+        <p>Comienza registrando tu primer egreso</p>
+        <button
+          pButton
+          type="button"
+          label="Agregar Egreso"
+          icon="pi pi-plus"
+          class="p-button-expense"
+          (click)="nuevoEgreso()"
+        ></button>
+      </div>
+    } @else {
+      <!-- Tabla de egresos -->
+      <p-table
+        [value]="egresos()"
+        [paginator]="true"
+        [rows]="10"
+        [rowsPerPageOptions]="[5, 10, 20]"
+        [showCurrentPageReport]="true"
+        currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} egresos"
+        [globalFilterFields]="['descripcion', 'categoriaNombre']"
+        styleClass="p-datatable-striped"
+      >
+        <!-- Header de la tabla -->
+        <ng-template #header>
+          <tr>
+            <th pSortableColumn="fecha" style="width: 120px">
+              Fecha <p-sortIcon field="fecha"></p-sortIcon>
+            </th>
+            <th pSortableColumn="descripcion">
+              Descripción <p-sortIcon field="descripcion"></p-sortIcon>
+            </th>
+            <th pSortableColumn="categoriaNombre" style="width: 150px">
+              Categoría <p-sortIcon field="categoriaNombre"></p-sortIcon>
+            </th>
+            <th pSortableColumn="monto" style="width: 150px; text-align: right">
+              Monto <p-sortIcon field="monto"></p-sortIcon>
+            </th>
+            <th style="width: 100px; text-align: center">Acciones</th>
+          </tr>
+        </ng-template>
+
+        <!-- Body de la tabla -->
+        <ng-template #body let-egreso>
+          <tr>
+            <!-- Fecha -->
+            <td>{{ formatDate(egreso.fecha) }}</td>
+
+            <!-- Descripción -->
+            <td>{{ egreso.descripcion }}</td>
+
+            <!-- Categoría -->
+            <td>
+              <span class="badge-expense">
+                <i [class]="egreso.categoriaIcono + ' mr-1'"></i>
+                {{ egreso.categoriaNombre }}
+              </span>
+            </td>
+
+            <!-- Monto -->
+            <td class="text-right">
+              <span class="amount-negative font-semibold">
+                {{ formatCurrency(egreso.monto) }}
+              </span>
+            </td>
+
+            <!-- Acciones -->
+            <td class="text-center">
+              <button
+                pButton
+                type="button"
+                icon="pi pi-pencil"
+                class="p-button-warning"
+                (click)="editarEgreso(egreso)"
+              ></button>
+              <button
+                pButton
+                type="button"
+                icon="pi pi-trash"
+                class="p-button-danger"
+                (click)="(confirmarEliminar)"
+              ></button>
+            </td>
+          </tr>
+        </ng-template>
+
+        <!-- Empty message -->
+        <ng-template #emptyMessage>
+          <tr>
+            <td colspan="5" class="text-center p-4">No se encontraron egresos</td>
+          </tr>
+        </ng-template>
+      </p-table>
+    }
+  </div>
+</div>

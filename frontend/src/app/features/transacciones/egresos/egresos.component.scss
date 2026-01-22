@@ -1,0 +1,163 @@
+/**
+ * EgresosComponent - Estilos SCSS
+ *
+ * ESTRUCTURA:
+ * - Header con título y total
+ * - Tabla con estilos Calm Design
+ * - Estado vacío
+ *
+ * NOTA PARA EGRESOS:
+ * Copia este archivo y cambia:
+ * - .income-icon → .expense-icon
+ * - Colores de --income-color → --expense-color
+ *
+ * @author Juan Esteban Barrios Portela
+ * @version 1.0
+ * @since 2026-01-21
+ */
+
+// ==================== PAGE ====================
+.egresos-page {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+// ==================== HEADER ====================
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--spacing-lg);
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+}
+
+.header-left {
+  .page-title {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+  }
+
+  .expense-icon {
+    color: var(--expense-color);
+    font-size: 1.75rem;
+  }
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.total-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--expense-bg);
+  border-radius: var(--border-radius-md);
+}
+
+.total-label {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+}
+
+.total-value {
+  font-size: 1.25rem;
+  font-weight: var(--font-weight-bold);
+}
+
+// ==================== TABLE ====================
+.skeleton-table {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+}
+
+.skeleton-row {
+  display: flex;
+  gap: var(--spacing-lg);
+}
+
+// ==================== EMPTY STATE ====================
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-2xl);
+  text-align: center;
+}
+
+.empty-icon {
+  font-size: 4rem;
+  color: var(--surface-300);
+  margin-bottom: var(--spacing-md);
+}
+
+.empty-state h3 {
+  font-size: 1.25rem;
+  color: var(--surface-700);
+  margin-bottom: var(--spacing-xs);
+}
+
+.empty-state p {
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-lg);
+}
+
+// ==================== UTILITIES ====================
+.text-right {
+  text-align: right;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.font-semibold {
+  font-weight: var(--font-weight-semibold);
+}
+
+.mr-1 {
+  margin-right: 0.25rem;
+}
+
+// ==================== RESPONSIVE ====================
+@media (max-width: 768px) {
+  .page-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .header-right {
+    justify-content: space-between;
+  }
+}
+
+// ==================== BUTTONS ====================
+.p-button-expense {
+  background: var(--expense-color);
+  // Important para sobrescribir estilos de PrimeNG si es necesario
+  border: 1px solid var(--expense-color);
+  color: #ffffff;
+
+  .p-button-icon {
+    color: #ffffff;
+  }
+
+  &:enabled:hover, &:enabled:active {
+    background: var(--expense-hover) !important;
+    border-color: var(--expense-hover) !important;
+    color: #ffffff !important;
+  }
+
+  &:focus {
+    box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px var(--expense-bg);
+  }
+}

@@ -32,6 +32,7 @@ import { LayoutComponent } from './layout/layout.component';
 import { LoginComponent } from './features/auth/login/login.component';
 import { DashboardComponent } from './features/dashboard/dashboard.component';
 import { IngresosComponent } from './features/transacciones/ingresos/ingresos.component';
+import { EgresosComponent } from './features/transacciones/egresos/egresos.component';
 
 export const routes: Routes = [
   // ==================== RUTAS PÚBLICAS ====================
@@ -66,10 +67,10 @@ export const routes: Routes = [
         component: IngresosComponent,
         title: 'Ingresos - GastuApp',
       },
-      // Egresos (placeholder - TODO: crear componente)
+      // Egresos
       {
         path: 'egresos',
-        component: IngresosComponent, // Temporal: usa Ingresos hasta crear Egresos
+        component: EgresosComponent,
         title: 'Egresos - GastuApp',
       },
     ],
