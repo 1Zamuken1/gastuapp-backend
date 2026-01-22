@@ -1,0 +1,168 @@
+/**
+ * LayoutComponent - Estilos SCSS
+ *
+ * ESTRUCTURA:
+ * - Layout de 2 columnas (sidebar + contenido)
+ * - Navbar fija en la parte superior
+ * - Sidebar colapsable
+ *
+ * VARIABLES USADAS:
+ * - Todas las variables de styles.scss (Calm Design)
+ *
+ * @author Juan Esteban Barrios Portela
+ * @version 1.0
+ * @since 2026-01-21
+ */
+
+// ==================== LAYOUT CONTAINER ====================
+.layout-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--surface-50);
+}
+
+// ==================== NAVBAR ====================
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 60px;
+  padding: 0 var(--spacing-md);
+  background: var(--surface-0);
+  border-bottom: 1px solid var(--surface-200);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.navbar-left {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.navbar-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.navbar-title {
+  font-size: 1.25rem;
+  font-weight: var(--font-weight-semibold);
+  color: var(--surface-800);
+}
+
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.user-email {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+// ==================== MAIN CONTAINER ====================
+.main-container {
+  display: flex;
+  flex: 1;
+}
+
+// ==================== SIDEBAR ====================
+.sidebar {
+  width: 240px;
+  background: var(--surface-0);
+  border-right: 1px solid var(--surface-200);
+  padding: var(--spacing-md) 0;
+  transition: width var(--transition-normal);
+  overflow: hidden;
+
+  // Estado colapsado
+  &.collapsed {
+    width: 64px;
+  }
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  margin: 0 var(--spacing-sm);
+  border-radius: var(--border-radius-md);
+  color: var(--surface-600);
+  text-decoration: none;
+  transition: all var(--transition-fast);
+  cursor: pointer;
+
+  &:hover {
+    background: var(--surface-100);
+    color: var(--surface-800);
+  }
+
+  // Estado activo
+  &.active {
+    background: var(--primary-50);
+    color: var(--primary-600);
+
+    .nav-icon {
+      color: var(--primary-600);
+    }
+  }
+}
+
+.nav-icon {
+  font-size: 1.25rem;
+  width: 24px;
+  text-align: center;
+}
+
+.nav-label {
+  font-size: 0.9375rem;
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+}
+
+// ==================== CONTENIDO PRINCIPAL ====================
+.content {
+  flex: 1;
+  padding: var(--spacing-lg);
+  overflow-y: auto;
+}
+
+// ==================== RESPONSIVE ====================
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    left: 0;
+    top: 60px;
+    height: calc(100vh - 60px);
+    z-index: 99;
+
+    &.collapsed {
+      width: 0;
+      padding: 0;
+    }
+  }
+
+  .content {
+    width: 100%;
+  }
+
+  .navbar-title {
+    display: none;
+  }
+
+  .user-email {
+    display: none;
+  }
+}

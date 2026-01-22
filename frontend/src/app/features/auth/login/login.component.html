@@ -1,0 +1,82 @@
+<!--
+  LoginComponent - Template HTML
+
+  ESTRUCTURA:
+  - Card centrada con formulario
+  - Inputs para email y password
+  - Botón de login
+
+  @author Juan Esteban Barrios Portela
+  @version 1.0
+  @since 2026-01-21
+-->
+
+<p-toast></p-toast>
+
+<div class="login-container">
+  <div class="login-card">
+    <!-- Logo y título -->
+    <div class="login-header">
+      <i class="pi pi-wallet login-logo"></i>
+      <h1 class="login-title">GastuApp</h1>
+      <p class="login-subtitle">Inicia sesión para continuar</p>
+    </div>
+
+    <!-- Mensaje de error -->
+    @if (errorMessage()) {
+      <div class="error-message">
+        <i class="pi pi-exclamation-circle"></i>
+        {{ errorMessage() }}
+      </div>
+    }
+
+    <!-- Formulario -->
+    <form (ngSubmit)="onSubmit()" class="login-form">
+      <!-- Email -->
+      <div class="field">
+        <label for="email">Correo electrónico</label>
+        <input
+          id="email"
+          type="email"
+          pInputText
+          [(ngModel)]="email"
+          name="email"
+          placeholder="tu@email.com"
+          [disabled]="loading()"
+          class="w-full"
+        />
+      </div>
+
+      <!-- Password -->
+      <div class="field">
+        <label for="password">Contraseña</label>
+        <p-password
+          [(ngModel)]="password"
+          name="password"
+          [feedback]="false"
+          [toggleMask]="true"
+          placeholder="Tu contraseña"
+          [disabled]="loading()"
+          styleClass="w-full"
+          inputStyleClass="w-full"
+        ></p-password>
+      </div>
+
+      <!-- Botón submit -->
+      <button
+        pButton
+        type="submit"
+        label="Iniciar Sesión"
+        icon="pi pi-sign-in"
+        class="w-full"
+        [loading]="loading()"
+      ></button>
+    </form>
+
+    <!-- Link registro -->
+    <div class="login-footer">
+      <span>¿No tienes cuenta?</span>
+      <a routerLink="/register" class="register-link">Regístrate aquí</a>
+    </div>
+  </div>
+</div>

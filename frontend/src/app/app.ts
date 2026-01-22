@@ -3,35 +3,33 @@
  *
  * FLUJO DE DATOS:
  * - BOOTSTRAP: Componente raíz de la aplicación Angular
- * - RENDERIZA: Template app.html con router-outlet
- * - PROVEE: Contenedor principal para toda la aplicación
+ * - RENDERIZA: Router outlet para navegación
+ * - PROVEE: Punto de entrada para toda la aplicación
  *
  * RESPONSABILIDAD:
- * Componente raíz que sirve como contenedor principal.
- * Actualmente muestra una vista de prueba del sistema de diseño.
- * Será reemplazado por el layout principal cuando se implemente routing.
+ * Componente raíz minimalista que solo renderiza el router-outlet.
+ * La navegación y layout se manejan en app.routes.ts y LayoutComponent.
  *
- * IMPORTS:
- * - RouterOutlet: Para navegación entre componentes
- * - ButtonModule: Botones de PrimeNG
- * - CardModule: Cards de PrimeNG
+ * ESTRUCTURA DE NAVEGACIÓN:
+ * App (router-outlet)
+ *   ├── LoginComponent (ruta /login)
+ *   └── LayoutComponent (rutas protegidas)
+ *       ├── DashboardComponent (/dashboard)
+ *       ├── IngresosComponent (/ingresos)
+ *       └── EgresosComponent (/egresos)
  *
  * @author Juan Esteban Barrios Portela
- * @version 1.0
+ * @version 1.1
  * @since 2026-01-21
  */
-import { Component, signal } from '@angular/core';
+import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-// Importaciones de PrimeNG
-import { ButtonModule } from 'primeng/button';
-import { CardModule } from 'primeng/card';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, ButtonModule, CardModule],
-  templateUrl: './app.html',
-  styleUrl: './app.scss',
+  standalone: true,
+  imports: [RouterOutlet],
+  template: '<router-outlet />',
+  styles: [],
 })
-export class App {
-  protected readonly title = signal('GastuApp');
-}
+export class App {}

@@ -1,0 +1,81 @@
+<!--
+  LayoutComponent - Template HTML
+
+  ESTRUCTURA:
+  - Navbar superior con logo y opciones de usuario
+  - Sidebar lateral izquierdo con navegación
+  - Área de contenido principal con router-outlet
+
+  @author Juan Esteban Barrios Portela
+  @version 1.0
+  @since 2026-01-21
+-->
+
+<div class="layout-container">
+  <!-- ==================== NAVBAR SUPERIOR ==================== -->
+  <header class="navbar">
+    <div class="navbar-left">
+      <!-- Botón toggle sidebar -->
+      <button
+        pButton
+        type="button"
+        icon="pi pi-bars"
+        class="p-button-text p-button-plain"
+        (click)="toggleSidebar()"
+        pTooltip="Toggle menú"
+      ></button>
+
+      <!-- Logo y nombre -->
+      <div class="navbar-brand">
+        <i class="pi pi-wallet text-2xl" style="color: var(--primary-500)"></i>
+        <span class="navbar-title">GastuApp</span>
+      </div>
+    </div>
+
+    <div class="navbar-right">
+      <!-- Info del usuario -->
+      @if (authService.currentUser(); as user) {
+        <span class="user-email">{{ user.email }}</span>
+      }
+
+      <!-- Botón logout -->
+      <button
+        pButton
+        type="button"
+        icon="pi pi-sign-out"
+        label="Salir"
+        class="p-button-text p-button-danger"
+        (click)="logout()"
+        pTooltip="Cerrar sesión"
+      ></button>
+    </div>
+  </header>
+
+  <!-- ==================== CONTENEDOR PRINCIPAL ==================== -->
+  <div class="main-container">
+    <!-- ==================== SIDEBAR ==================== -->
+    <aside class="sidebar" [class.collapsed]="!sidebarExpanded()">
+      <nav class="sidebar-nav">
+        @for (item of menuItems; track item.route) {
+          <a
+            [routerLink]="item.route"
+            routerLinkActive="active"
+            class="nav-item"
+            [pTooltip]="!sidebarExpanded() ? item.label : ''"
+            tooltipPosition="right"
+          >
+            <i [class]="item.icon + ' nav-icon'"></i>
+            @if (sidebarExpanded()) {
+              <span class="nav-label">{{ item.label }}</span>
+            }
+          </a>
+        }
+      </nav>
+    </aside>
+
+    <!-- ==================== CONTENIDO PRINCIPAL ==================== -->
+    <main class="content">
+      <router-outlet />
+    </main>
+  </div>
+</div>

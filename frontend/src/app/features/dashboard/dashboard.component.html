@@ -1,0 +1,101 @@
+<!--
+  DashboardComponent - Template HTML
+
+  ESTRUCTURA:
+  - Título de página
+  - Grid de cards con resumen financiero
+  - Acciones rápidas
+
+  @author Juan Esteban Barrios Portela
+  @version 1.0
+  @since 2026-01-21
+-->
+
+<div class="dashboard">
+  <!-- ==================== HEADER ==================== -->
+  <div class="dashboard-header">
+    <h1 class="page-title">Dashboard</h1>
+    <p class="page-subtitle">Resumen de tus finanzas</p>
+  </div>
+
+  <!-- ==================== CARDS DE RESUMEN ==================== -->
+  @if (loading()) {
+    <!-- Skeleton mientras carga -->
+    <div class="cards-grid">
+      @for (i of [1, 2, 3, 4]; track i) {
+        <div class="card-calm">
+          <p-skeleton height="1.5rem" width="60%" styleClass="mb-2" />
+          <p-skeleton height="2.5rem" width="80%" />
+        </div>
+      }
+    </div>
+  } @else {
+    <div class="cards-grid">
+      <!-- Card: Balance -->
+      <div class="card-calm card-balance">
+        <div class="card-header">
+          <span class="card-label">Balance Actual</span>
+          <i class="pi pi-wallet card-icon"></i>
+        </div>
+        <div
+          class="card-value"
+          [class.positive]="resumen().balance >= 0"
+          [class.negative]="resumen().balance < 0"
+        >
+          {{ formatCurrency(resumen().balance) }}
+        </div>
+      </div>
+
+      <!-- Card: Ingresos -->
+      <div class="card-calm card-income">
+        <div class="card-header">
+          <span class="card-label">Total Ingresos</span>
+          <i class="pi pi-arrow-up card-icon income-icon"></i>
+        </div>
+        <div class="card-value amount-positive">
+          {{ formatCurrency(resumen().totalIngresos) }}
+        </div>
+        <a routerLink="/ingresos" class="card-link">Ver detalles →</a>
+      </div>
+
+      <!-- Card: Egresos -->
+      <div class="card-calm card-expense">
+        <div class="card-header">
+          <span class="card-label">Total Egresos</span>
+          <i class="pi pi-arrow-down card-icon expense-icon"></i>
+        </div>
+        <div class="card-value amount-negative">
+          {{ formatCurrency(resumen().totalEgresos) }}
+        </div>
+        <a routerLink="/egresos" class="card-link">Ver detalles →</a>
+      </div>
+
+      <!-- Card: Transacciones -->
+      <div class="card-calm card-transactions">
+        <div class="card-header">
+          <span class="card-label">Transacciones</span>
+          <i class="pi pi-list card-icon"></i>
+        </div>
+        <div class="card-value">
+          {{ resumen().cantidadTransacciones }}
+        </div>
+        <span class="card-sublabel">Este mes</span>
+      </div>
+    </div>
+  }
+
+  <!-- ==================== ACCIONES RÁPIDAS ==================== -->
+  <div class="quick-actions">
+    <h2 class="section-title">Acciones Rápidas</h2>
+    <div class="actions-grid">
+      <a routerLink="/ingresos" class="action-card">
+        <i class="pi pi-plus-circle action-icon income-icon"></i>
+        <span class="action-label">Nuevo Ingreso</span>
+      </a>
+      <a routerLink="/egresos" class="action-card">
+        <i class="pi pi-minus-circle action-icon expense-icon"></i>
+        <span class="action-label">Nuevo Egreso</span>
+      </a>
+    </div>
+  </div>
+</div>

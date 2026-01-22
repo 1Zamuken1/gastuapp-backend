@@ -9,31 +9,24 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Security Configuration
  *
  * RESPONSABILIDAD:
- * Configuración de Spring Security para la aplicación.
- * Define qué endpoints son públicos y cuáles requieren autenticación.
- * Configura el filtro JWT para validar tokens en cada request.
- *
- * ENDPOINTS PÚBLICOS:
- * - POST /api/auth/register → Registro de usuarios
- * - POST /api/auth/login → Login de usuarios
- * - GET /api/health → Health check
- *
- * ENDPOINTS PROTEGIDOS:
- * - Todos los demás requieren token JWT válido
- *
- * CONFIGURACIÓN JWT:
- * - Stateless (sin sesiones en servidor)
- * - Token en header "Authorization: Bearer <token>"
- * - Filtro JWT ejecutado antes de cada request
+ * Configuración de Spring Security + CORS para la aplicación.
+ * Define endpoints públicos y protegidos.
+ * Configura CORS para permitir requests desde Angular.
  *
  * @author Juan Esteban Barrios Portela
  * @version 1.0
- * @since 2025-01-20
+ * @since 2025-01-21
  */
 @Configuration
 @EnableWebSecurity
@@ -47,50 +40,75 @@ public class SecurityConfig {
 
     /**
      * Configura la cadena de filtros de seguridad.
-     *
-     * CONFIGURACIÓN:
-     * - CSRF deshabilitado (API REST stateless)
-     * - Sesiones deshabilitadas (JWT stateless)
-     * - Endpoints públicos: /auth/**, /health
-     * - Filtro JWT añadido antes de UsernamePasswordAuthenticationFilter
-     *
-     * @param http HttpSecurity
-     * @return SecurityFilterChain configurado
      */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                // Deshabilitar CSRF (no necesario en API REST con JWT)
+                // Habilitar CORS
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+
+                // Deshabilitar CSRF (API REST stateless)
                 .csrf(csrf -> csrf.disable())
 
-                // Configurar sesiones como STATELESS (sin estado en servidor)
+                // Sesiones STATELESS
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-                // Configurar autorización de endpoints
+                // Configurar autorización
                 .authorizeHttpRequests(auth -> auth
-                        // Endpoints públicos (no requieren autenticación)
-                        .requestMatchers("/auth/**").permitAll()
-                        .requestMatchers("/health").permitAll()
-                        .requestMatchers("/categorias/**").permitAll()
+                        // Endpoints públicos
+                        .requestMatchers("/auth/**", "/api/auth/**").permitAll()
+                        .requestMatchers("/health", "/api/health").permitAll()
+                        .requestMatchers("/categorias/**", "/api/categorias/**").permitAll()
 
-                        // Todos los demás endpoints requieren autenticación
+                        // Todos los demás requieren autenticación
                         .anyRequest().authenticated())
 
-                // Añadir filtro JWT antes del filtro de autenticación
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                // Añadir filtro JWT
+                .addFilterBefore(jwtAuthenticationFilter,
+                        UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
     /**
-     * Bean de BCryptPasswordEncoder para hashear passwords.
-     *
-     * SEGURIDAD:
-     * - Algoritmo BCrypt con salt aleatorio
-     * - Resistente a rainbow tables
-     * - Adaptive hashing (costo configurable)
-     *
-     * @return Instancia de BCryptPasswordEncoder
+     * Configuración de CORS.
+     */
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+
+        // Orígenes permitidos
+        configuration.setAllowedOrigins(Arrays.asList(
+                "http://localhost:4200",
+                "http://127.0.0.1:4200"));
+
+        // Métodos permitidos
+        configuration.setAllowedMethods(Arrays.asList(
+                "GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+
+        // Headers permitidos
+        configuration.setAllowedHeaders(Arrays.asList(
+                "Authorization",
+                "Content-Type",
+                "Accept",
+                "Origin",
+                "X-Requested-With"));
+
+        // Permitir credentials
+        configuration.setAllowCredentials(true);
+
+        // Max age
+        configuration.setMaxAge(3600L);
+
+        // Aplicar a todas las rutas
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+
+        return source;
+    }
+
+    /**
+     * Bean de BCryptPasswordEncoder.
      */
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {

@@ -1,0 +1,177 @@
+<!--
+  IngresosComponent - Template HTML
+
+  ESTRUCTURA:
+  - Header con título y total
+  - Botón para nuevo ingreso
+  - Tabla PrimeNG con datos
+  - Dialogs de confirmación y mensajes
+
+  NOTA PARA EGRESOS:
+  Para crear EgresosComponent, copia este archivo y cambia:
+  - "Ingresos" → "Egresos"
+  - "ingreso" → "egreso"
+  - "income" → "expense" (en clases CSS)
+  - Icono pi-arrow-up → pi-arrow-down
+
+  @author Juan Esteban Barrios Portela
+  @version 1.0
+  @since 2026-01-21
+-->
+
+<!-- Toast para mensajes -->
+<p-toast></p-toast>
+
+<!-- Dialog de confirmación -->
+<p-confirmDialog></p-confirmDialog>
+
+<div class="ingresos-page">
+  <!-- ==================== HEADER ==================== -->
+  <div class="page-header">
+    <div class="header-left">
+      <h1 class="page-title">
+        <i class="pi pi-arrow-circle-up income-icon"></i>
+        Ingresos
+      </h1>
+      <p class="page-subtitle">Gestiona tus fuentes de ingreso</p>
+    </div>
+
+    <div class="header-right">
+      <!-- Total de ingresos -->
+      <div class="total-card">
+        <span class="total-label">Total</span>
+        <span class="total-value amount-positive">
+          {{ formatCurrency(totalIngresos()) }}
+        </span>
+      </div>
+
+      <!-- Botón nuevo -->
+      <button
+        pButton
+        type="button"
+        label="Nuevo Ingreso"
+        icon="pi pi-plus"
+        class="p-button-success"
+        (click)="nuevoIngreso()"
+      ></button>
+    </div>
+  </div>
+
+  <!-- ==================== TABLA ==================== -->
+  <div class="card-calm">
+    @if (loading()) {
+      <!-- Skeleton mientras carga -->
+      <div class="skeleton-table">
+        @for (i of [1, 2, 3, 4, 5]; track i) {
+          <div class="skeleton-row">
+            <p-skeleton width="100px" height="1rem"></p-skeleton>
+            <p-skeleton width="200px" height="1rem"></p-skeleton>
+            <p-skeleton width="80px" height="1rem"></p-skeleton>
+            <p-skeleton width="100px" height="1rem"></p-skeleton>
+          </div>
+        }
+      </div>
+    } @else if (ingresos().length === 0) {
+      <!-- Estado vacío -->
+      <div class="empty-state">
+        <i class="pi pi-inbox empty-icon"></i>
+        <h3>No hay ingresos registrados</h3>
+        <p>Comienza agregando tu primer ingreso</p>
+        <button
+          pButton
+          type="button"
+          label="Agregar Ingreso"
+          icon="pi pi-plus"
+          class="p-button-success"
+          (click)="nuevoIngreso()"
+        ></button>
+      </div>
+    } @else {
+      <!-- Tabla de ingresos -->
+      <p-table
+        [value]="ingresos()"
+        [paginator]="true"
+        [rows]="10"
+        [rowsPerPageOptions]="[5, 10, 20]"
+        [showCurrentPageReport]="true"
+        currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} ingresos"
+        [globalFilterFields]="['descripcion', 'categoriaNombre']"
+        styleClass="p-datatable-striped"
+      >
+        <!-- Header de la tabla -->
+        <ng-template #header>
+          <tr>
+            <th pSortableColumn="fecha" style="width: 120px">
+              Fecha <p-sortIcon field="fecha"></p-sortIcon>
+            </th>
+            <th pSortableColumn="descripcion">
+              Descripción <p-sortIcon field="descripcion"></p-sortIcon>
+            </th>
+            <th pSortableColumn="categoriaNombre" style="width: 150px">
+              Categoría <p-sortIcon field="categoriaNombre"></p-sortIcon>
+            </th>
+            <th pSortableColumn="monto" style="width: 150px; text-align: right">
+              Monto <p-sortIcon field="monto"></p-sortIcon>
+            </th>
+            <th style="width: 100px; text-align: center">Acciones</th>
+          </tr>
+        </ng-template>
+
+        <!-- Body de la tabla -->
+        <ng-template #body let-ingreso>
+          <tr>
+            <!-- Fecha -->
+            <td>{{ formatDate(ingreso.fecha) }}</td>
+
+            <!-- Descripción -->
+            <td>{{ ingreso.descripcion }}</td>
+
+            <!-- Categoría -->
+            <td>
+              <p-tag [value]="ingreso.categoriaNombre" severity="info">
+                <ng-template #content>
+                  <i [class]="ingreso.categoriaIcono + ' mr-1'"></i>
+                  {{ ingreso.categoriaNombre }}
+                </ng-template>
+              </p-tag>
+            </td>
+
+            <!-- Monto -->
+            <td class="text-right">
+              <span class="amount-positive font-semibold">
+                {{ formatCurrency(ingreso.monto) }}
+              </span>
+            </td>
+
+            <!-- Acciones -->
+            <td class="text-center">
+              <button
+                pButton
+                type="button"
+                icon="pi pi-pencil"
+                class="p-button-text p-button-sm"
+                pTooltip="Editar"
+                (click)="editarIngreso(ingreso)"
+              ></button>
+              <button
+                pButton
+                type="button"
+                icon="pi pi-trash"
+                class="p-button-text p-button-danger p-button-sm"
+                pTooltip="Eliminar"
+                (click)="confirmarEliminar(ingreso)"
+              ></button>
+            </td>
+          </tr>
+        </ng-template>
+
+        <!-- Empty message -->
+        <ng-template #emptymessage>
+          <tr>
+            <td colspan="5" class="text-center p-4">No se encontraron ingresos</td>
+          </tr>
+        </ng-template>
+      </p-table>
+    }
+  </div>
+</div>
