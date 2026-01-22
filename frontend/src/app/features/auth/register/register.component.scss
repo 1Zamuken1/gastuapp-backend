@@ -1,5 +1,5 @@
 /**
- * RegisterComponent - Estilos SCSS
+ * RegisterComponent - Wizard Styles
  */
 
 .register-container {
@@ -13,12 +13,14 @@
 
 .register-card {
   width: 100%;
-  max-width: 500px; // Un poco más ancho que login
-  padding: var(--spacing-xl);
+  max-width: 600px; // Más ancho para las cards
+  padding: var(--spacing-2xl);
   background: var(--surface-0);
   border-radius: var(--border-radius-xl);
   box-shadow: var(--shadow-lg);
-  margin: var(--spacing-md) 0; // Margen vertical para móviles
+  margin: var(--spacing-md) 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .register-header {
@@ -45,20 +47,109 @@
   margin-top: var(--spacing-xs);
 }
 
-.register-form {
+/* WIZARD STEPS CONTENT */
+.wizard-step {
+  min-height: 300px; // Altura mínima para evitar saltos bruscos
   display: flex;
   flex-direction: column;
   gap: var(--spacing-md);
+  
+  h3 {
+    font-size: 1.25rem;
+    color: var(--surface-800);
+    margin-bottom: var(--spacing-xs);
+    text-align: center;
+  }
+  
+  .step-desc {
+    text-align: center;
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-lg);
+  }
 }
 
+/* ANIMATIONS */
+.fade-in {
+  animation: fadeIn var(--transition-normal);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* CARDS GRID (Step 2) */
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-md);
+}
+
+.typology-card {
+  position: relative;
+  background: var(--surface-50);
+  border: 2px solid var(--surface-200);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-md);
+  text-align: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-sm);
+
+  &:hover {
+    border-color: var(--primary-300);
+    background: var(--primary-50);
+    transform: translateY(-2px);
+  }
+
+  &.selected {
+    border-color: var(--primary-500);
+    background: var(--primary-50);
+    box-shadow: 0 0 0 2px var(--primary-200);
+
+    .card-icon i {
+      color: var(--primary-500);
+    }
+  }
+
+  .card-icon {
+    font-size: 2rem;
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-xs);
+    
+    i { transition: color var(--transition-fast); }
+  }
+
+  .card-content h4 {
+    font-size: 1rem;
+    font-weight: var(--font-weight-semibold);
+    color: var(--surface-800);
+    margin-bottom: 0.25rem;
+  }
+
+  .card-content p {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+  }
+
+  .check-icon {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    color: var(--primary-500);
+    font-size: 1.25rem;
+  }
+}
+
+/* FORMS LAYOUT */
 .form-row {
   display: flex;
   gap: var(--spacing-md);
+  .field { flex: 1; }
   
-  .field {
-    flex: 1;
-  }
-
   @media (max-width: 576px) {
     flex-direction: column;
     gap: var(--spacing-md);
@@ -75,18 +166,6 @@
     font-weight: var(--font-weight-medium);
     color: var(--surface-700);
   }
-  
-  input {
-    width: 100%;
-  }
-}
-
-.w-full {
-  width: 100%;
-}
-
-.mt-3 {
-  margin-top: var(--spacing-md);
 }
 
 .error-text {
@@ -94,11 +173,22 @@
   font-size: 0.75rem;
 }
 
+/* ACTION BUTTONS */
+.wizard-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: var(--spacing-2xl);
+  padding-top: var(--spacing-md);
+  border-top: 1px solid var(--surface-100);
+}
+
 .register-footer {
   text-align: center;
   margin-top: var(--spacing-lg);
   color: var(--text-secondary);
   font-size: 0.875rem;
+  
+  &.mt-large { margin-top: var(--spacing-xl); }
 }
 
 .login-link {
@@ -106,8 +196,19 @@
   text-decoration: none;
   font-weight: var(--font-weight-medium);
   margin-left: var(--spacing-xs);
+  &:hover { text-decoration: underline; }
+}
 
-  &:hover {
-    text-decoration: underline;
+/* RESPONSIVE */
+@media (max-width: 576px) {
+  .cards-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .wizard-actions {
+    flex-direction: column-reverse;
+    gap: var(--spacing-md);
+    
+    button { width: 100%; }
   }
 }

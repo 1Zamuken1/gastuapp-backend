@@ -1,145 +1,231 @@
 <!--
-  RegisterComponent - Template HTML
+  RegisterComponent - Wizard Template
 -->
 <p-toast></p-toast>
-
 <div class="register-container">
   <div class="register-card">
+    <!-- Header -->
     <div class="register-header">
       <i class="pi pi-user-plus register-logo"></i>
       <h1 class="register-title">Crear Cuenta</h1>
-      <p class="register-subtitle">Únete a GastuApp para controlar tus finanzas</p>
+      <p class="register-subtitle">Paso {{ currentStep() + 1 }} de {{ steps.length }}</p>
     </div>
 
+    <!-- Stepper Indicator -->
+    <p-steps
+      [model]="steps"
+      [activeIndex]="currentStep()"
+      [readonly]="true"
+      styleClass="mb-5"
+    ></p-steps>
+
     <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="register-form">
-      <!-- Fila 1: Nombre y Apellido -->
-      <div class="form-row">
-        <div class="field">
-          <label for="nombre">Nombre</label>
-          <input
-            id="nombre"
-            type="text"
-            pInputText
-            formControlName="nombre"
-            placeholder="Juan"
-            [class.ng-invalid]="isInvalid('nombre')"
-            [class.ng-dirty]="isInvalid('nombre')"
-          />
-          @if (isInvalid('nombre')) {
-            <small class="error-text">Nombre es requerido</small>
-          }
-        </div>
-        <div class="field">
-          <label for="apellido">Apellido</label>
-          <input
-            id="apellido"
-            type="text"
-            pInputText
-            formControlName="apellido"
-            placeholder="Pérez"
-            [class.ng-invalid]="isInvalid('apellido')"
-            [class.ng-dirty]="isInvalid('apellido')"
-          />
-          @if (isInvalid('apellido')) {
-            <small class="error-text">Apellido es requerido</small>
-          }
-        </div>
-      </div>
+      <!-- ==================== CONTENIDO DEL WIZARD ==================== -->
+      @switch (currentStep()) {
+        <!-- PASO 0: DATOS PERSONALES -->
+        @case (0) {
+          <div class="wizard-step step-personal fade-in">
+            <h3>¿Quién eres?</h3>
 
-      <!-- Email -->
-      <div class="field">
-        <label for="email">Correo electrónico</label>
-        <input
-          id="email"
-          type="email"
-          pInputText
-          formControlName="email"
-          placeholder="juan@ejemplo.com"
-          [class.ng-invalid]="isInvalid('email')"
-          [class.ng-dirty]="isInvalid('email')"
-        />
-        @if (isInvalid('email')) {
-          <small class="error-text">Ingresa un correo válido</small>
+            <div class="form-row">
+              <div class="field">
+                <label for="nombre">Nombre</label>
+                <input
+                  id="nombre"
+                  type="text"
+                  pInputText
+                  formControlName="nombre"
+                  placeholder="Juan"
+                  [class.ng-invalid]="isInvalid('nombre')"
+                  [class.ng-dirty]="isInvalid('nombre')"
+                />
+                @if (isInvalid('nombre')) {
+                  <small class="error-text">Requerido</small>
+                }
+              </div>
+              <div class="field">
+                <label for="apellido">Apellido</label>
+                <input
+                  id="apellido"
+                  type="text"
+                  pInputText
+                  formControlName="apellido"
+                  placeholder="Pérez"
+                  [class.ng-invalid]="isInvalid('apellido')"
+                  [class.ng-dirty]="isInvalid('apellido')"
+                />
+                @if (isInvalid('apellido')) {
+                  <small class="error-text">Requerido</small>
+                }
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="email">Correo electrónico</label>
+              <input
+                id="email"
+                type="email"
+                pInputText
+                formControlName="email"
+                placeholder="juan@ejemplo.com"
+                [class.ng-invalid]="isInvalid('email')"
+                [class.ng-dirty]="isInvalid('email')"
+              />
+              @if (isInvalid('email')) {
+                <small class="error-text">Correo inválido</small>
+              }
+            </div>
+
+            <div class="field">
+              <label for="password">Contraseña</label>
+              <p-password
+                formControlName="password"
+                [toggleMask]="true"
+                [feedback]="true"
+                placeholder="Mínimo 6 caracteres"
+                styleClass="w-full"
+                inputStyleClass="w-full"
+                [class.ng-invalid]="isInvalid('password')"
+                [class.ng-dirty]="isInvalid('password')"
+              ></p-password>
+              @if (isInvalid('password')) {
+                <small class="error-text">Mínimo 6 caracteres</small>
+              }
+            </div>
+
+            <div class="field">
+              <label for="telefono">Teléfono</label>
+              <input
+                id="telefono"
+                type="text"
+                pInputText
+                formControlName="telefono"
+                placeholder="3001234567"
+                [class.ng-invalid]="isInvalid('telefono')"
+                [class.ng-dirty]="isInvalid('telefono')"
+              />
+              @if (isInvalid('telefono')) {
+                <small class="error-text">Requerido</small>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- PASO 1: TIPOLOGÍA (CARDS) -->
+        @case (1) {
+          <div class="wizard-step step-typology fade-in">
+            <h3>¿A qué te dedicas?</h3>
+            <p class="step-desc">Selecciona la opción que mejor te describa.</p>
+
+            <div class="cards-grid">
+              @for (tipo of tipologias; track tipo.value) {
+                <div
+                  class="typology-card"
+                  [class.selected]="registerForm.get('tipologia')?.value === tipo.value"
+                  (click)="selectTipologia(tipo.value)"
+                >
+                  <div class="card-icon">
+                    <i [class]="tipo.icon"></i>
+                  </div>
+                  <div class="card-content">
+                    <h4>{{ tipo.label }}</h4>
+                    <p>{{ tipo.description }}</p>
+                  </div>
+                  @if (registerForm.get('tipologia')?.value === tipo.value) {
+                    <div class="check-icon"><i class="pi pi-check-circle"></i></div>
+                  }
+                </div>
+              }
+            </div>
+            <!-- Hidden input for validation linkage if needed, though we use patchValue -->
+          </div>
+        }
+
+        <!-- PASO 2: DETALLES -->
+        @case (2) {
+          <div class="wizard-step step-details fade-in">
+            <h3>Detalles Profesionales</h3>
+            <p class="step-desc">Cuéntanos un poco más sobre tu actividad.</p>
+
+            <div class="field">
+              <label for="profesion">Profesión / Ocupación</label>
+              <p-autoComplete
+                inputId="profesion"
+                formControlName="profesion"
+                [suggestions]="profesionesFiltradas()"
+                (completeMethod)="filterProfesion($event)"
+                [dropdown]="true"
+                placeholder="Ej: Ingeniero, Diseñador..."
+                styleClass="w-full"
+                inputStyleClass="w-full"
+                [forceSelection]="false"
+              >
+              </p-autoComplete>
+              @if (isInvalid('profesion')) {
+                <small class="error-text">Requerido</small>
+              }
+            </div>
+
+            <div class="field">
+              <label for="institucion">Lugar de Trabajo / Estudio</label>
+              <input
+                id="institucion"
+                type="text"
+                pInputText
+                formControlName="institucion"
+                placeholder="Empresa S.A.S o Universidad"
+                [class.ng-invalid]="isInvalid('institucion')"
+                [class.ng-dirty]="isInvalid('institucion')"
+              />
+              @if (isInvalid('institucion')) {
+                <small class="error-text">Requerido</small>
+              }
+            </div>
+          </div>
+        }
+      }
+
+      <!-- ==================== ACTION BUTTONS ==================== -->
+      <div class="wizard-actions">
+        <!-- Botón Atrás -->
+        @if (currentStep() > 0) {
+          <button
+            pButton
+            type="button"
+            label="Atrás"
+            icon="pi pi-arrow-left"
+            class="p-button-outlined"
+            (click)="prevStep()"
+          ></button>
+        } @else {
+          <!-- Spacer para alinear a la derecha si no hay botón atrás -->
+          <div></div>
+        }
+
+        <!-- Botón Siguiente / Registrar -->
+        @if (currentStep() < steps.length - 1) {
+          <button
+            pButton
+            type="button"
+            label="Siguiente"
+            icon="pi pi-arrow-right"
+            iconPos="right"
+            (click)="nextStep()"
+          ></button>
+        } @else {
+          <button
+            pButton
+            type="submit"
+            label="Crear Cuenta"
+            icon="pi pi-check"
+            [loading]="loading()"
+            class="p-button-success"
+          ></button>
         }
       </div>
-
-      <!-- Password -->
-      <div class="field">
-        <label for="password">Contraseña</label>
-        <p-password
-          formControlName="password"
-          [toggleMask]="true"
-          [feedback]="true"
-          placeholder="Mínimo 6 caracteres"
-          styleClass="w-full"
-          inputStyleClass="w-full"
-          [class.ng-invalid]="isInvalid('password')"
-          [class.ng-dirty]="isInvalid('password')"
-        ></p-password>
-        @if (isInvalid('password')) {
-          <small class="error-text">Mínimo 6 caracteres</small>
-        }
-      </div>
-
-      <!-- Teléfono -->
-      <div class="field">
-        <label for="telefono">Teléfono</label>
-        <input
-          id="telefono"
-          type="text"
-          pInputText
-          formControlName="telefono"
-          placeholder="3001234567"
-        />
-      </div>
-
-      <!-- Fila 2: Tipología y Profesión -->
-      <div class="form-row">
-        <div class="field">
-          <label for="tipologia">Ocupación</label>
-          <p-select
-            [options]="tipologias"
-            formControlName="tipologia"
-            optionLabel="label"
-            optionValue="value"
-            styleClass="w-full"
-          ></p-select>
-        </div>
-        <div class="field">
-          <label for="profesion">Profesión</label>
-          <input
-            id="profesion"
-            type="text"
-            pInputText
-            formControlName="profesion"
-            placeholder="Ingeniero"
-          />
-        </div>
-      </div>
-
-      <!-- Institución -->
-      <div class="field">
-        <label for="institucion">Lugar de Trabajo / Estudio</label>
-        <input
-          id="institucion"
-          type="text"
-          pInputText
-          formControlName="institucion"
-          placeholder="Empresa S.A.S"
-        />
-      </div>
-
-      <button
-        pButton
-        type="submit"
-        label="Registrarse"
-        icon="pi pi-check"
-        class="w-full mt-3"
-        [loading]="loading()"
-      ></button>
     </form>
 
-    <div class="register-footer">
+    <div class="register-footer" [class.mt-large]="true">
       <span>¿Ya tienes cuenta?</span>
       <a routerLink="/login" class="login-link">Inicia sesión</a>
     </div>
