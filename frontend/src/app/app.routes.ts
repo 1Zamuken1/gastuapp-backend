@@ -30,6 +30,7 @@ import { authGuard } from './core/guards/auth.guard';
 // Components
 import { LayoutComponent } from './layout/layout.component';
 import { LoginComponent } from './features/auth/login/login.component';
+import { RegisterComponent } from './features/auth/register/register.component';
 import { DashboardComponent } from './features/dashboard/dashboard.component';
 import { IngresosComponent } from './features/transacciones/ingresos/ingresos.component';
 import { EgresosComponent } from './features/transacciones/egresos/egresos.component';
@@ -40,6 +41,11 @@ export const routes: Routes = [
     path: 'login',
     component: LoginComponent,
     title: 'Iniciar Sesión - GastuApp',
+  },
+  {
+    path: 'register',
+    component: RegisterComponent,
+    title: 'Crear Cuenta - GastuApp',
   },
 
   // ==================== RUTAS PROTEGIDAS ====================

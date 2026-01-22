@@ -1,0 +1,113 @@
+/**
+ * RegisterComponent - Estilos SCSS
+ */
+
+.register-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--primary-50) 0%, var(--surface-50) 100%);
+  padding: var(--spacing-md);
+}
+
+.register-card {
+  width: 100%;
+  max-width: 500px; // Un poco más ancho que login
+  padding: var(--spacing-xl);
+  background: var(--surface-0);
+  border-radius: var(--border-radius-xl);
+  box-shadow: var(--shadow-lg);
+  margin: var(--spacing-md) 0; // Margen vertical para móviles
+}
+
+.register-header {
+  text-align: center;
+  margin-bottom: var(--spacing-lg);
+}
+
+.register-logo {
+  font-size: 2.5rem;
+  color: var(--primary-500);
+  margin-bottom: var(--spacing-xs);
+}
+
+.register-title {
+  font-size: 1.5rem;
+  font-weight: var(--font-weight-bold);
+  color: var(--surface-800);
+  margin: 0;
+}
+
+.register-subtitle {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  margin-top: var(--spacing-xs);
+}
+
+.register-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.form-row {
+  display: flex;
+  gap: var(--spacing-md);
+  
+  .field {
+    flex: 1;
+  }
+
+  @media (max-width: 576px) {
+    flex-direction: column;
+    gap: var(--spacing-md);
+  }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+
+  label {
+    font-size: 0.875rem;
+    font-weight: var(--font-weight-medium);
+    color: var(--surface-700);
+  }
+  
+  input {
+    width: 100%;
+  }
+}
+
+.w-full {
+  width: 100%;
+}
+
+.mt-3 {
+  margin-top: var(--spacing-md);
+}
+
+.error-text {
+  color: var(--danger-color);
+  font-size: 0.75rem;
+}
+
+.register-footer {
+  text-align: center;
+  margin-top: var(--spacing-lg);
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+.login-link {
+  color: var(--primary-500);
+  text-decoration: none;
+  font-weight: var(--font-weight-medium);
+  margin-left: var(--spacing-xs);
+
+  &:hover {
+    text-decoration: underline;
+  }
+}

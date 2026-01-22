@@ -1,0 +1,147 @@
+<!--
+  RegisterComponent - Template HTML
+-->
+<p-toast></p-toast>
+
+<div class="register-container">
+  <div class="register-card">
+    <div class="register-header">
+      <i class="pi pi-user-plus register-logo"></i>
+      <h1 class="register-title">Crear Cuenta</h1>
+      <p class="register-subtitle">Únete a GastuApp para controlar tus finanzas</p>
+    </div>
+
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="register-form">
+      <!-- Fila 1: Nombre y Apellido -->
+      <div class="form-row">
+        <div class="field">
+          <label for="nombre">Nombre</label>
+          <input
+            id="nombre"
+            type="text"
+            pInputText
+            formControlName="nombre"
+            placeholder="Juan"
+            [class.ng-invalid]="isInvalid('nombre')"
+            [class.ng-dirty]="isInvalid('nombre')"
+          />
+          @if (isInvalid('nombre')) {
+            <small class="error-text">Nombre es requerido</small>
+          }
+        </div>
+        <div class="field">
+          <label for="apellido">Apellido</label>
+          <input
+            id="apellido"
+            type="text"
+            pInputText
+            formControlName="apellido"
+            placeholder="Pérez"
+            [class.ng-invalid]="isInvalid('apellido')"
+            [class.ng-dirty]="isInvalid('apellido')"
+          />
+          @if (isInvalid('apellido')) {
+            <small class="error-text">Apellido es requerido</small>
+          }
+        </div>
+      </div>
+
+      <!-- Email -->
+      <div class="field">
+        <label for="email">Correo electrónico</label>
+        <input
+          id="email"
+          type="email"
+          pInputText
+          formControlName="email"
+          placeholder="juan@ejemplo.com"
+          [class.ng-invalid]="isInvalid('email')"
+          [class.ng-dirty]="isInvalid('email')"
+        />
+        @if (isInvalid('email')) {
+          <small class="error-text">Ingresa un correo válido</small>
+        }
+      </div>
+
+      <!-- Password -->
+      <div class="field">
+        <label for="password">Contraseña</label>
+        <p-password
+          formControlName="password"
+          [toggleMask]="true"
+          [feedback]="true"
+          placeholder="Mínimo 6 caracteres"
+          styleClass="w-full"
+          inputStyleClass="w-full"
+          [class.ng-invalid]="isInvalid('password')"
+          [class.ng-dirty]="isInvalid('password')"
+        ></p-password>
+        @if (isInvalid('password')) {
+          <small class="error-text">Mínimo 6 caracteres</small>
+        }
+      </div>
+
+      <!-- Teléfono -->
+      <div class="field">
+        <label for="telefono">Teléfono</label>
+        <input
+          id="telefono"
+          type="text"
+          pInputText
+          formControlName="telefono"
+          placeholder="3001234567"
+        />
+      </div>
+
+      <!-- Fila 2: Tipología y Profesión -->
+      <div class="form-row">
+        <div class="field">
+          <label for="tipologia">Ocupación</label>
+          <p-select
+            [options]="tipologias"
+            formControlName="tipologia"
+            optionLabel="label"
+            optionValue="value"
+            styleClass="w-full"
+          ></p-select>
+        </div>
+        <div class="field">
+          <label for="profesion">Profesión</label>
+          <input
+            id="profesion"
+            type="text"
+            pInputText
+            formControlName="profesion"
+            placeholder="Ingeniero"
+          />
+        </div>
+      </div>
+
+      <!-- Institución -->
+      <div class="field">
+        <label for="institucion">Lugar de Trabajo / Estudio</label>
+        <input
+          id="institucion"
+          type="text"
+          pInputText
+          formControlName="institucion"
+          placeholder="Empresa S.A.S"
+        />
+      </div>
+
+      <button
+        pButton
+        type="submit"
+        label="Registrarse"
+        icon="pi pi-check"
+        class="w-full mt-3"
+        [loading]="loading()"
+      ></button>
+    </form>
+
+    <div class="register-footer">
+      <span>¿Ya tienes cuenta?</span>
+      <a routerLink="/login" class="login-link">Inicia sesión</a>
+    </div>
+  </div>
+</div>
