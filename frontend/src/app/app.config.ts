@@ -49,9 +49,12 @@ export const appConfig: ApplicationConfig = {
     // Configuración de PrimeNG
     providePrimeNG({
       theme: {
-        preset: Aura, // Tema base: Aura (moderno, limpio)
+        preset: Aura,
+        options: {
+          darkModeSelector: '.dark-mode',
+        },
       },
-      ripple: true, // Efecto ripple en botones
+      ripple: true,
     }),
   ],
 };

@@ -140,24 +140,4 @@
   }
 }
 
-// ==================== BUTTONS ====================
-.p-button-expense {
-  background: var(--expense-color);
-  // Important para sobrescribir estilos de PrimeNG si es necesario
-  border: 1px solid var(--expense-color);
-  color: #ffffff;
-
-  .p-button-icon {
-    color: #ffffff;
-  }
-
-  &:enabled:hover, &:enabled:active {
-    background: var(--expense-hover) !important;
-    border-color: var(--expense-hover) !important;
-    color: #ffffff !important;
-  }
-
-  &:focus {
-    box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px var(--expense-bg);
-  }
-}
+// NOTA: .p-button-expense eliminado - usar p-button-primary con el tema dinámico

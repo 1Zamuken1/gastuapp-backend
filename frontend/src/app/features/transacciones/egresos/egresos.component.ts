@@ -22,8 +22,9 @@
  * @version 1.0
  * @since 2026-01-21
  */
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 
 // PrimeNG Modules
 import { TableModule } from 'primeng/table';
@@ -34,17 +35,30 @@ import { SkeletonModule } from 'primeng/skeleton';
 import { TooltipModule } from 'primeng/tooltip';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ToastModule } from 'primeng/toast';
+import { DialogModule } from 'primeng/dialog';
+import { InputTextModule } from 'primeng/inputtext';
+import { InputNumberModule } from 'primeng/inputnumber';
+import { DatePickerModule } from 'primeng/datepicker';
+import { SelectModule } from 'primeng/select';
 import { ConfirmationService, MessageService } from 'primeng/api';
 
 // Services & Models
 import { TransaccionService } from '../../../core/services/transaccion.service';
-import { Transaccion } from '../../../core/models/transaccion.model';
+import { CategoriaService } from '../../../core/services/categoria.service';
+import {
+  Transaccion,
+  TipoTransaccion,
+  TransaccionRequest,
+} from '../../../core/models/transaccion.model';
+import { Categoria } from '../../../core/models/categoria.model';
+import { ThemeService } from '../../../core/services/theme.service';
 
 @Component({
   selector: 'app-egresos',
   standalone: true,
   imports: [
     CommonModule,
+    ReactiveFormsModule,
     TableModule,
     ButtonModule,
     CardModule,
@@ -53,6 +67,11 @@ import { Transaccion } from '../../../core/models/transaccion.model';
     TooltipModule,
     ConfirmDialogModule,
     ToastModule,
+    DialogModule,
+    InputTextModule,
+    InputNumberModule,
+    DatePickerModule,
+    SelectModule,
   ],
   providers: [ConfirmationService, MessageService],
   templateUrl: './egresos.component.html',
@@ -62,42 +81,104 @@ export class EgresosComponent implements OnInit {
   // ==================== SIGNALS ====================
   // Lista de egresos
   egresos = signal<Transaccion[]>([]);
+  categorias = signal<Categoria[]>([]);
 
   // Estado de carga
   loading = signal(true);
+  saving = signal(false);
+  mostrarDialog = signal(false);
 
   // Total de egresos (para mostrar en header)
   totalEgresos = signal(0);
 
+  // Formulario
+  egresoForm: FormGroup;
+
+  // Estado edición
+  esEdicion = signal(false);
+  idEdicion = signal<number | null>(null);
+
+  // Modal Detalle
+  mostrarDetalleDialog = signal(false);
+  selectedCategory = signal<CategoriaAgrupada | null>(null);
+  categoriasAgrupadas = signal<CategoriaAgrupada[]>([]);
+
+  // Theme Service (para cambio dinámico de colores)
+  private themeService = inject(ThemeService);
+
   constructor(
     private transaccionService: TransaccionService,
+    private categoriaService: CategoriaService,
     private confirmationService: ConfirmationService,
     private messageService: MessageService,
-  ) {}
+    private fb: FormBuilder,
+  ) {
+    this.egresoForm = this.fb.group({
+      descripcion: ['', [Validators.required, Validators.maxLength(100)]],
+      monto: [null, [Validators.required, Validators.min(1)]],
+      fecha: [new Date(), Validators.required],
+      categoria: [null, Validators.required],
+    });
+  }
 
   ngOnInit(): void {
-    this.cargarEgresos();
+    // Activar tema naranja para módulo de Egresos
+    this.themeService.setExpenseTheme();
+    this.cargarDatos();
+  }
+
+  ngOnDestroy(): void {
+    // Restaurar tema por defecto al salir
+    this.themeService.resetTheme();
   }
 
   // ==================== MÉTODOS DE CARGA ====================
+
+  cargarDatos(): void {
+    this.loading.set(true);
+    // Pedimos categorías de tipo EGRESO
+    this.categoriaService.listarPorTipo('EGRESO').subscribe({
+      next: (cats) => {
+        this.categorias.set(cats);
+        this.cargarEgresos();
+      },
+      error: (err) => {
+        console.error('Error cargando categorías:', err);
+        this.loading.set(false);
+      },
+    });
+  }
 
   /**
    * Carga los egresos desde el backend.
    * Filtra por tipo 'EGRESO' automáticamente.
    */
   cargarEgresos(): void {
-    this.loading.set(true);
+    const selectedId = this.selectedCategory()?.id;
 
+    // Pedimos transacciones de tipo EGRESO
     this.transaccionService.listarPorTipo('EGRESO').subscribe({
       next: (data) => {
         this.egresos.set(data);
         this.calcularTotal(data);
+        this.agruparCategorias(data);
+
+        // Auto-refresh del modal de detalle
+        if (selectedId) {
+          const updatedCat = this.categoriasAgrupadas().find((c) => c.id === selectedId);
+          if (updatedCat) {
+            this.selectedCategory.set(updatedCat);
+          } else {
+            this.mostrarDetalleDialog.set(false);
+            this.selectedCategory.set(null);
+          }
+        }
+
         this.loading.set(false);
       },
       error: (err) => {
         console.error('Error cargando egresos:', err);
         this.loading.set(false);
-        // Para demo, dejamos vacío en lugar de mostrar error
       },
     });
   }
@@ -110,7 +191,37 @@ export class EgresosComponent implements OnInit {
     this.totalEgresos.set(total);
   }
 
-  // ==================== MÉTODOS DE FORMATO ====================
+  /**
+   * Agrupa Categorías
+   */
+  private agruparCategorias(data: Transaccion[]): void {
+    const agrupado = new Map<number, CategoriaAgrupada>();
+    data.forEach((t) => {
+      if (!agrupado.has(t.categoriaId)) {
+        agrupado.set(t.categoriaId, {
+          id: t.categoriaId,
+          nombre: t.categoriaNombre,
+          icono: t.categoriaIcono,
+          total: 0,
+          cantidad: 0,
+          transacciones: [],
+        });
+      }
+      const cat = agrupado.get(t.categoriaId)!;
+      cat.total += t.monto;
+      cat.cantidad++;
+      cat.transacciones.push(t);
+    });
+    this.categoriasAgrupadas.set(Array.from(agrupado.values()));
+  }
+
+  // ==================== NAVEGACIÓN ====================
+  verDetalleCategoria(categoria: CategoriaAgrupada): void {
+    this.selectedCategory.set(categoria);
+    this.mostrarDetalleDialog.set(true);
+  }
+
+  // ==================== MÉTODOS DE FORMATO Y HELPERS ====================
 
   /**
    * Formatea un número como moneda colombiana
@@ -127,13 +238,23 @@ export class EgresosComponent implements OnInit {
   /**
    * Formatea una fecha ISO a formato legible
    */
+  // Helper crítico para fechas
   formatDate(dateString: string): string {
-    const date = new Date(dateString);
+    const [year, month, day] = dateString.split('-').map(Number);
+    const date = new Date(year, month - 1, day);
     return new Intl.DateTimeFormat('es-CO', {
       day: '2-digit',
       month: 'short',
       year: 'numeric',
     }).format(date);
+  }
+
+  // Helper crítico para guardar sin timezone
+  private toLocalDateString(date: Date): string {
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
 
   // ==================== MÉTODOS CRUD ====================
@@ -143,10 +264,71 @@ export class EgresosComponent implements OnInit {
    * TODO: Implementar dialog de creación
    */
   nuevoEgreso(): void {
-    this.messageService.add({
-      severity: 'info',
-      summary: 'Próximamente',
-      detail: 'La creación de egresos se implementará pronto',
+    this.esEdicion.set(false);
+    this.idEdicion.set(null);
+
+    // Lógica inteligente de contexto
+    const categoriaActiva = this.mostrarDetalleDialog() ? this.selectedCategory() : null;
+    const categoriaParaForm = categoriaActiva
+      ? this.categorias().find((c) => c.id === categoriaActiva.id) || null
+      : null;
+
+    let initialValues = {
+      fecha: new Date(),
+      monto: null as number | null,
+      descripcion: '',
+      categoria: categoriaParaForm,
+    };
+
+    // Clonar último registro
+    if (categoriaActiva && categoriaActiva.transacciones.length > 0) {
+      const ultimaTransaccion = categoriaActiva.transacciones[0];
+      initialValues.monto = ultimaTransaccion.monto;
+      initialValues.descripcion = ultimaTransaccion.descripcion;
+    }
+
+    this.egresoForm.reset(initialValues);
+    this.mostrarDialog.set(true);
+  }
+
+  guardarEgreso(): void {
+    if (this.egresoForm.invalid) {
+      this.egresoForm.markAllAsTouched();
+      return;
+    }
+    this.saving.set(true);
+    const formValues = this.egresoForm.value;
+    const transaccionDTO: TransaccionRequest = {
+      monto: formValues.monto,
+      tipo: 'EGRESO' as TipoTransaccion, // <--- IMPORTANTE: Tipo EGRESO
+      descripcion: formValues.descripcion,
+      fecha: this.toLocalDateString(formValues.fecha), // <--- Helper de fecha
+      categoriaId: formValues.categoria.id,
+    };
+    const request =
+      this.esEdicion() && this.idEdicion()
+        ? this.transaccionService.actualizar(this.idEdicion()!, transaccionDTO)
+        : this.transaccionService.crear(transaccionDTO);
+    request.subscribe({
+      next: () => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Éxito',
+          detail: `Egreso ${this.esEdicion() ? 'actualizado' : 'creado'} correctamente`,
+        });
+        this.mostrarDialog.set(false);
+        this.cargarEgresos();
+        this.saving.set(false);
+      },
+      error: (err) => {
+        console.error('Error guardando:', err);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'No se pudo guardar el egreso',
+        });
+        this.saving.set(false);
+      },
     });
   }
 
@@ -155,12 +337,25 @@ export class EgresosComponent implements OnInit {
    * TODO: Implementar dialog de edición
    */
   editarEgreso(egreso: Transaccion): void {
-    console.log('Editar egreso:', egreso);
-    this.messageService.add({
-      severity: 'info',
-      summary: 'Próximamente',
-      detail: 'La edición de egresos se implementará pronto',
+    const cat = this.categorias().find((c) => c.id === egreso.categoriaId);
+    this.esEdicion.set(true);
+    this.idEdicion.set(egreso.id);
+
+    // Ajuste de fecha para que el picker la lea bien
+    // (Si toLocalDateString guardó 'YYYY-MM-DD', new Date() al leerla podría fallar por zona horaria
+    // al setear el valor en el control, pero el DatePicker suele manejar Dates nativos.
+    // Lo ideal es parsear igual que en el helper inverso o dejar que new Date lo intente,
+    // pero como ya viene formateada del backend string, asegurate que new Date(string) sea correcto localmente)
+    // Truco: new Date(egreso.fecha + 'T00:00:00') fuerza local si no hay Z.
+    const [y, m, d] = egreso.fecha.toString().split('-').map(Number);
+    const fechaCorrecta = new Date(y, m - 1, d);
+    this.egresoForm.patchValue({
+      descripcion: egreso.descripcion,
+      monto: egreso.monto,
+      fecha: fechaCorrecta,
+      categoria: cat,
     });
+    this.mostrarDialog.set(true);
   }
 
   /**
@@ -188,18 +383,25 @@ export class EgresosComponent implements OnInit {
         this.messageService.add({
           severity: 'success',
           summary: 'Eliminado',
-          detail: 'El egreso fue eliminado correctamente',
+          detail: 'Egreso eliminado',
         });
-        this.cargarEgresos(); // Recargar lista
+        this.cargarEgresos();
       },
-      error: (err) => {
-        console.error('Error eliminando:', err);
+      error: () => {
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
-          detail: 'No se pudo eliminar el egreso',
+          detail: 'No se pudo eliminar',
         });
       },
     });
   }
+}
+export interface CategoriaAgrupada {
+  id: number;
+  nombre: string;
+  icono: string;
+  total: number;
+  cantidad: number;
+  transacciones: Transaccion[];
 }

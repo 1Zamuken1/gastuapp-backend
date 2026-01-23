@@ -1,173 +1,280 @@
 <!--
-  EgresosComponent - Template HTML
-
-  ESTRUCTURA:
-  - Header con título y total
-  - Botón para nuevo egreso
-  - Tabla PrimeNG con datos
-  - Dialogs de confirmación y mensajes
-
-  NOTA PARA EGRESOS:
-  Para crear EgresosComponent, copia este archivo y cambia:
-  - "Ingresos" → "Egresos"
-  - "ingreso" → "egreso"
-  - "income" → "expense" (en clases CSS)
-  - Icono pi-arrow-up → pi-arrow-down
-
-  @author Juan Esteban Barrios Portela
-  @version 1.0
-  @since 2026-01-21
+  EgresosComponent - Vista por Categorías (Mirror de Ingresos)
 -->
-
-<!-- Toast para mensajes -->
 <p-toast></p-toast>
-
-<!-- Dialog de confirmación -->
 <p-confirmDialog></p-confirmDialog>
 
-<div class="egresos-page">
+<div class="ingresos-page theme-expense">
   <!-- ==================== HEADER ==================== -->
   <div class="page-header">
     <div class="header-left">
-      <h1 class="page-title">
-        <i class="pi pi-arrow-circle-down expense-icon"></i>
-        Egresos
+      <h1 class="page-title flex align-items-center gap-2">
+        <i class="pi pi-arrow-circle-down expense-icon" style="color: var(--expense-color)"></i>
+        <span>Egresos</span>
       </h1>
-      <p class="page-subtitle">Gastos realizados</p>
+      <p class="page-subtitle">Gestiona tus gastos por categoría</p>
     </div>
 
-    <div class="page-subtitle">
-      <!-- Total de egresos -->
+    <div class="header-right">
+      <!-- Total General -->
       <div class="total-card">
-        <span class="total-label">Total</span>
+        <span class="total-label">Total Gastado</span>
         <span class="total-value amount-negative">
           {{ formatCurrency(totalEgresos()) }}
         </span>
       </div>
 
-      <!-- Botón nuevo-->
       <button
         pButton
         type="button"
         label="Nuevo Egreso"
-        icon="pi pi-plus"
-        class="p-button-expense"
+        icon="pi pi-minus"
+        class="p-button-primary"
         (click)="nuevoEgreso()"
       ></button>
     </div>
   </div>
 
-  <!-- ==================== TABLA ==================== -->
+  <!-- ==================== VISTA: CATEGORÍAS (CARDS) ==================== -->
   <div class="card-calm">
     @if (loading()) {
-      <!-- Skeleton mientras carga-->
-      <div class="skeleton-table">
-        @for (i of [1, 2, 3, 4, 5]; track i) {
-          <div class="skeleton-row">
-            <p-skeleton width="100px" height="1rem"></p-skeleton>
-            <p-skeleton width="200px" height="1rem"></p-skeleton>
-            <p-skeleton width="80px" height="1rem"></p-skeleton>
-            <p-skeleton width="100px" height="1rem"></p-skeleton>
+      <div class="skeleton-grid">
+        <p-skeleton width="100%" height="8rem" styleClass="mb-2"></p-skeleton>
+        <p-skeleton width="100%" height="8rem" styleClass="mb-2"></p-skeleton>
+      </div>
+    } @else if (categoriasAgrupadas().length === 0) {
+      <div class="empty-state">
+        <i class="pi pi-wallet empty-icon"></i>
+        <h3>No hay egresos registrados</h3>
+        <p>Registra tu primer gasto para ver las categorías</p>
+      </div>
+    } @else {
+      <div class="grid">
+        @for (cat of categoriasAgrupadas(); track cat.id) {
+          <div class="col-12 md:col-6 lg:col-4" (click)="verDetalleCategoria(cat)">
+            <div class="category-card cursor-pointer">
+              <!-- Card Content -->
+              <div
+                class="card-content flex flex-column gap-3 p-4 border-1 surface-border border-round transition-all shadow-2 h-full"
+              >
+                <div class="flex justify-content-between align-items-start">
+                  <div class="flex align-items-center gap-3">
+                    <span class="text-3xl">{{ cat.icono }}</span>
+                    <span class="text-xl font-semibold text-900">{{ cat.nombre }}</span>
+                  </div>
+                  <div class="badge-expense">{{ cat.cantidad }} reg.</div>
+                </div>
+
+                <div class="mt-auto">
+                  <span class="text-sm text-500 block mb-1">Total Gastado</span>
+                  <span class="text-2xl font-bold amount-negative">{{
+                    formatCurrency(cat.total)
+                  }}</span>
+                </div>
+              </div>
+            </div>
           </div>
         }
       </div>
-    } @else if (egresos().length === 0) {
-      <!-- Estado vacío-->
-      <div class="empty-state">
-        <i class="pi pi-inbox empty-icon"></i>
-        <h3>No hay egresos registrados</h3>
-        <p>Comienza registrando tu primer egreso</p>
-        <button
-          pButton
-          type="button"
-          label="Agregar Egreso"
-          icon="pi pi-plus"
-          class="p-button-expense"
-          (click)="nuevoEgreso()"
-        ></button>
+    }
+  </div>
+
+  <!-- ==================== DIALOGO DETALLE (TABLA) ==================== -->
+  <p-dialog
+    [(visible)]="mostrarDetalleDialog"
+    [header]="selectedCategory()?.nombre || 'Detalle'"
+    [modal]="true"
+    [style]="{ width: '800px', maxWidth: '95vw' }"
+    styleClass="theme-expense"
+    [draggable]="false"
+    [resizable]="false"
+    [dismissableMask]="true"
+    [blockScroll]="true"
+  >
+    <ng-template pTemplate="header">
+      <div class="flex align-items-center gap-2">
+        <span class="text-xl font-bold">{{ selectedCategory()?.nombre }}</span>
+        <span class="badge-expense ml-2">{{ selectedCategory()?.cantidad }} registros</span>
       </div>
-    } @else {
-      <!-- Tabla de egresos -->
+      <div class="flex-grow-1"></div>
+      <!-- Botón Especial Contextual -->
+      <button
+        pButton
+        label="Nuevo en esta categoría"
+        icon="pi pi-plus"
+        class="p-button-sm p-button-outlined p-button-primary mr-4"
+        (click)="nuevoEgreso()"
+      ></button>
+    </ng-template>
+
+    <div class="mt-3">
+      <!-- Tabla Detalle -->
       <p-table
-        [value]="egresos()"
+        [value]="selectedCategory()?.transacciones || []"
         [paginator]="true"
-        [rows]="10"
-        [rowsPerPageOptions]="[5, 10, 20]"
-        [showCurrentPageReport]="true"
-        currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} egresos"
-        [globalFilterFields]="['descripcion', 'categoriaNombre']"
-        styleClass="p-datatable-striped"
+        [rows]="5"
+        [rowsPerPageOptions]="[5, 10]"
+        sortField="fecha"
+        [sortOrder]="-1"
+        styleClass="p-datatable-sm p-datatable-striped"
+        paginatorDropdownAppendTo="body"
       >
-        <!-- Header de la tabla -->
         <ng-template #header>
           <tr>
-            <th pSortableColumn="fecha" style="width: 120px">
-              Fecha <p-sortIcon field="fecha"></p-sortIcon>
-            </th>
+            <th pSortableColumn="fecha">Fecha <p-sortIcon field="fecha"></p-sortIcon></th>
             <th pSortableColumn="descripcion">
               Descripción <p-sortIcon field="descripcion"></p-sortIcon>
             </th>
-            <th pSortableColumn="categoriaNombre" style="width: 150px">
-              Categoría <p-sortIcon field="categoriaNombre"></p-sortIcon>
-            </th>
-            <th pSortableColumn="monto" style="width: 150px; text-align: right">
+            <th pSortableColumn="monto" class="text-right">
               Monto <p-sortIcon field="monto"></p-sortIcon>
             </th>
-            <th style="width: 100px; text-align: center">Acciones</th>
+            <th class="text-center">Acciones</th>
           </tr>
         </ng-template>
-
-        <!-- Body de la tabla -->
         <ng-template #body let-egreso>
           <tr>
-            <!-- Fecha -->
             <td>{{ formatDate(egreso.fecha) }}</td>
-
-            <!-- Descripción -->
             <td>{{ egreso.descripcion }}</td>
-
-            <!-- Categoría -->
-            <td>
-              <span class="badge-expense">
-                <i [class]="egreso.categoriaIcono + ' mr-1'"></i>
-                {{ egreso.categoriaNombre }}
-              </span>
+            <td class="text-right amount-negative font-semibold">
+              {{ formatCurrency(egreso.monto) }}
             </td>
-
-            <!-- Monto -->
-            <td class="text-right">
-              <span class="amount-negative font-semibold">
-                {{ formatCurrency(egreso.monto) }}
-              </span>
-            </td>
-
-            <!-- Acciones -->
             <td class="text-center">
               <button
                 pButton
-                type="button"
                 icon="pi pi-pencil"
-                class="p-button-warning"
+                class="p-button-text p-button-sm"
                 (click)="editarEgreso(egreso)"
               ></button>
               <button
                 pButton
-                type="button"
                 icon="pi pi-trash"
-                class="p-button-danger"
-                (click)="(confirmarEliminar)"
+                class="p-button-text p-button-danger p-button-sm"
+                (click)="confirmarEliminar(egreso)"
               ></button>
             </td>
           </tr>
         </ng-template>
 
-        <!-- Empty message -->
-        <ng-template #emptyMessage>
-          <tr>
-            <td colspan="5" class="text-center p-4">No se encontraron egresos</td>
-          </tr>
+        <ng-template #summary>
+          <div class="flex justify-content-end subtotal-summary">
+            <span class="font-bold mr-2">Total Categoría:</span>
+            <span class="amount-negative font-bold">{{
+              formatCurrency(selectedCategory()?.total || 0)
+            }}</span>
+          </div>
         </ng-template>
       </p-table>
-    }
-  </div>
+    </div>
+  </p-dialog>
+
+  <!-- ==================== DIALOGO CREACIÓN/EDICIÓN ==================== -->
+  <p-dialog
+    [(visible)]="mostrarDialog"
+    [header]="esEdicion() ? 'Editar Egreso' : 'Nuevo Egreso'"
+    [modal]="true"
+    [style]="{ width: '450px' }"
+    styleClass="p-fluid theme-expense"
+    [appendTo]="'body'"
+    [dismissableMask]="true"
+  >
+    <ng-template #content>
+      <form [formGroup]="egresoForm" class="flex flex-column gap-4">
+        <!-- Monto -->
+        <div class="field">
+          <label for="monto" class="font-bold">Monto</label>
+          <p-inputNumber
+            id="monto"
+            formControlName="monto"
+            mode="currency"
+            currency="COP"
+            locale="es-CO"
+            placeholder="$ 0"
+            [min]="0"
+          ></p-inputNumber>
+          @if (egresoForm.get('monto')?.invalid && egresoForm.get('monto')?.touched) {
+            <small class="p-error block">Monto requerido</small>
+          }
+        </div>
+
+        <!-- Descripción -->
+        <div class="field">
+          <label for="descripcion" class="font-bold">Descripción</label>
+          <input
+            pInputText
+            id="descripcion"
+            formControlName="descripcion"
+            placeholder="Ej: Taxi al centro"
+          />
+          @if (egresoForm.get('descripcion')?.invalid && egresoForm.get('descripcion')?.touched) {
+            <small class="p-error block">Descripción requerida</small>
+          }
+        </div>
+
+        <!-- Fecha -->
+        <div class="field">
+          <label for="fecha" class="font-bold">Fecha</label>
+          <p-datePicker
+            id="fecha"
+            formControlName="fecha"
+            dateFormat="dd/mm/yy"
+            [showIcon]="true"
+            appendTo="body"
+            panelStyleClass="theme-expense"
+          ></p-datePicker>
+        </div>
+
+        <!-- Categoría -->
+        <div class="field">
+          <label for="categoria" class="font-bold">Categoría</label>
+          <p-select
+            id="categoria"
+            formControlName="categoria"
+            [options]="categorias()"
+            optionLabel="nombre"
+            placeholder="Seleccione una categoría"
+            appendTo="body"
+            styleClass="w-full"
+            overlayStyleClass="theme-expense"
+            [disabled]="mostrarDetalleDialog()"
+          >
+            <!-- Si hay categoría seleccionada, la bloqueamos visualmente -->
+            <ng-template #selectedItem let-selectedOption>
+              <div class="flex align-items-center gap-2" *ngIf="selectedOption">
+                <span>{{ selectedOption.icono }}</span>
+                <span>{{ selectedOption.nombre }}</span>
+              </div>
+            </ng-template>
+
+            <ng-template let-category #item>
+              <div class="flex align-items-center gap-2">
+                <span>{{ category.icono }}</span>
+                <span>{{ category.nombre }}</span>
+              </div>
+            </ng-template>
+          </p-select>
+          @if (egresoForm.get('categoria')?.invalid && egresoForm.get('categoria')?.touched) {
+            <small class="p-error block">Categoría requerida</small>
+          }
+        </div>
+      </form>
+    </ng-template>
+
+    <ng-template #footer>
+      <button
+        pButton
+        label="Cancelar"
+        icon="pi pi-times"
+        class="p-button-text"
+        (click)="mostrarDialog.set(false)"
+      ></button>
+      <button
+        pButton
+        label="Guardar"
+        icon="pi pi-check"
+        class="p-button-primary"
+        [loading]="saving()"
+        (click)="guardarEgreso()"
+      ></button>
+    </ng-template>
+  </p-dialog>
 </div>

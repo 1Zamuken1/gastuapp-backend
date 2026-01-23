@@ -27,10 +27,10 @@
 
 // ==================== IMPORTS ====================
 // PrimeIcons - Iconografía oficial de PrimeNG
-@import "primeicons/primeicons.css";
+@import 'primeicons/primeicons.css';
 
 // PrimeFlex - Utilidades CSS (flexbox, spacing, etc.)
-@import "primeflex/primeflex.css";
+@import 'primeflex/primeflex.css';
 
 // Google Fonts - Tipografía Inter (moderna, legible)
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
@@ -49,53 +49,53 @@
 
   // ----- COLORES PRIMARIOS -----
   // Azul calmado - Color principal, transmite confianza y estabilidad
-  --primary-50: #EFF6FF;
-  --primary-100: #DBEAFE;
-  --primary-200: #BFDBFE;
-  --primary-300: #93C5FD;
-  --primary-400: #60A5FA;
-  --primary-500: #3B82F6;  // Color principal
-  --primary-600: #2563EB;
-  --primary-700: #1D4ED8;
-  --primary-800: #1E40AF;
-  --primary-900: #1E3A8A;
+  --primary-50: #eff6ff;
+  --primary-100: #dbeafe;
+  --primary-200: #bfdbfe;
+  --primary-300: #93c5fd;
+  --primary-400: #60a5fa;
+  --primary-500: #3b82f6; // Color principal
+  --primary-600: #2563eb;
+  --primary-700: #1d4ed8;
+  --primary-800: #1e40af;
+  --primary-900: #1e3a8a;
 
   // ----- COLORES SEMÁNTICOS -----
   // Ingresos - Verde suave (crecimiento positivo sin agresividad)
-  --income-color: #10B981;      // Esmeralda
-  --income-bg: #D1FAE5;         // Fondo claro para badges/tags
+  --income-color: #10b981; // Esmeralda
+  --income-bg: #d1fae5; // Fondo claro para badges/tags
   --income-hover: #059669;
 
   // Egresos - Coral suave (atención sin alarma)
-  --expense-color: #F97316;     // Naranja coral
-  --expense-bg: #FFEDD5;        // Fondo claro para badges/tags
-  --expense-hover: #EA580C;
+  --expense-color: #f97316; // Naranja coral
+  --expense-bg: #ffedd5; // Fondo claro para badges/tags
+  --expense-hover: #ea580c;
 
   // Success - Confirmaciones positivas
-  --success-color: #22C55E;
-  --success-bg: #F0FDF4;
+  --success-color: #22c55e;
+  --success-bg: #f0fdf4;
 
   // Warning - Alertas suaves
-  --warning-color: #EAB308;
-  --warning-bg: #FEFCE8;
+  --warning-color: #eab308;
+  --warning-bg: #fefce8;
 
   // Danger - Errores (solo cuando es necesario)
-  --danger-color: #EF4444;
-  --danger-bg: #FEF2F2;
+  --danger-color: #ef4444;
+  --danger-bg: #fef2f2;
 
   // ----- COLORES NEUTROS -----
   // Escala de grises para textos y fondos
-  --surface-0: #FFFFFF;       // Fondo principal
-  --surface-50: #F9FAFB;      // Fondo alternativo
-  --surface-100: #F3F4F6;     // Bordes suaves
-  --surface-200: #E5E7EB;     // Bordes
-  --surface-300: #D1D5DB;     // Bordes oscuros
-  --surface-400: #9CA3AF;     // Texto deshabilitado
-  --surface-500: #6B7280;     // Texto secundario
-  --surface-600: #4B5563;     // Texto normal
-  --surface-700: #374151;     // Texto destacado
-  --surface-800: #1F2937;     // Texto principal
-  --surface-900: #111827;     // Texto muy oscuro
+  --surface-0: #ffffff; // Fondo principal
+  --surface-50: #f9fafb; // Fondo alternativo
+  --surface-100: #f3f4f6; // Bordes suaves
+  --surface-200: #e5e7eb; // Bordes
+  --surface-300: #d1d5db; // Bordes oscuros
+  --surface-400: #9ca3af; // Texto deshabilitado
+  --surface-500: #6b7280; // Texto secundario
+  --surface-600: #4b5563; // Texto normal
+  --surface-700: #374151; // Texto destacado
+  --surface-800: #1f2937; // Texto principal
+  --surface-900: #111827; // Texto muy oscuro
 
   // ----- TEXTO -----
   --text-color: var(--surface-800);
@@ -103,18 +103,18 @@
   --text-muted: var(--surface-400);
 
   // ----- ESPACIADO -----
-  --spacing-xs: 0.25rem;   // 4px
-  --spacing-sm: 0.5rem;    // 8px
-  --spacing-md: 1rem;      // 16px
-  --spacing-lg: 1.5rem;    // 24px
-  --spacing-xl: 2rem;      // 32px
-  --spacing-2xl: 3rem;     // 48px
+  --spacing-xs: 0.25rem; // 4px
+  --spacing-sm: 0.5rem; // 8px
+  --spacing-md: 1rem; // 16px
+  --spacing-lg: 1.5rem; // 24px
+  --spacing-xl: 2rem; // 32px
+  --spacing-2xl: 3rem; // 48px
 
   // ----- BORDES -----
-  --border-radius-sm: 0.375rem;  // 6px
-  --border-radius-md: 0.5rem;    // 8px
-  --border-radius-lg: 0.75rem;   // 12px
-  --border-radius-xl: 1rem;      // 16px
+  --border-radius-sm: 0.375rem; // 6px
+  --border-radius-md: 0.5rem; // 8px
+  --border-radius-lg: 0.75rem; // 12px
+  --border-radius-xl: 1rem; // 16px
 
   // ----- SOMBRAS (Calm - muy sutiles) -----
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
@@ -124,6 +124,30 @@
   // ----- TRANSICIONES -----
   --transition-fast: 150ms ease;
   --transition-normal: 300ms ease;
+}
+
+// ==================== MODO OSCURO ====================
+.dark-mode {
+  // ----- COLORES NEUTROS (Invertidos para modo oscuro) -----
+  --surface-0: #18181b; // Zinc 900
+  --surface-50: #09090b; // Zinc 950 (Fondo body)
+  --surface-100: #27272a; // Zinc 800
+  --surface-200: #3f3f46; // Zinc 700
+  --surface-300: #52525b; // Zinc 600
+  --surface-400: #71717a; // Zinc 500
+  --surface-500: #a1a1aa; // Zinc 400
+  --surface-600: #d4d4d8; // Zinc 300
+  --surface-700: #e4e4e7; // Zinc 200 (Texto destacado)
+  --surface-800: #f4f4f5; // Zinc 100 (Texto principal)
+  --surface-900: #ffffff; // Blanco puro
+
+  // Re-mapear colores semánticos para mejor contraste
+  --income-bg: rgba(16, 185, 129, 0.15); // Esmeralda transparente
+  --expense-bg: rgba(249, 115, 22, 0.15); // Naranja transparente
+
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
 }
 
 // ==================== RESET / NORMALIZE ====================
@@ -169,6 +193,19 @@ body {
   }
 }
 
+// ----- CONTENIDO DE TARJETAS (CATEGORÍAS) -----
+.card-content {
+  background: var(--surface-0); // Se adapta a blanco/oscuro
+  transition: all var(--transition-normal);
+  
+  // Hover Premium: Elevación + Borde de acento
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary-500); // Borde azul suave al hacer hover
+  }
+}
+
 // ----- BADGES DE TRANSACCIONES -----
 // Badge para ingresos
 .badge-income {
@@ -209,6 +246,8 @@ body {
   font-weight: var(--font-weight-semibold);
 }
 
+// NOTA: .p-button-expense eliminado - usar p-button-primary con el tema dinámico
+
 // ----- CONTENEDORES -----
 .container {
   width: 100%;
@@ -234,3 +273,9 @@ body {
   color: var(--text-secondary);
   margin-top: var(--spacing-xs);
 }
+
+// =====================================================================
+// NOTA: La configuración de temas ahora se maneja dinámicamente
+// a través de ThemeService usando PrimeNG's definePreset.
+// Los overrides manuales de CSS ya no son necesarios.
+// =====================================================================
