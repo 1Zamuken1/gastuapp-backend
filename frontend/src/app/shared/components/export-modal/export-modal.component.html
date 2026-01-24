@@ -1,0 +1,143 @@
+<p-dialog
+  [(visible)]="visible"
+  [style]="{ width: '500px' }"
+  [header]="config?.title || 'Exportar Datos'"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  (onHide)="close()"
+  styleClass="p-fluid"
+>
+  <ng-template pTemplate="content">
+    @if (config && form) {
+      <form [formGroup]="form" class="flex flex-column gap-4">
+        <!-- Renderizado Dinámico de Campos Configurados -->
+        @for (field of config.fields; track field.key) {
+          <div class="field-group">
+            <label class="font-bold block mb-2">{{ field.label }}</label>
+
+            <!-- TIPO: CHECKBOX GROUP (Ej: Categorías) -->
+            @if (field.type === 'checkbox-group') {
+              <div class="flex flex-column gap-2" [formGroupName]="field.key">
+                <!-- Botones Seleccionar Todo / Nada -->
+                <div class="flex gap-2 mb-2 text-sm">
+                  <span
+                    class="text-primary cursor-pointer hover:underline"
+                    (click)="toggleAll(field.key, true)"
+                    >Todas</span
+                  >
+                  <span class="text-500">|</span>
+                  <span
+                    class="text-primary cursor-pointer hover:underline"
+                    (click)="toggleAll(field.key, false)"
+                    >Ninguna</span
+                  >
+                </div>
+
+                <div class="grid formgrid p-0 scrollable-options">
+                  @for (opt of field.options; track opt.value) {
+                    <div class="col-6 mb-2">
+                      <div class="field-checkbox mb-0">
+                        <p-checkbox
+                          [formControlName]="opt.value"
+                          [binary]="true"
+                          [inputId]="field.key + opt.value"
+                        ></p-checkbox>
+                        <label [for]="field.key + opt.value" class="ml-2">{{ opt.label }}</label>
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+
+            <!-- TIPO: RADIO (Ej: Tipo Ingreso/Egreso) -->
+            @if (field.type === 'radio') {
+              <div class="flex flex-wrap gap-3">
+                @for (opt of field.options; track opt.value) {
+                  <div class="field-radiobutton mb-0">
+                    <p-radioButton
+                      [name]="field.key"
+                      [value]="opt.value"
+                      [formControlName]="field.key"
+                      [inputId]="field.key + opt.value"
+                    ></p-radioButton>
+                    <label [for]="field.key + opt.value">{{ opt.label }}</label>
+                  </div>
+                }
+              </div>
+            }
+
+            <!-- TIPO: DATERANGE -->
+            @if (field.type === 'daterange') {
+              <p-datePicker
+                [formControlName]="field.key"
+                selectionMode="range"
+                [readonlyInput]="true"
+                dateFormat="dd/mm/yy"
+                [showIcon]="true"
+                placeholder="Seleccionar rango (opcional)"
+                appendTo="body"
+              ></p-datePicker>
+            }
+          </div>
+        }
+
+        <p-divider></p-divider>
+
+        <!-- SECCIÓN FIJA: FORMATO -->
+        <div class="field-group">
+          <label class="font-bold block mb-2">Formato de Archivo</label>
+          <div class="flex gap-4">
+            <div class="field-radiobutton">
+              <p-radioButton
+                name="format"
+                value="pdf"
+                formControlName="format"
+                inputId="fmt_pdf"
+              ></p-radioButton>
+              <label for="fmt_pdf"><i class="pi pi-file-pdf text-red-500 mr-1"></i> PDF</label>
+            </div>
+            <div class="field-radiobutton">
+              <p-radioButton
+                name="format"
+                value="excel"
+                formControlName="format"
+                inputId="fmt_excel"
+              ></p-radioButton>
+              <label for="fmt_excel"
+                ><i class="pi pi-file-excel text-green-500 mr-1"></i> Excel</label
+              >
+            </div>
+            <div class="field-radiobutton">
+              <p-radioButton
+                name="format"
+                value="csv"
+                formControlName="format"
+                inputId="fmt_csv"
+              ></p-radioButton>
+              <label for="fmt_csv"><i class="pi pi-file-o mr-1"></i> CSV</label>
+            </div>
+          </div>
+        </div>
+      </form>
+    }
+  </ng-template>
+
+  <ng-template pTemplate="footer">
+    <button
+      pButton
+      label="Cancelar"
+      icon="pi pi-times"
+      class="p-button-text"
+      (click)="close()"
+    ></button>
+    <button
+      pButton
+      label="Descargar"
+      icon="pi pi-download"
+      class="p-button-primary"
+      (click)="onExport()"
+    ></button>
+  </ng-template>
+</p-dialog>

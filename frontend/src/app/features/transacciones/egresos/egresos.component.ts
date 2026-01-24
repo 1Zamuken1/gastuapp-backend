@@ -24,7 +24,13 @@
  */
 import { Component, OnInit, signal, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 
 // PrimeNG Modules
 import { TableModule } from 'primeng/table';
@@ -41,6 +47,8 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { DatePickerModule } from 'primeng/datepicker';
 import { SelectModule } from 'primeng/select';
 import { ConfirmationService, MessageService } from 'primeng/api';
+import { IconFieldModule } from 'primeng/iconfield';
+import { InputIconModule } from 'primeng/inputicon';
 
 // Services & Models
 import { TransaccionService } from '../../../core/services/transaccion.service';
@@ -52,11 +60,16 @@ import {
 } from '../../../core/models/transaccion.model';
 import { Categoria } from '../../../core/models/categoria.model';
 import { ThemeService } from '../../../core/services/theme.service';
+import { ExportModalComponent } from '../../../shared/components/export-modal/export-modal.component';
+import { ExportModalConfig } from '../../../shared/models/export.model';
 
 @Component({
   selector: 'app-egresos',
   standalone: true,
   imports: [
+    FormsModule,
+    IconFieldModule,
+    InputIconModule,
     CommonModule,
     ReactiveFormsModule,
     TableModule,
@@ -72,6 +85,7 @@ import { ThemeService } from '../../../core/services/theme.service';
     InputNumberModule,
     DatePickerModule,
     SelectModule,
+    ExportModalComponent,
   ],
   providers: [ConfirmationService, MessageService],
   templateUrl: './egresos.component.html',
@@ -103,8 +117,62 @@ export class EgresosComponent implements OnInit {
   selectedCategory = signal<CategoriaAgrupada | null>(null);
   categoriasAgrupadas = signal<CategoriaAgrupada[]>([]);
 
+  // ==================== TOOLBAR ====================
+  sortOption = signal<string>('nombre-asc');
+  searchTerm = signal<string>('');
+
+  sortOptions = [
+    { label: 'Nombre (A-Z)', value: 'nombre-asc' },
+    { label: 'Nombre (Z-A)', value: 'nombre-desc' },
+    { label: 'Monto (Mayor)', value: 'monto-desc' },
+    { label: 'Monto (Menor)', value: 'monto-asc' },
+    { label: 'Registros (Mayor)', value: 'cantidad-desc' },
+    { label: 'Registros (Menor)', value: 'cantidad-asc' },
+    { label: 'Fecha (Reciente)', value: 'fecha-desc' },
+    { label: 'Fecha (Antigua)', value: 'fecha-asc' },
+  ];
+
+  // ==================== EXPORTACIÓN ====================
+  exportVisible = signal(false);
+  exportConfig = signal<ExportModalConfig | null>(null);
+
   // Theme Service (para cambio dinámico de colores)
   private themeService = inject(ThemeService);
+
+  // MÉTODO PARA ABRIR MODAL DE EXPORTACIÓN
+  openExport(): void {
+    const config: ExportModalConfig = {
+      title: 'Exportar Egresos',
+      moduleType: 'transacciones',
+      fields: [
+        {
+          type: 'checkbox-group',
+          key: 'categorias',
+          label: 'Categorías',
+          options: this.categoriasAgrupadas().map((c) => ({
+            label: c.nombre,
+            value: c.id,
+            checked: true,
+          })),
+        },
+        {
+          type: 'daterange',
+          key: 'fechas',
+          label: 'Rango de Fechas',
+        },
+      ],
+      columns: [
+        { header: 'Fecha', field: 'fecha', type: 'date' },
+        { header: 'Categoría', field: 'categoriaNombre', type: 'text' },
+        { header: 'Descripción', field: 'descripcion', type: 'text' },
+        { header: 'Monto', field: 'monto', type: 'currency' },
+      ],
+      data: this.egresos(),
+    };
+
+    this.exportConfig.set(config);
+    this.exportVisible.set(true);
+  }
 
   constructor(
     private transaccionService: TransaccionService,
@@ -212,7 +280,55 @@ export class EgresosComponent implements OnInit {
       cat.cantidad++;
       cat.transacciones.push(t);
     });
-    this.categoriasAgrupadas.set(Array.from(agrupado.values()));
+    const categorias = Array.from(agrupado.values());
+    this.categoriasAgrupadas.set(this.sortCategorias(categorias));
+  }
+
+  // Ordena las categorías según la opción seleccionada
+  private sortCategorias(categorias: CategoriaAgrupada[]): CategoriaAgrupada[] {
+    const [field, direction] = this.sortOption().split('-');
+    const asc = direction === 'asc' ? 1 : -1;
+
+    return [...categorias].sort((a, b) => {
+      switch (field) {
+        case 'nombre':
+          return asc * a.nombre.localeCompare(b.nombre);
+        case 'monto':
+          return asc * (a.total - b.total);
+        case 'cantidad':
+          return asc * (a.cantidad - b.cantidad);
+        case 'fecha':
+          const fechaA = a.transacciones.length ? new Date(a.transacciones[0].fecha).getTime() : 0;
+          const fechaB = b.transacciones.length ? new Date(b.transacciones[0].fecha).getTime() : 0;
+          return asc * (fechaA - fechaB);
+        default:
+          return 0;
+      }
+    });
+  }
+
+  // Callback cuando cambia el sort
+  onSortChange(event: { value: string }): void {
+    this.sortOption.set(event.value);
+    const current = this.categoriasAgrupadas();
+    this.categoriasAgrupadas.set(this.sortCategorias(current));
+  }
+
+  // callback cuando cambia la búsqueda
+  onSearchChange(term: string): void {
+    this.searchTerm.set(term);
+  }
+
+  // Getter: Filtra categorías por término de búsqueda
+  get categoriasFiltradas(): CategoriaAgrupada[] {
+    const term = this.searchTerm().toLowerCase().trim();
+    if (!term) return this.categoriasAgrupadas();
+
+    return this.categoriasAgrupadas().filter(
+      (cat) =>
+        cat.nombre.toLowerCase().includes(term) ||
+        cat.transacciones.some((t) => t.descripcion.toLowerCase().includes(term)),
+    );
   }
 
   // ==================== NAVEGACIÓN ====================

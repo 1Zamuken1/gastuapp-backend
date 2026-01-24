@@ -1,0 +1,38 @@
+.field-group {
+  border: 1px solid var(--surface-border);
+  padding: 1rem;
+  border-radius: 6px;
+  background: var(--surface-50);
+
+  label {
+    color: var(--text-color-secondary);
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+}
+
+:host ::ng-deep .p-checkbox-label {
+  margin-left: 0.5rem;
+}
+
+.scrollable-options {
+  max-height: 200px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 0.5rem;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: var(--surface-300);
+    border-radius: 3px;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background: var(--surface-400);
+  }
+}

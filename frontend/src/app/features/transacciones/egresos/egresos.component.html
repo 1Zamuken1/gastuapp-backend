@@ -36,13 +36,55 @@
   </div>
 
   <!-- ==================== VISTA: CATEGORÍAS (CARDS) ==================== -->
+  <!-- ToolBar -->
+  <div class="toolbar wrapper mb-4">
+    <div class="flex flex-wrap gap-3 align-items-center justify-content-between">
+      <!-- búsqueda -->
+      <p-iconfield class="flex-grow-1" style="max-width: 300px">
+        <p-inputicon styleClass="pi pi-search"></p-inputicon>
+        <input
+          pInputText
+          type="text"
+          placeholder="Buscar categoría o descripción..."
+          [ngModel]="searchTerm()"
+          (ngModelChange)="onSearchChange($event)"
+          class="w-full"
+        />
+      </p-iconfield>
+
+      <!-- Ordenamiento -->
+      <div class="flex align-items-center gap-2">
+        <span class="text-sm text-500">Ordenar:</span>
+        <p-select
+          [options]="sortOptions"
+          [ngModel]="sortOption()"
+          (ngModelChange)="onSortChange({ value: $event })"
+          optionLabel="label"
+          optionValue="value"
+          [style]="{ minWidth: '180px' }"
+          appendTo="body"
+        ></p-select>
+
+        <button
+          pButton
+          type="button"
+          icon="pi pi-download"
+          label="Exportar"
+          class="p-button-outlined"
+          (click)="openExport()"
+          pTooltip="Exportar reporte"
+          tooltipPosition="bottom"
+        ></button>
+      </div>
+    </div>
+  </div>
   <div class="card-calm">
     @if (loading()) {
       <div class="skeleton-grid">
         <p-skeleton width="100%" height="8rem" styleClass="mb-2"></p-skeleton>
         <p-skeleton width="100%" height="8rem" styleClass="mb-2"></p-skeleton>
       </div>
-    } @else if (categoriasAgrupadas().length === 0) {
+    } @else if (categoriasFiltradas.length === 0) {
       <div class="empty-state">
         <i class="pi pi-wallet empty-icon"></i>
         <h3>No hay egresos registrados</h3>
@@ -50,7 +92,7 @@
       </div>
     } @else {
       <div class="grid">
-        @for (cat of categoriasAgrupadas(); track cat.id) {
+        @for (cat of categoriasFiltradas; track cat.id) {
           <div class="col-12 md:col-6 lg:col-4" (click)="verDetalleCategoria(cat)">
             <div class="category-card cursor-pointer">
               <!-- Card Content -->
@@ -278,4 +320,9 @@
       ></button>
     </ng-template>
   </p-dialog>
+
+  <!-- MODAL DE EXPORTACIÓN -->
+  @if (exportConfig()) {
+    <app-export-modal [(visible)]="exportVisible" [config]="exportConfig()!"></app-export-modal>
+  }
 </div>
