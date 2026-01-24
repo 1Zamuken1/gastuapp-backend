@@ -191,6 +191,7 @@
             locale="es-CO"
             placeholder="$ 0"
             [min]="0"
+            [allowEmpty]="true"
           ></p-inputNumber>
           @if (ingresoForm.get('monto')?.invalid && ingresoForm.get('monto')?.touched) {
             <small class="p-error block">Monto requerido</small>
