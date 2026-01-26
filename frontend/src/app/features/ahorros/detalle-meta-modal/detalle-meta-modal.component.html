@@ -1,0 +1,332 @@
+<p-confirmDialog></p-confirmDialog>
+<p-dialog
+  [header]="meta?.nombre || 'Detalle de Meta'"
+  [(visible)]="visible"
+  [modal]="true"
+  [closable]="true"
+  [dismissableMask]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: '800px', maxHeight: '90vh' }"
+  (onHide)="closeModal()"
+  styleClass="savings-detail-modal"
+>
+  @if (meta) {
+    <div class="flex flex-column gap-4">
+      <!-- Header Info -->
+      <div class="meta-header surface-ground p-4 border-round">
+        <div class="flex align-items-center gap-3 mb-3">
+          <i [class]="meta.icono" class="text-4xl" [style.color]="meta.color"></i>
+          <div class="flex-1">
+            <h2 class="m-0 text-xl font-bold">{{ meta.nombre }}</h2>
+            <p-tag [value]="meta.estado" [severity]="getSeverity(meta.estado)" class="mt-1"></p-tag>
+          </div>
+          <!-- Acciones Meta -->
+          <div class="flex gap-2">
+            <button
+              pButton
+              icon="pi pi-pencil"
+              class="p-button-rounded p-button-text p-button-secondary"
+              pTooltip="Editar Meta"
+              (click)="editarMeta()"
+            ></button>
+            <button
+              pButton
+              icon="pi pi-trash"
+              class="p-button-rounded p-button-text p-button-danger"
+              pTooltip="Eliminar Meta"
+              (click)="confirmarEliminarMeta()"
+            ></button>
+          </div>
+        </div>
+
+        <!-- Tabs si hay frecuencia -->
+        @if (meta.frecuencia) {
+          <div class="flex gap-2 mb-3">
+            <button
+              pButton
+              [label]="'Plan de Pagos'"
+              [class.p-button-outlined]="activeTab() !== 'plan'"
+              (click)="activeTab.set('plan')"
+              class="p-button-sm"
+            ></button>
+            <button
+              pButton
+              [label]="'Historial'"
+              [class.p-button-outlined]="activeTab() !== 'historial'"
+              (click)="activeTab.set('historial')"
+              class="p-button-sm"
+            ></button>
+          </div>
+        }
+
+        <!-- Progress -->
+        <div class="mb-3">
+          <div class="flex justify-content-between mb-1">
+            <span class="text-sm text-500">Progreso</span>
+            <span class="text-sm font-bold">{{ meta.porcentajeProgreso | number: '1.0-1' }}%</span>
+          </div>
+          <p-progressBar
+            [value]="meta.porcentajeProgreso"
+            [showValue]="false"
+            styleClass="h-1rem"
+          ></p-progressBar>
+        </div>
+
+        <!-- Montos -->
+        <div class="flex justify-content-between">
+          <div>
+            <span class="text-sm text-500 block">Ahorrado</span>
+            <span class="text-xl font-bold" style="color: var(--p-primary-color)">
+              {{ meta.montoActual | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
+            </span>
+          </div>
+          <div class="text-right">
+            <span class="text-sm text-500 block">Objetivo</span>
+            <span class="text-xl font-semibold">
+              {{ meta.montoObjetivo | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
+            </span>
+          </div>
+          <div class="text-right">
+            <span class="text-sm text-500 block">Faltante</span>
+            <span class="text-xl font-semibold text-orange-500">
+              {{
+                meta.montoObjetivo - meta.montoActual | currency: 'COP' : 'symbol-narrow' : '1.0-0'
+              }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Botón Abonar (Solo para Legacy o Sin Frecuencia) -->
+      @if (meta.estado === 'ACTIVA' && !meta.frecuencia) {
+        <div class="flex justify-content-end">
+          <button
+            pButton
+            [label]="mostrarFormAbono ? 'Cancelar' : 'Registrar Abono'"
+            [icon]="mostrarFormAbono ? 'pi pi-times' : 'pi pi-plus'"
+            [class]="mostrarFormAbono ? 'p-button-text' : 'p-button-primary'"
+            (click)="toggleFormAbono()"
+          ></button>
+        </div>
+      }
+
+      <!-- Form Abono (inline) -->
+      @if (mostrarFormAbono) {
+        <div class="surface-card p-4 border-round border-1 surface-border">
+          <h4 class="mt-0 mb-3">Nuevo Abono</h4>
+          <div class="flex gap-3 align-items-end">
+            <div class="flex-1">
+              <label class="block text-sm mb-1">Monto *</label>
+              <p-inputNumber
+                [(ngModel)]="nuevoAbonoMonto"
+                mode="currency"
+                currency="COP"
+                locale="es-CO"
+                [minFractionDigits]="0"
+                placeholder="$ 0"
+                inputStyleClass="w-full"
+              ></p-inputNumber>
+            </div>
+            <div class="flex-1">
+              <label class="block text-sm mb-1">Descripción</label>
+              <input
+                pInputText
+                [(ngModel)]="nuevoAbonoDescripcion"
+                placeholder="Ej: Ahorro de enero"
+                class="w-full"
+              />
+            </div>
+            <button
+              pButton
+              icon="pi pi-check"
+              label="Guardar"
+              class="p-button-primary"
+              [loading]="savingAbono()"
+              [disabled]="!nuevoAbonoMonto"
+              (click)="guardarAbono()"
+            ></button>
+          </div>
+        </div>
+      }
+
+      <p-divider></p-divider>
+
+      <!-- AREA DE TABLAS -->
+      <div class="mt-3">
+        <!-- PLAN DE PAGOS (CUOTAS) -->
+        @if (meta.frecuencia && activeTab() === 'plan') {
+          <h4 class="mt-0 mb-3">Plan de Pagos</h4>
+          <div class="border-1 surface-border border-round">
+            <p-table
+              [value]="cuotas()"
+              [loading]="loadingData()"
+              [paginator]="true"
+              [rows]="5"
+              styleClass="p-datatable-sm"
+            >
+              <ng-template pTemplate="header">
+                <tr>
+                  <th style="width: 50px">#</th>
+                  <th>Fecha</th>
+                  <th style="width: 150px" class="text-right">Monto</th>
+                  <th class="text-center">Estado</th>
+                  <th style="width: 100px" class="text-center">Acción</th>
+                </tr>
+              </ng-template>
+              <ng-template pTemplate="body" let-cuota>
+                <tr [class.opacity-60]="cuota.estado !== 'PENDIENTE' && cuota.estado !== 'VENCIDA'">
+                  <td>{{ cuota.numeroCuota }}</td>
+                  <td>{{ cuota.fechaProgramada | date: 'dd/MM/yyyy' }}</td>
+                  <td class="text-right p-fluid">
+                    <p-inputNumber
+                      [(ngModel)]="cuota.montoEsperado"
+                      mode="currency"
+                      currency="COP"
+                      locale="es-CO"
+                      [minFractionDigits]="0"
+                      [disabled]="!isCuotaActiva(cuota) || cuota.estado !== 'PENDIENTE'"
+                      inputStyleClass="text-right p-inputtext-sm"
+                    ></p-inputNumber>
+                  </td>
+                  <td class="text-center">
+                    <p-tag
+                      [value]="cuota.estado"
+                      [severity]="
+                        cuota.estado === 'PAGADA'
+                          ? 'success'
+                          : cuota.estado === 'PENDIENTE'
+                            ? 'warn'
+                            : 'danger'
+                      "
+                    ></p-tag>
+                  </td>
+                  <td class="text-center">
+                    @if (cuota.estado === 'PENDIENTE') {
+                      <button
+                        pButton
+                        label="Abonar"
+                        class="p-button-sm p-button-success"
+                        [disabled]="!isCuotaActiva(cuota)"
+                        [loading]="savingAbono()"
+                        (click)="pagarCuotaDesdeTabla(cuota)"
+                      ></button>
+                    }
+                  </td>
+                </tr>
+              </ng-template>
+              <ng-template pTemplate="emptymessage">
+                <tr>
+                  <td colspan="5" class="text-center p-4">No hay cuotas generadas</td>
+                </tr>
+              </ng-template>
+            </p-table>
+          </div>
+        }
+
+        <!-- HISTORIAL DE ABONOS -->
+        @if (!meta.frecuencia || activeTab() === 'historial') {
+          <h4 class="mt-0 mb-3">Historial de Abonos</h4>
+          <div class="border-1 surface-border border-round">
+            <p-table
+              [value]="abonos()"
+              [loading]="loadingData()"
+              [paginator]="abonos().length > 5"
+              [rows]="5"
+              styleClass="p-datatable-sm p-datatable-striped"
+            >
+              <ng-template pTemplate="header">
+                <tr>
+                  <th style="width: 120px">Fecha</th>
+                  <th>Descripción</th>
+                  <th style="width: 140px" class="text-right">Monto</th>
+                  <th style="width: 80px" class="text-right"></th>
+                </tr>
+              </ng-template>
+              <ng-template pTemplate="body" let-abono>
+                <tr>
+                  <td>{{ abono.fecha | date: 'dd/MM/yyyy' }}</td>
+                  <td>{{ abono.descripcion }}</td>
+                  <td class="text-right font-bold" style="color: var(--p-primary-color)">
+                    {{ abono.monto | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
+                  </td>
+                  <td class="text-right flex justify-content-end gap-1">
+                    <button
+                      pButton
+                      icon="pi pi-pencil"
+                      class="p-button-text p-button-secondary p-button-sm p-0"
+                      style="width: 2rem; height: 2rem"
+                      pTooltip="Editar Abono"
+                      (click)="abrirEditarAbono(abono)"
+                    ></button>
+                    <button
+                      pButton
+                      icon="pi pi-times"
+                      class="p-button-text p-button-danger p-button-sm p-0"
+                      style="width: 2rem; height: 2rem"
+                      pTooltip="Eliminar Abono"
+                      (click)="confirmarEliminarAbono(abono)"
+                    ></button>
+                  </td>
+                </tr>
+              </ng-template>
+              <ng-template pTemplate="emptymessage">
+                <tr>
+                  <td colspan="4" class="text-center text-500 p-4">No hay abonos registrados</td>
+                </tr>
+              </ng-template>
+            </p-table>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</p-dialog>
+
+<!-- Modal Editar Abono -->
+<p-dialog
+  header="Editar Abono"
+  [(visible)]="mostrarEditarAbono"
+  [modal]="true"
+  [style]="{ width: '400px' }"
+  [dismissableMask]="true"
+  [draggable]="false"
+  [resizable]="false"
+  appendTo="body"
+  styleClass="savings-detail-modal"
+>
+  <div class="flex flex-column gap-3 pt-2">
+    <div class="field">
+      <label class="block font-medium mb-2">Monto</label>
+      <p-inputNumber
+        [(ngModel)]="abonoEditMonto"
+        mode="currency"
+        currency="COP"
+        locale="es-CO"
+        [minFractionDigits]="0"
+        class="w-full"
+        inputStyleClass="w-full"
+      ></p-inputNumber>
+    </div>
+    <div class="field">
+      <label class="block font-medium mb-2">Descripción</label>
+      <input pInputText [(ngModel)]="abonoEditDescripcion" class="w-full" />
+    </div>
+  </div>
+  <ng-template pTemplate="footer">
+    <button
+      pButton
+      label="Cancelar"
+      class="p-button-text"
+      (click)="cancelarEdicionAbono()"
+    ></button>
+    <button
+      pButton
+      label="Guardar"
+      class="p-button-primary"
+      [loading]="savingEditAbono()"
+      [disabled]="!abonoEditMonto"
+      (click)="guardarEdicionAbono()"
+    ></button>
+  </ng-template>
+</p-dialog>

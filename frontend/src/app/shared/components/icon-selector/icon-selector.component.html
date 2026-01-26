@@ -1,0 +1,44 @@
+<p-dialog
+  header="Selecciona un ícono"
+  [(visible)]="visible"
+  [modal]="true"
+  [closable]="true"
+  [dismissableMask]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: '600px', maxHeight: '80vh' }"
+  (onHide)="close()"
+  styleClass="icon-selector-modal"
+>
+  <div class="flex flex-column gap-3">
+    <!-- Search -->
+    <span class="p-input-icon-left w-full">
+      <i class="pi pi-search"></i>
+      <input
+        pInputText
+        type="text"
+        placeholder="Buscar ícono..."
+        [ngModel]="searchTerm()"
+        (ngModelChange)="searchTerm.set($event)"
+        class="w-full"
+      />
+    </span>
+
+    <!-- Grid -->
+    <div class="icon-grid">
+      @for (icon of filteredIcons(); track icon) {
+        <button
+          pButton
+          class="p-button-outlined p-button-secondary icon-btn"
+          (click)="selectIcon(icon)"
+        >
+          <i [class]="icon" class="text-xl"></i>
+        </button>
+      }
+
+      @if (filteredIcons().length === 0) {
+        <div class="col-12 text-center text-500 py-4">No se encontraron íconos</div>
+      }
+    </div>
+  </div>
+</p-dialog>

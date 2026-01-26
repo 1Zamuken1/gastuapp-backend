@@ -79,6 +79,13 @@ export const routes: Routes = [
         component: EgresosComponent,
         title: 'Egresos - GastuApp',
       },
+      // Ahorros
+      {
+        path: 'ahorros',
+        loadComponent: () =>
+          import('./features/ahorros/ahorros.component').then((m) => m.AhorrosComponent),
+        title: 'Ahorros - GastuApp',
+      },
     ],
   },
 

@@ -75,6 +75,12 @@
   --success-color: #22c55e;
   --success-bg: #f0fdf4;
 
+  // Savings - Ámbar/Dorado (riqueza y precaución positiva)
+  --savings-color: #f59e0b; // Ámbar 500
+  --savings-bg: #fef3c7; // Ámbar 50 (fondo claro)
+  --savings-text: #92400e; // Ámbar 800 (texto)
+  --savings-hover: #d97706; // Ámbar 600
+
   // Warning - Alertas suaves
   --warning-color: #eab308;
   --warning-bg: #fefce8;
@@ -82,8 +88,63 @@
   // Danger - Errores (solo cuando es necesario)
   --danger-color: #ef4444;
   --danger-bg: #fef2f2;
+  
+  // ... (colores neutros se mantienen igual) ...
 
-  // ----- COLORES NEUTROS -----
+  // ==================== THEME OVERRIDES (SAVINGS) ====================
+  // Clase global para forzar el tema de Ahorros en componentes flotantes
+  .theme-savings {
+    // Buttons
+    .p-button.p-button-outlined {
+      color: var(--savings-color) !important;
+      border-color: var(--savings-color) !important;
+      &:hover {
+        background: rgba(245, 158, 11, 0.04) !important;
+        border-color: var(--savings-text) !important;
+        color: var(--savings-text) !important;
+      }
+    }
+    
+    .p-button:not(.p-button-outlined):not(.p-button-text):not(.p-button-danger) {
+      background: var(--savings-color) !important;
+      border-color: var(--savings-color) !important;
+      &:hover {
+        background: var(--savings-hover) !important;
+        border-color: var(--savings-hover) !important;
+      }
+    }
+    
+    // Focus rings
+    .p-inputtext:enabled:focus,
+    .p-inputnumber-input:enabled:focus {
+      box-shadow: 0 0 0 1px var(--savings-color), 0 0 0 4px rgba(245, 158, 11, 0.2) !important;
+      border-color: var(--savings-color) !important;
+    }
+  }
+
+  // DatePicker específico para Savings (usando la clase panelStyleClass)
+  .p-datepicker.theme-savings {
+      table td > span.p-highlight {
+        background: var(--savings-color) !important;
+        color: #ffffff;
+      }
+      
+      table td > span:focus {
+        box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.3) !important;
+      }
+      
+      .p-datepicker-header .p-datepicker-title .p-datepicker-month:hover,
+      .p-datepicker-header .p-datepicker-title .p-datepicker-year:hover {
+        color: var(--savings-color) !important;
+      }
+      
+       // Forzar también el input dentro del datepicker si tiene focus
+      &.p-inputwrapper-focus .p-inputtext {
+         box-shadow: 0 0 0 1px var(--savings-color), 0 0 0 4px rgba(245, 158, 11, 0.2) !important;
+         border-color: var(--savings-color) !important;
+      }
+  }
+
   // Escala de grises para textos y fondos
   --surface-0: #ffffff; // Fondo principal
   --surface-50: #f9fafb; // Fondo alternativo

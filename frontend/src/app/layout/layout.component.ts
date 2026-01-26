@@ -50,6 +50,7 @@ export class LayoutComponent {
     { label: 'Dashboard', icon: 'pi pi-home', route: '/dashboard' },
     { label: 'Ingresos', icon: 'pi pi-arrow-circle-up', route: '/ingresos' },
     { label: 'Egresos', icon: 'pi pi-arrow-circle-down', route: '/egresos' },
+    { label: 'Ahorros', icon: 'pi pi-briefcase', route: '/ahorros' },
   ];
 
   constructor(public authService: AuthService) {}

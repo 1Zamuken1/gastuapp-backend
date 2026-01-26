@@ -1,0 +1,168 @@
+<p-dialog
+  [header]="metaToEdit ? 'Editar Meta de Ahorro' : 'Nueva Meta de Ahorro'"
+  [(visible)]="visible"
+  [modal]="true"
+  [closable]="true"
+  [dismissableMask]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: '500px' }"
+  (onHide)="closeModal()"
+  styleClass="savings-modal"
+>
+  <div class="flex flex-column gap-4">
+    <!-- Información Básica -->
+    <div class="surface-ground p-3 border-round">
+      <h4 class="mt-0 mb-3 text-sm font-semibold text-500 uppercase">Información Básica</h4>
+
+      <!-- Nombre -->
+      <div class="field mb-3">
+        <label for="nombre" class="block font-medium mb-2">Nombre de la meta *</label>
+        <input
+          pInputText
+          id="nombre"
+          [(ngModel)]="nombre"
+          placeholder="Ej: Viaje a Europa"
+          class="w-full"
+        />
+      </div>
+
+      <!-- Monto y Frecuencia -->
+      <div class="formgrid grid mb-3">
+        <div class="field col-12 md:col-6">
+          <label for="monto" class="block font-medium mb-2">Monto objetivo *</label>
+          <p-inputNumber
+            id="monto"
+            [(ngModel)]="montoObjetivo"
+            mode="currency"
+            currency="COP"
+            locale="es-CO"
+            [minFractionDigits]="0"
+            [maxFractionDigits]="0"
+            placeholder="$ 0"
+            class="w-full"
+            inputStyleClass="w-full"
+          ></p-inputNumber>
+        </div>
+        <div class="field col-12 md:col-6">
+          <label class="block font-medium mb-2">Frecuencia de Ahorro</label>
+          <p-select
+            [options]="frecuencias"
+            [(ngModel)]="frecuenciaSeleccionada"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Selecciona una frecuencia"
+            class="w-full"
+            [style]="{ width: '100%' }"
+          ></p-select>
+        </div>
+      </div>
+
+      <!-- Fechas -->
+      <div class="formgrid grid">
+        <div class="field col-12 md:col-6">
+          <label class="block font-medium mb-2">Fecha Inicio</label>
+          <p-datepicker
+            [(ngModel)]="fechaInicio"
+            dateFormat="dd/mm/yy"
+            [showIcon]="true"
+            placeholder="Seleccionar fecha"
+            styleClass="w-full"
+            appendTo="body"
+          ></p-datepicker>
+        </div>
+        <div class="field col-12 md:col-6">
+          <label class="block font-medium mb-2">Fecha Límite</label>
+          <p-datepicker
+            [(ngModel)]="fechaLimite"
+            dateFormat="dd/mm/yy"
+            [minDate]="minDate"
+            [showIcon]="true"
+            placeholder="Seleccionar fecha"
+            styleClass="w-full"
+            appendTo="body"
+          ></p-datepicker>
+        </div>
+      </div>
+    </div>
+
+    <!-- Personalización -->
+    <div class="surface-ground p-3 border-round">
+      <h4 class="mt-0 mb-3 text-sm font-semibold text-500 uppercase">Personalización</h4>
+
+      <!-- Ícono y Color en fila -->
+      <div class="grid">
+        <div class="col-12 md:col-6">
+          <label class="block font-medium mb-2">Ícono</label>
+          <div class="flex gap-2 align-items-center">
+            <div
+              class="flex align-items-center justify-content-center border-round surface-card border-1 surface-border"
+              style="width: 3rem; height: 3rem"
+            >
+              <i [class]="iconoSeleccionado" class="text-2xl"></i>
+            </div>
+            <button
+              pButton
+              label="Cambiar"
+              icon="pi pi-search"
+              class="p-button-outlined p-button-sm flex-1"
+              (click)="mostrarSelectorIcono = true"
+            ></button>
+          </div>
+        </div>
+
+        <div class="col-12 md:col-6">
+          <label class="block font-medium mb-2">Color</label>
+          <div class="flex align-items-center gap-3">
+            <!-- Círculo de Colores -->
+            <div class="color-wheel">
+              @for (color of coloresRueda; track color; let i = $index) {
+                <div
+                  class="color-positioner"
+                  [style.transform]="'rotate(' + i * 30 + 'deg) translateY(-40px)'"
+                >
+                  <div
+                    class="color-dot"
+                    [class.selected]="colorSeleccionado === color"
+                    [style.background]="color"
+                    [title]="color"
+                    (click)="colorSeleccionado = color"
+                  ></div>
+                </div>
+              }
+            </div>
+            <!-- Preview -->
+            <div
+              class="flex-1 border-round p-3 text-center text-white font-bold shadow-2"
+              [style.background]="colorSeleccionado"
+            >
+              {{ colorSeleccionado }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <ng-template pTemplate="footer">
+    <div class="flex justify-content-end gap-2">
+      <button pButton label="Cancelar" class="p-button-text" (click)="closeModal()"></button>
+      <button
+        pButton
+        [label]="metaToEdit ? 'Guardar Cambios' : 'Crear Meta'"
+        icon="pi pi-check"
+        class="p-button-primary"
+        [loading]="saving()"
+        [disabled]="!nombre || !montoObjetivo"
+        (click)="guardarMeta()"
+      ></button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- Selector de Ícono -->
+<app-icon-selector
+  [(visible)]="mostrarSelectorIcono"
+  (iconSelected)="onIconSelected($event)"
+></app-icon-selector>

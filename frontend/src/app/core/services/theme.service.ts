@@ -15,7 +15,7 @@
  */
 import { Injectable, inject } from '@angular/core';
 import { PrimeNG } from 'primeng/config';
-import { IncomePreset, ExpensePreset, DefaultPreset } from '../config/theme-presets';
+import { IncomePreset, ExpensePreset, SavingsPreset, DefaultPreset } from '../config/theme-presets';
 
 @Injectable({ providedIn: 'root' })
 export class ThemeService {
@@ -39,6 +39,18 @@ export class ThemeService {
   setExpenseTheme(): void {
     this.primeng.theme.set({
       preset: ExpensePreset,
+      options: {
+        darkModeSelector: '.dark-mode',
+      },
+    });
+  }
+
+  /**
+   * Activa el tema ámbar para el módulo de Ahorros
+   */
+  setSavingsTheme(): void {
+    this.primeng.theme.set({
+      preset: SavingsPreset,
       options: {
         darkModeSelector: '.dark-mode',
       },

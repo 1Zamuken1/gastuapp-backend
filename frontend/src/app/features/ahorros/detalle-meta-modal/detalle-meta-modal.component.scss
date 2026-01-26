@@ -1,0 +1,11 @@
+/**
+ * DetalleMetaModalComponent - Estilos
+ * 
+ * NOTA: Los colores primarios son manejados por el ThemeService (SavingsPreset)
+ * Usamos variables de tema de PrimeNG en lugar de colores hardcodeados.
+ */
+
+// Meta header card
+.meta-header {
+  background: var(--surface-ground);
+}
