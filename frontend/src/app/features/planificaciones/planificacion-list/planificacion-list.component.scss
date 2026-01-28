@@ -1,0 +1,83 @@
+/* PlanificacionListComponent - Estilos */
+/* NOTA: .card-calm y .toolbar heredan de styles.scss global */
+
+// ==================== TOOLBAR ====================
+// Sin fondo - hereda el color oscuro del fondo de página
+.toolbar {
+  padding: var(--spacing-md);
+  background: var(--surface-card);
+  border-radius: var(--border-radius-lg);
+  border: 1px solid var(--surface-border);
+}
+
+// ==================== CARDS ====================
+.category-card {
+  height: 100%;
+
+  .card-content {
+    background: var(--surface-0);
+    transition: all 0.2s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg) !important;
+      border-color: var(--p-primary-color) !important;
+    }
+  }
+}
+
+.icon-wrapper {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--border-radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// ==================== SKELETON ====================
+.skeleton-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+}
+
+// ==================== EMPTY STATE ====================
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-2xl);
+  text-align: center;
+}
+
+.empty-icon {
+  font-size: 4rem;
+  color: var(--surface-300);
+  margin-bottom: var(--spacing-md);
+}
+
+.empty-state h3 {
+  font-size: 1.25rem;
+  color: var(--surface-700);
+  margin-bottom: var(--spacing-xs);
+}
+
+.empty-state p {
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-lg);
+}
+
+// ==================== RESPONSIVE ====================
+@media (max-width: 768px) {
+  .page-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .header-right {
+    justify-content: space-between;
+  }
+}

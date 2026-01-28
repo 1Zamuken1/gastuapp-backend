@@ -61,6 +61,7 @@ import {
 import { Categoria } from '../../../core/models/categoria.model';
 import { ThemeService } from '../../../core/services/theme.service';
 import { ExportModalComponent } from '../../../shared/components/export-modal/export-modal.component';
+import { CategorySelectorModal } from '../../../shared/components/category-selector-modal/category-selector-modal';
 import { ExportModalConfig } from '../../../shared/models/export.model';
 
 @Component({
@@ -88,6 +89,7 @@ import { ExportModalConfig } from '../../../shared/models/export.model';
     DatePickerModule,
     SelectModule,
     ExportModalComponent,
+    CategorySelectorModal,
   ],
   providers: [ConfirmationService, MessageService],
   templateUrl: './ingresos.component.html',
@@ -122,6 +124,14 @@ export class IngresosComponent implements OnInit {
 
   // Categorías agrupadas (Solo las que tienen registros)
   categoriasAgrupadas = signal<CategoriaAgrupada[]>([]);
+
+  // Modal Selector de Categoría
+  showCategorySelector = signal(false);
+
+  onCategorySelected(cat: Categoria): void {
+    this.ingresoForm.patchValue({ categoria: cat });
+    this.showCategorySelector.set(false);
+  }
 
   // ==================== TOOLBAR: ORDENAMIENTO Y BÚSQUEDA ====================
   sortOption = signal<string>('nombre-asc');

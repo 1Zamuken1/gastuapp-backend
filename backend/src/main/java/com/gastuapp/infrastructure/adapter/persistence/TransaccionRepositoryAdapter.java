@@ -222,6 +222,16 @@ public class TransaccionRepositoryAdapter implements TransaccionRepositoryPort {
         return jpaRepository.countByUsuarioId(usuarioId);
     }
 
+    @Override
+    public List<Transaccion> findByUsuarioIdAndCategoriaIdAndFechaBetween(
+            Long usuarioId, Long categoriaId, LocalDate fechaInicio, LocalDate fechaFin) {
+        return jpaRepository
+                .findByUsuarioIdAndCategoriaIdAndFechaBetween(usuarioId, categoriaId, fechaInicio, fechaFin)
+                .stream()
+                .map(mapper::toDomain)
+                .collect(Collectors.toList());
+    }
+
     // ==================== MAPEO DE ENUMS ====================
 
     /**

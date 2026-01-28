@@ -7,7 +7,6 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -141,8 +140,7 @@ public class GlobalExceptionHandler {
                 HttpStatus.NOT_IMPLEMENTED.value(),
                 "Not Implemented",
                 ex.getMessage(),
-                request.getRequestURI()
-            );
+                request.getRequestURI());
         return new ResponseEntity<>(error, HttpStatus.NOT_IMPLEMENTED);
     }
 
@@ -156,19 +154,18 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleGenericException(
             Exception ex,
             HttpServletRequest request) {
-        
+
         // Log del error (en producción usar un logger apropiado)
         System.err.println("Error inesperado: " + ex.getMessage());
         ex.printStackTrace();
-        
+
         ErrorResponse error = new ErrorResponse(
-            LocalDateTime.now(),
-            HttpStatus.INTERNAL_SERVER_ERROR.value(),
-            "Internal Server Error",
-            "Ocurrió un error inesperado en el servidor",
-            request.getRequestURI()
-        );
-        
+                LocalDateTime.now(),
+                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                "Internal Server Error",
+                "Ocurrió un error inesperado en el servidor",
+                request.getRequestURI());
+
         return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

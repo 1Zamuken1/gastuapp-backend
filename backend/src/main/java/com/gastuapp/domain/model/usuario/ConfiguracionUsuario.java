@@ -1,8 +1,6 @@
 package com.gastuapp.domain.model.usuario;
 
 // Preferencias y configuración personalizada de cada usuario
-import com.gastuapp.domain.model.usuario.TipoOnboarding;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -23,8 +21,8 @@ public class ConfiguracionUsuario {
 
     // Lógica
     // Valida que la configuración sea correcta
-    public void validar(){
-        if (usuarioId == null){
+    public void validar() {
+        if (usuarioId == null) {
             throw new IllegalArgumentException("El ID de usuairo es obligatorio");
         }
 
@@ -46,16 +44,16 @@ public class ConfiguracionUsuario {
     }
 
     // verifica si el usuario ha completado el onboarding
-    public boolean haCompletadoOnboarding(){
+    public boolean haCompletadoOnboarding() {
         return onboardingCompletado != TipoOnboarding.NO_COMPLETADO;
     }
 
     // Inicia valores por defecto luego de la construcción
-    public void iniciarValoresPorDefecto(){
-        if (this.notificacionesActivas == null){
+    public void iniciarValoresPorDefecto() {
+        if (this.notificacionesActivas == null) {
             this.notificacionesActivas = true;
         }
-        if (this.celebracionesActivas == null){
+        if (this.celebracionesActivas == null) {
             this.celebracionesActivas = true;
         }
         if (this.onboardingCompletado == null) {

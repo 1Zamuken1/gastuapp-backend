@@ -9,6 +9,7 @@ import com.gastuapp.domain.model.transaccion.Transaccion;
 import com.gastuapp.domain.port.categoria.CategoriaRepositoryPort;
 import com.gastuapp.domain.port.transaccion.TransaccionRepositoryPort;
 import com.gastuapp.domain.port.usuario.UsuarioRepositoryPort;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -63,6 +64,9 @@ public class TransaccionService {
     private final CategoriaRepositoryPort categoriaRepository;
     private final UsuarioRepositoryPort usuarioRepository;
     private final TransaccionMapper transaccionMapper;
+    
+    @Autowired
+    private PresupuestoService presupuestoService;
 
     /**
      * Constructor con inyección de dependencias.
@@ -131,7 +135,14 @@ public class TransaccionService {
         // 7. Guardar en BD
         Transaccion transaccionGuardada = transaccionRepository.save(transaccion);
 
-        // 8. Convertir Domain → DTO Response
+        // 8. Actualizar montos gastados en presupuestos (INTEGRACIÓN)
+        // Solo para transacciones de EGRESO
+        if (transaccion.getTipo() == TipoTransaccion.EGRESO) {
+            presupuestoService.actualizarMontoGastado(
+                    usuarioId, transaccion.getCategoriaId(), transaccion.getMonto());
+        }
+
+        // 9. Convertir Domain → DTO Response
         return transaccionMapper.toResponseDTO(transaccionGuardada);
     }
 
@@ -322,7 +333,18 @@ public class TransaccionService {
         // 7. Guardar cambios
         Transaccion transaccionActualizada = transaccionRepository.save(transaccion);
 
-        // 8. Convertir a DTO
+        // 8. Actualizar montos gastados en presupuestos (INTEGRACIÓN)
+        // Calcular diferencia y actualizar según el cambio
+        BigDecimal montoAnterior = transaccion.getMonto(); // Monto original antes del cambio
+        BigDecimal montoNuevo = dto.getMonto(); // Monto nuevo
+        
+        if (transaccion.getTipo() == TipoTransaccion.EGRESO) {
+            BigDecimal diferencia = montoNuevo.subtract(montoAnterior);
+            presupuestoService.actualizarMontoGastado(
+                    usuarioId, transaccion.getCategoriaId(), diferencia);
+        }
+
+        // 9. Convertir a DTO
         return transaccionMapper.toResponseDTO(transaccionActualizada);
     }
 
@@ -352,7 +374,15 @@ public class TransaccionService {
                     "No tienes permiso para eliminar esta transacción");
         }
 
-        // Eliminar
+        // Eliminar (después de actualizar presupuestos)
+        // 8. Actualizar montos gastados en presupuestos (INTEGRACIÓN)
+        // Solo para transacciones de EGRESO (restar el monto eliminado)
+        if (transaccion.getTipo() == TipoTransaccion.EGRESO) {
+            presupuestoService.actualizarMontoGastado(
+                    usuarioId, transaccion.getCategoriaId(), transaccion.getMonto().negate());
+        }
+
+        // 9. Eliminar
         transaccionRepository.deleteById(id);
     }
 

@@ -83,23 +83,59 @@ public class DataSeeder implements CommandLineRunner {
         List<Categoria> categorias = new ArrayList<>();
 
         // ==================== EGRESOS ====================
-        categorias.add(crearCategoria("Comida y bebidas", "🍔", TipoCategoria.EGRESO));
-        categorias.add(crearCategoria("Transporte", "🚗", TipoCategoria.EGRESO));
-        categorias.add(crearCategoria("Salud", "💊", TipoCategoria.EGRESO));
-        categorias.add(crearCategoria("Entretenimiento", "🎮", TipoCategoria.EGRESO));
-        categorias.add(crearCategoria("Educación", "📚", TipoCategoria.EGRESO));
-        categorias.add(crearCategoria("Hogar", "🏠", TipoCategoria.EGRESO));
-        categorias.add(crearCategoria("Ropa y accesorios", "👕", TipoCategoria.EGRESO));
-        categorias.add(crearCategoria("Servicios", "💡", TipoCategoria.EGRESO));
-        categorias.add(crearCategoria("Otros gastos", "📦", TipoCategoria.EGRESO));
+        // Alimentación
+        categorias.add(crearCategoria("Alimentación", "pi pi-shopping-cart", TipoCategoria.EGRESO));
+        categorias.add(crearCategoria("Restaurantes", "pi pi-shopping-cart", TipoCategoria.EGRESO));
+        categorias.add(crearCategoria("Mercado", "pi pi-shopping-cart", TipoCategoria.EGRESO));
+
+        // Transporte
+        categorias.add(crearCategoria("Transporte Público", "pi pi-car", TipoCategoria.EGRESO));
+        categorias.add(crearCategoria("Taxi/Uber", "pi pi-car", TipoCategoria.EGRESO));
+        categorias.add(crearCategoria("Gasolina", "pi pi-car", TipoCategoria.EGRESO));
+        categorias.add(crearCategoria("Mantenimiento Vehículo", "pi pi-car", TipoCategoria.EGRESO));
+
+        // Vivienda y Servicios
+        categorias.add(crearCategoria("Arriendo/Hipoteca", "pi pi-home", TipoCategoria.EGRESO));
+        categorias.add(crearCategoria("Servicios Públicos", "pi pi-bolt", TipoCategoria.EGRESO));
+        categorias.add(crearCategoria("Internet/TV", "pi pi-wifi", TipoCategoria.EGRESO));
+        categorias.add(crearCategoria("Mantenimiento Hogar", "pi pi-home", TipoCategoria.EGRESO));
+
+        // Salud y Bienestar
+        categorias.add(crearCategoria("Salud", "pi pi-heart", TipoCategoria.EGRESO));
+        categorias.add(crearCategoria("Medicamentos", "pi pi-heart", TipoCategoria.EGRESO));
+        categorias.add(crearCategoria("Deportes", "pi pi-heart", TipoCategoria.EGRESO));
+        categorias.add(crearCategoria("Cuidado Personal", "pi pi-heart", TipoCategoria.EGRESO));
+
+        // Entretenimiento y Ocio
+        categorias.add(crearCategoria("Entretenimiento", "pi pi-ticket", TipoCategoria.EGRESO));
+        categorias.add(crearCategoria("Cine", "pi pi-ticket", TipoCategoria.EGRESO));
+        categorias.add(crearCategoria("Viajes", "pi pi-globe", TipoCategoria.EGRESO));
+        categorias.add(crearCategoria("Suscripciones", "pi pi-play", TipoCategoria.EGRESO));
+
+        // Educación
+        categorias.add(crearCategoria("Educación", "pi pi-book", TipoCategoria.EGRESO));
+        categorias.add(crearCategoria("Cursos", "pi pi-book", TipoCategoria.EGRESO));
+        categorias.add(crearCategoria("Material Escolar", "pi pi-book", TipoCategoria.EGRESO));
+
+        // Otros
+        categorias.add(crearCategoria("Ropa", "pi pi-tag", TipoCategoria.EGRESO));
+        categorias.add(crearCategoria("Mascotas", "pi pi-heart", TipoCategoria.EGRESO));
+        categorias.add(crearCategoria("Regalos", "pi pi-gift", TipoCategoria.EGRESO));
+        categorias.add(crearCategoria("Tecnología", "pi pi-desktop", TipoCategoria.EGRESO));
+        categorias.add(crearCategoria("Impuestos", "pi pi-percentage", TipoCategoria.EGRESO));
+        categorias.add(crearCategoria("Otros Gastos", "pi pi-box", TipoCategoria.EGRESO));
 
         // ==================== INGRESOS ====================
-        categorias.add(crearCategoria("Salario", "💰", TipoCategoria.INGRESO));
-        categorias.add(crearCategoria("Freelance", "💼", TipoCategoria.INGRESO));
-        categorias.add(crearCategoria("Inversiones", "📈", TipoCategoria.INGRESO));
-        categorias.add(crearCategoria("Regalos", "🎁", TipoCategoria.INGRESO));
-        categorias.add(crearCategoria("Mesada", "🪙", TipoCategoria.INGRESO));
-        categorias.add(crearCategoria("Otros ingresos", "💸", TipoCategoria.INGRESO));
+        categorias.add(crearCategoria("Salario", "pi pi-money-bill", TipoCategoria.INGRESO));
+        categorias.add(crearCategoria("Freelance", "pi pi-briefcase", TipoCategoria.INGRESO));
+        categorias.add(crearCategoria("Inversiones", "pi pi-chart-line", TipoCategoria.INGRESO));
+        categorias.add(crearCategoria("Arriendos", "pi pi-home", TipoCategoria.INGRESO));
+        categorias.add(crearCategoria("Regalos", "pi pi-gift", TipoCategoria.INGRESO));
+        categorias.add(crearCategoria("Mesada", "pi pi-wallet", TipoCategoria.INGRESO));
+        categorias.add(crearCategoria("Devoluciones", "pi pi-replay", TipoCategoria.INGRESO));
+        categorias.add(crearCategoria("Bonus", "pi pi-star", TipoCategoria.INGRESO));
+        categorias.add(crearCategoria("Ventas", "pi pi-tag", TipoCategoria.INGRESO));
+        categorias.add(crearCategoria("Otros Ingresos", "pi pi-plus", TipoCategoria.INGRESO));
 
         return categorias;
     }

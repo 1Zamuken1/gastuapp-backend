@@ -229,4 +229,15 @@ public class UsuarioRepositoryAdapter implements UsuarioRepositoryPort {
     public boolean existsByPublicId(String publicId) {
         return jpaRepository.existsByPublicId(publicId);
     }
+
+    /**
+     * Verifica si existe un usuario por su ID.
+     *
+     * @param id ID del usuario
+     * @return true si existe, false en caso contrario
+     */
+    @Override
+    public boolean existsById(Long id) {
+        return jpaRepository.existsById(id);
+    }
 }

@@ -1,0 +1,148 @@
+<p-dialog
+  [header]="modalTitle"
+  [(visible)]="visible"
+  [modal]="true"
+  [closable]="true"
+  [dismissableMask]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: '450px' }"
+  (onHide)="closeModal()"
+  styleClass="planificacion-confirm-modal"
+>
+  <div class="flex flex-column gap-4">
+    <!-- Icono de advertencia -->
+    <div class="flex justify-content-center">
+      <div class="icon-circle">
+        <i [class]="getIconClass" class="text-4xl"></i>
+      </div>
+    </div>
+
+    <!-- Mensaje principal -->
+    <div class="text-center">
+      <p class="m-0 text-lg line-height-3 text-700">{{ modalMessage }}</p>
+    </div>
+
+    <!-- Información del presupuesto (si existe) -->
+    @if (planificacion) {
+      <div class="surface-card p-3 border-round">
+        <h5 class="mt-0 mb-3 text-sm font-semibold text-500 uppercase">Información del Presupuesto</h5>
+        
+        <div class="grid">
+          <!-- Nombre y categoría -->
+          <div class="col-12 mb-2">
+            <div class="flex align-items-center gap-2">
+              <div
+                class="w-2rem h-2rem border-round flex align-items-center justify-content-center text-white text-xs font-bold"
+                [style.background]="planificacion.color"
+              >
+                <i class="pi pi-wallet"></i>
+              </div>
+              <div>
+                <div class="font-semibold">{{ planificacion.nombrePersonalizado || planificacion.categoriaNombre }}</div>
+                <div class="text-500 text-sm">{{ planificacion.categoriaNombre }}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Montos -->
+          <div class="col-6 mb-2">
+            <div class="text-500 text-sm mb-1">Límite:</div>
+            <div class="font-semibold">{{ formatearMonto(planificacion.montoTope) }}</div>
+          </div>
+          <div class="col-6 mb-2">
+            <div class="text-500 text-sm mb-1">Gastado:</div>
+            <div class="font-semibold">{{ formatearMonto(planificacion.montoGastado) }}</div>
+          </div>
+
+          <!-- Estado y frecuencia -->
+          <div class="col-6 mb-2">
+            <div class="text-500 text-sm mb-1">Estado:</div>
+            <div class="flex align-items-center gap-1">
+              <i [class]="getEstadoIcono(planificacion.estado)" class="text-sm" [style.color]="getEstadoColor(planificacion.estado)"></i>
+              <span class="font-semibold" [style.color]="getEstadoColor(planificacion.estado)">
+                {{ getEstadoTexto(planificacion.estado) }}
+              </span>
+            </div>
+          </div>
+          <div class="col-6 mb-2">
+            <div class="text-500 text-sm mb-1">Frecuencia:</div>
+            <div class="font-semibold">{{ getFrecuenciaTexto(planificacion.frecuencia) }}</div>
+          </div>
+
+          <!-- Barra de progreso -->
+          <div class="col-12">
+            <div class="text-500 text-sm mb-1">Utilización:</div>
+            <div class="flex align-items-center gap-2">
+              <div class="flex-1">
+                <div class="relative">
+                  <div class="progress-bar">
+                    <div 
+                      class="progress-fill"
+                      [style.width.%]="calcularProgreso(planificacion.montoGastado, planificacion.montoTope)"
+                      [style.background]="getProgressColor(planificacion.porcentajeUtilizacion)"
+                    ></div>
+                  </div>
+                </div>
+              </div>
+              <span class="font-semibold text-sm min-w-3rem text-right">
+                {{ planificacion.porcentajeUtilizacion.toFixed(1) }}%
+              </span>
+            </div>
+          </div>
+
+          <!-- Período -->
+          <div class="col-12">
+            <div class="text-500 text-sm mb-1">Período:</div>
+            <div class="font-semibold text-sm">{{ planificacion.periodoTexto }}</div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Advertencia final -->
+    @if (modalType === 'delete') {
+      <div class="bg-red-50 border-1 border-red-200 p-3 border-round">
+        <div class="flex align-items-center gap-2">
+          <i class="pi pi-exclamation-triangle text-red-500"></i>
+          <span class="text-red-700 text-sm font-medium">
+            Esta acción es irreversible y eliminará todos los datos asociados.
+          </span>
+        </div>
+      </div>
+    }
+
+    @if (modalType === 'deactivate') {
+      <div class="bg-amber-50 border-1 border-amber-200 p-3 border-round">
+        <div class="flex align-items-center gap-2">
+          <i class="pi pi-info-circle text-amber-500"></i>
+          <span class="text-amber-700 text-sm font-medium">
+            El presupuesto quedará inactivo pero no se perderán los datos.
+          </span>
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- Footer -->
+  <ng-template pTemplate="footer">
+    <div class="flex justify-content-end gap-2">
+      <button 
+        pButton 
+        label="Cancelar" 
+        class="p-button-text p-button-secondary" 
+        (click)="closeModal()"
+        [disabled]="loading()"
+      ></button>
+      <button
+        pButton
+        [label]="getConfirmButtonLabel"
+        [icon]="modalType === 'delete' ? 'pi pi-trash' : modalType === 'deactivate' ? 'pi pi-pause' : 'pi pi-check'"
+        [class]="getConfirmButtonClass"
+        [loading]="loading()"
+        [disabled]="loading()"
+        (click)="onConfirm()"
+      ></button>
+    </div>
+  </ng-template>
+</p-dialog>

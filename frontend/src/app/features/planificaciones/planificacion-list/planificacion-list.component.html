@@ -1,0 +1,156 @@
+<!-- PlanificacionListComponent - Lista de presupuestos (siguiendo patrón Ahorros) -->
+
+<!-- ==================== TOOLBAR ==================== -->
+<div class="toolbar wrapper mb-4">
+  <div class="flex flex-wrap gap-3 align-items-center justify-content-between">
+    <!-- Búsqueda -->
+    <p-iconfield class="flex-grow-1" style="max-width: 300px">
+      <p-inputicon styleClass="pi pi-search"></p-inputicon>
+      <input
+        pInputText
+        type="text"
+        placeholder="Buscar presupuesto..."
+        [ngModel]="searchTerm()"
+        (ngModelChange)="onSearchChange($event)"
+        class="w-full"
+      />
+    </p-iconfield>
+
+    <!-- Ordenamiento -->
+    <div class="flex align-items-center gap-2">
+      <span class="text-sm text-500">Ordenar:</span>
+      <p-select
+        [options]="sortOptions"
+        [ngModel]="sortField()"
+        (ngModelChange)="onSortChange($event, sortDirection())"
+        optionLabel="label"
+        optionValue="value"
+        [style]="{ minWidth: '180px' }"
+        appendTo="body"
+      ></p-select>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== CARDS CONTAINER ==================== -->
+<div class="card-calm">
+  @if (loading) {
+    <div class="skeleton-grid">
+      <p-skeleton width="100%" height="8rem" styleClass="mb-2"></p-skeleton>
+      <p-skeleton width="100%" height="8rem" styleClass="mb-2"></p-skeleton>
+    </div>
+  } @else if (planificacionesFiltradas().length === 0) {
+    <div class="empty-state">
+      <i class="pi pi-wallet empty-icon"></i>
+      <h3>No hay presupuestos</h3>
+      <p>No se encontraron resultados con los filtros actuales</p>
+      <button
+        pButton
+        label="Limpiar filtros"
+        icon="pi pi-refresh"
+        class="p-button-text"
+        (click)="limpiarFiltros()"
+      ></button>
+    </div>
+  } @else {
+    <div class="grid">
+      @for (presupuesto of planificacionesFiltradas(); track presupuesto.publicId) {
+        <div class="col-12 md:col-6 lg:col-4" (click)="onVerDetalle(presupuesto)">
+          <div class="category-card cursor-pointer">
+            <!-- Card Content -->
+            <div
+              class="card-content flex flex-column gap-3 p-4 border-1 surface-border border-round transition-all shadow-2 h-full"
+              [style.borderLeftWidth]="'4px'"
+              [style.borderLeftColor]="presupuesto.color || '#6366f1'"
+            >
+              <div class="flex justify-content-between align-items-start">
+                <div class="flex align-items-center gap-3">
+                  <div
+                    class="icon-wrapper"
+                    [style.background]="(presupuesto.color || '#6366f1') + '20'"
+                  >
+                    <i
+                      class="pi pi-wallet text-2xl"
+                      [style.color]="presupuesto.color || '#6366f1'"
+                    ></i>
+                  </div>
+                  <div>
+                    <span class="text-xl font-semibold text-900">
+                      {{ presupuesto.nombrePersonalizado || presupuesto.categoriaNombre }}
+                    </span>
+                    <span class="text-sm text-500 block">
+                      Vence: {{ presupuesto.fechaFin | date: 'dd/MM/yyyy' }}
+                    </span>
+                  </div>
+                </div>
+                <p-tag
+                  [value]="presupuesto.estado"
+                  [severity]="getEstadoSeverity(presupuesto)"
+                  styleClass="text-xs"
+                ></p-tag>
+              </div>
+
+              <div class="mt-auto">
+                <div class="flex justify-content-between mb-1">
+                  <span class="text-sm text-500">Gastado</span>
+                  <span class="text-sm text-500">Presupuesto</span>
+                </div>
+                <div class="flex justify-content-between mb-2">
+                  <span
+                    class="text-2xl font-bold"
+                    [class.text-red-500]="presupuesto.porcentajeUtilizacion > 80"
+                    [class.text-orange-500]="presupuesto.porcentajeUtilizacion <= 80"
+                  >
+                    {{ formatCurrency(presupuesto.montoGastado) }}
+                  </span>
+                  <span class="text-lg font-semibold text-900">
+                    {{ formatCurrency(presupuesto.montoTope) }}
+                  </span>
+                </div>
+
+                <p-progressBar
+                  [value]="presupuesto.porcentajeUtilizacion"
+                  [showValue]="false"
+                  styleClass="h-1rem"
+                ></p-progressBar>
+                <div class="text-right mt-1">
+                  <span class="text-xs text-500">
+                    {{ presupuesto.porcentajeUtilizacion | number: '1.0-1' }}% utilizado
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- Pagination -->
+    @if (totalRecordsFiltered() > rows()) {
+      <div
+        class="flex justify-content-center align-items-center gap-3 mt-4 pt-3 border-top-1 surface-border"
+      >
+        <p-button
+          icon="pi pi-chevron-left"
+          [outlined]="true"
+          [disabled]="first() === 0"
+          (click)="previousPage()"
+          pTooltip="Página anterior"
+        ></p-button>
+
+        <span class="text-sm text-500">
+          {{ first() + 1 }}-{{ min(first() + rows(), totalRecordsFiltered()) }} de
+          {{ totalRecordsFiltered() }}
+        </span>
+
+        <p-button
+          icon="pi pi-chevron-right"
+          [outlined]="true"
+          [disabled]="first() + rows() >= totalRecordsFiltered()"
+          (click)="nextPage()"
+          pTooltip="Siguiente página"
+        ></p-button>
+      </div>
+    }
+  }
+</div>

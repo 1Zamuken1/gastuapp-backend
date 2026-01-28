@@ -2,7 +2,6 @@ package com.gastuapp.application.mapper;
 
 import com.gastuapp.application.dto.request.TransaccionRequestDTO;
 import com.gastuapp.application.dto.response.TransaccionResponseDTO;
-import com.gastuapp.domain.model.categoria.Categoria;
 import com.gastuapp.domain.model.transaccion.Transaccion;
 import com.gastuapp.domain.port.categoria.CategoriaRepositoryPort;
 import org.springframework.stereotype.Component;

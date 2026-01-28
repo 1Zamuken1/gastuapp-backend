@@ -76,6 +76,28 @@ public interface TransaccionRepositoryPort {
 
     /**
      * Cuenta transacciones por usuario.
+     *
+     * Query generada:
+     * SELECT COUNT(*) FROM transacciones WHERE usuario_id = ?
+     *
+     * @param usuarioId ID del usuario
+     * @return Cantidad de transacciones
      */
     long countByUsuarioId(Long usuarioId);
+
+    /**
+     * Lista transacciones por usuario, categoría y rango de fechas.
+     * Usado para calcular montos gastados en presupuestos.
+     *
+     * @param usuarioId   ID del usuario
+     * @param categoriaId ID de la categoría
+     * @param fechaInicio Fecha inicio del período (inclusive)
+     * @param fechaFin    Fecha fin del período (inclusive)
+     * @return Lista de transacciones en el período y categoría
+     */
+    List<Transaccion> findByUsuarioIdAndCategoriaIdAndFechaBetween(
+            Long usuarioId, 
+            Long categoriaId, 
+            LocalDate fechaInicio, 
+            LocalDate fechaFin);
 }

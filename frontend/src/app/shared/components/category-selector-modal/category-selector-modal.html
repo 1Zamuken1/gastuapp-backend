@@ -1,0 +1,56 @@
+<p-dialog
+  [(visible)]="visible"
+  [modal]="true"
+  [style]="{ width: '600px', maxHeight: '80vh' }"
+  header="Seleccionar Categoría"
+  [draggable]="false"
+  [resizable]="false"
+  [dismissableMask]="true"
+  [appendTo]="'body'"
+  (onHide)="close()"
+  styleClass="category-selector-modal"
+>
+  <div class="flex flex-column gap-3 pt-2">
+    <!-- Search -->
+    <span class="p-input-icon-left w-full">
+      <i class="pi pi-search"></i>
+      <input
+        pInputText
+        type="text"
+        placeholder="Buscar..."
+        [ngModel]="searchTerm()"
+        (ngModelChange)="searchTerm.set($event)"
+        class="w-full"
+        autofocus
+      />
+    </span>
+
+    <!-- Grid -->
+    <div class="category-grid">
+      @if (loading()) {
+        <div class="col-12 text-center p-4">
+          <i class="pi pi-spin pi-spinner text-3xl text-500"></i>
+        </div>
+      } @else if (displayCategories().length === 0) {
+        <div class="col-12 text-center text-500 p-4">No se encontraron categorías</div>
+      } @else {
+        @for (cat of displayCategories(); track cat.id) {
+          <div
+            class="category-card cursor-pointer surface-card border-1 surface-border border-round p-3 flex align-items-center gap-3 transition-all"
+            [ngClass]="getHoverClass()"
+            (click)="select(cat)"
+          >
+            <div
+              class="icon-container border-circle w-3rem h-3rem flex align-items-center justify-content-center surface-100"
+              [class]="getColorClass()"
+            >
+              <!-- USAMOS EL ICONO UNIFICADO POR TIPO, NO EL INDIVIDUAL -->
+              <i [class]="getIconForType()" class="text-xl"></i>
+            </div>
+            <span class="font-medium text-900">{{ cat.nombre }}</span>
+          </div>
+        }
+      }
+    </div>
+  </div>
+</p-dialog>

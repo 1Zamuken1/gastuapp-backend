@@ -217,18 +217,6 @@ export class AhorrosComponent implements OnInit, OnDestroy {
   onMetaEditRequested(meta: MetaAhorro): void {
     this.metaToEdit = meta;
     this.mostrarModalCrear = true;
-    // No cerramos el detalle aún? O sí?
-    // Si editamos y guardamos, el detalle se mostrará desactualizado.
-    // Mejor cerrar detalle o refrescarlo al volver.
-    // Usualmente: cerrar detalle, abrir edición.
-    // Si el usuario quiere ver detalle de nuevo, lo abre.
-    // O mantener detalle abierto y edición encima (stacked).
-    // Si es stacked, al guardar edición se actualiza la lista.
-    // Necesitamos que el detalle se actualice.
-    // Vamos a cerrar detalle para evitar inconsistencias por ahora.
-    // OJO: Si cerramos detalle, la UX es: Click Editar -> Cierra Detalle -> Abre Edición -> Guarda -> Cierra Edición -> (Usuario ve lista).
-    // Es aceptable.
-    // Si quisiéramos volver al detalle, sería más complejo.
     this.mostrarModalDetalle = false;
   }
 }

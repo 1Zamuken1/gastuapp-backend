@@ -268,34 +268,22 @@
           ></p-datePicker>
         </div>
 
-        <!-- Categoría -->
+        <!-- Categoría (Selector Modal) -->
         <div class="field">
-          <label for="categoria" class="font-bold">Categoría</label>
-          <p-select
-            id="categoria"
-            formControlName="categoria"
-            [options]="categorias()"
-            optionLabel="nombre"
-            placeholder="Seleccione una categoría"
-            appendTo="body"
-            styleClass="w-full"
-            [disabled]="mostrarDetalleDialog()"
-          >
-            <!-- Si hay categoría seleccionada (estamos en modal detalle), bloqueamos cambio -->
-            <ng-template #selectedItem let-selectedOption>
-              <div class="flex align-items-center gap-2" *ngIf="selectedOption">
-                <span>{{ selectedOption.icono }}</span>
-                <span>{{ selectedOption.nombre }}</span>
-              </div>
-            </ng-template>
-
-            <ng-template let-category #item>
-              <div class="flex align-items-center gap-2">
-                <span>{{ category.icono }}</span>
-                <span>{{ category.nombre }}</span>
-              </div>
-            </ng-template>
-          </p-select>
+          <label class="font-bold">Categoría</label>
+          <div class="p-inputgroup cursor-pointer" (click)="showCategorySelector.set(true)">
+            <span class="p-inputgroup-addon">
+              <i class="pi pi-arrow-circle-up text-green-500"></i>
+            </span>
+            <input
+              pInputText
+              readonly
+              [value]="ingresoForm.get('categoria')?.value?.nombre || 'Seleccionar Categoría'"
+              class="cursor-pointer"
+              [class.text-500]="!ingresoForm.get('categoria')?.value"
+            />
+            <button pButton icon="pi pi-search" type="button" class="p-button-outlined"></button>
+          </div>
           @if (ingresoForm.get('categoria')?.invalid && ingresoForm.get('categoria')?.touched) {
             <small class="p-error block">Categoría requerida</small>
           }
@@ -326,4 +314,11 @@
   @if (exportConfig()) {
     <app-export-modal [(visible)]="exportVisible" [config]="exportConfig()!"></app-export-modal>
   }
+
+  <!-- MODAL SELECTOR CATEGORÍA -->
+  <app-category-selector-modal
+    [(visible)]="showCategorySelector"
+    type="INGRESO"
+    (onSelect)="onCategorySelected($event)"
+  ></app-category-selector-modal>
 </div>

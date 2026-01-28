@@ -61,6 +61,7 @@ import {
 import { Categoria } from '../../../core/models/categoria.model';
 import { ThemeService } from '../../../core/services/theme.service';
 import { ExportModalComponent } from '../../../shared/components/export-modal/export-modal.component';
+import { CategorySelectorModal } from '../../../shared/components/category-selector-modal/category-selector-modal';
 import { ExportModalConfig } from '../../../shared/models/export.model';
 
 @Component({
@@ -86,6 +87,7 @@ import { ExportModalConfig } from '../../../shared/models/export.model';
     DatePickerModule,
     SelectModule,
     ExportModalComponent,
+    CategorySelectorModal,
   ],
   providers: [ConfirmationService, MessageService],
   templateUrl: './egresos.component.html',
@@ -116,6 +118,14 @@ export class EgresosComponent implements OnInit {
   mostrarDetalleDialog = signal(false);
   selectedCategory = signal<CategoriaAgrupada | null>(null);
   categoriasAgrupadas = signal<CategoriaAgrupada[]>([]);
+
+  // Modal Selector de Categoría
+  showCategorySelector = signal(false);
+
+  onCategorySelected(cat: Categoria): void {
+    this.egresoForm.patchValue({ categoria: cat });
+    this.showCategorySelector.set(false);
+  }
 
   // ==================== TOOLBAR ====================
   sortOption = signal<string>('nombre-asc');

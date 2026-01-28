@@ -122,4 +122,12 @@ public interface UsuarioRepositoryPort {
      * @param id ID del usuario a eliminar
      */
     void deleteById(Long id);
+
+    /**
+     * Verifica si existe un usuario por su ID.
+     *
+     * @param id ID del usuario
+     * @return true si existe, false en caso contrario
+     */
+    boolean existsById(Long id);
 }

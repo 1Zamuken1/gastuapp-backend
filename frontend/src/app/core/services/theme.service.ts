@@ -15,7 +15,13 @@
  */
 import { Injectable, inject } from '@angular/core';
 import { PrimeNG } from 'primeng/config';
-import { IncomePreset, ExpensePreset, SavingsPreset, DefaultPreset } from '../config/theme-presets';
+import {
+  IncomePreset,
+  ExpensePreset,
+  SavingsPreset,
+  PlanificacionPreset,
+  DefaultPreset,
+} from '../config/theme-presets';
 
 @Injectable({ providedIn: 'root' })
 export class ThemeService {
@@ -51,6 +57,18 @@ export class ThemeService {
   setSavingsTheme(): void {
     this.primeng.theme.set({
       preset: SavingsPreset,
+      options: {
+        darkModeSelector: '.dark-mode',
+      },
+    });
+  }
+
+  /**
+   * Activa el tema violeta para el módulo de Planificaciones
+   */
+  setPlanificacionTheme(): void {
+    this.primeng.theme.set({
+      preset: PlanificacionPreset,
       options: {
         darkModeSelector: '.dark-mode',
       },

@@ -199,4 +199,11 @@ public interface UsuarioJpaRepository extends JpaRepository<UsuarioEntity, Long>
     @Query("SELECT u FROM UsuarioEntity u WHERE u.tutorId = :tutorId AND u.activo = true")
     List<UsuarioEntity> findActivosByTutorId(@Param("tutorId") Long tutorId);
 
+    /**
+     * Verifica si existe un usuario por su ID.
+     *
+     * @param id ID del usuario
+     * @return true si existe, false en caso contrario
+     */
+    boolean existsById(Long id);
 }

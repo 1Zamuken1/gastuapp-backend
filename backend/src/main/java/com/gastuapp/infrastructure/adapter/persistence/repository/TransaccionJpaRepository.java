@@ -213,9 +213,25 @@ public interface TransaccionJpaRepository extends JpaRepository<TransaccionEntit
      * @return Lista de transacciones que coinciden
      */
     @Query("SELECT t FROM TransaccionEntity t " +
-            "WHERE t.usuarioId = :usuarioId " +
-            "AND LOWER(t.descripcion) LIKE LOWER(CONCAT('%', :searchTerm, '%'))")
+           "WHERE t.usuarioId = :usuarioId " +
+           "AND LOWER(t.descripcion) LIKE LOWER(CONCAT('%', :searchTerm, '%'))")
     List<TransaccionEntity> searchByDescripcion(
             @Param("usuarioId") Long usuarioId,
             @Param("searchTerm") String searchTerm);
+
+    /**
+     * Lista transacciones por usuario, categoría y rango de fechas.
+     * Usado para calcular montos gastados en presupuestos.
+     *
+     * @param usuarioId   ID del usuario
+     * @param categoriaId ID de la categoría
+     * @param fechaInicio Fecha inicio del período (inclusive)
+     * @param fechaFin    Fecha fin del período (inclusive)
+     * @return Lista de transacciones en el período y categoría
+     */
+    List<TransaccionEntity> findByUsuarioIdAndCategoriaIdAndFechaBetween(
+            Long usuarioId,
+            Long categoriaId,
+            LocalDate fechaInicio,
+            LocalDate fechaFin);
 }

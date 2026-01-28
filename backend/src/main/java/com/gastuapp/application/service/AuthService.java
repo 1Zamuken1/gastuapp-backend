@@ -53,7 +53,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class AuthService {
     private final UsuarioRepositoryPort usuarioRepository;
     private final UsuarioService usuarioService;
-    private final UsuarioMapper usuarioMapper;
+    // private final UsuarioMapper usuarioMapper; // unused
     private final JwtUtils jwtUtils;
     private final BCryptPasswordEncoder passwordEncoder;
 
@@ -63,17 +63,16 @@ public class AuthService {
      *
      * @param usuarioRepository Port para acceso a datos de usuarios
      * @param usuarioService    Servicio para operaciones de usuarios
-     * @param usuarioMapper     Mapper entre DTOs y Domain
      * @param jwtUtils          Utilidad para manejo de JWT
      */
     public AuthService(
             UsuarioRepositoryPort usuarioRepository,
             UsuarioService usuarioService,
-            UsuarioMapper usuarioMapper,
+            // UsuarioMapper usuarioMapper,
             JwtUtils jwtUtils) {
         this.usuarioRepository = usuarioRepository;
         this.usuarioService = usuarioService;
-        this.usuarioMapper = usuarioMapper;
+        // this.usuarioMapper = usuarioMapper;
         this.jwtUtils = jwtUtils;
         this.passwordEncoder = new BCryptPasswordEncoder();
     }

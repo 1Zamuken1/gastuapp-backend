@@ -1,0 +1,104 @@
+<!--
+  PlanificacionesComponent - Vista Principal (Siguiendo patrón Ahorros)
+-->
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
+
+<div class="planificaciones-page">
+  <!-- ==================== HEADER ==================== -->
+  <div class="page-header">
+    <div class="header-left">
+      <h1 class="page-title flex align-items-center gap-2">
+        <i class="pi pi-wallet"></i>
+        <span>Mis Presupuestos</span>
+      </h1>
+      <p class="page-subtitle">Controla tus gastos por categoría</p>
+    </div>
+
+    <div class="header-right">
+      <!-- Métricas rápidas -->
+      <div class="metrics-container flex gap-3">
+        <div class="metric-card">
+          <span class="metric-label">Total Asignado</span>
+          <span class="metric-value">{{ formatearMonto(totalMontoAsignado) }}</span>
+        </div>
+        <div class="metric-card">
+          <span class="metric-label">Gastado</span>
+          <span class="metric-value text-warning">{{ formatearMonto(totalMontoGastado) }}</span>
+        </div>
+        <div class="metric-card">
+          <span class="metric-label">Activos</span>
+          <span class="metric-value text-success">{{ planificacionesActivas }}</span>
+        </div>
+      </div>
+
+      <button
+        pButton
+        type="button"
+        label="Nuevo Presupuesto"
+        icon="pi pi-plus"
+        class="p-button-primary"
+        (click)="onCrearPlanificacion()"
+      ></button>
+    </div>
+  </div>
+
+  <!-- ==================== CONTENT ==================== -->
+  @if (loading()) {
+    <div class="card-calm">
+      <div class="flex justify-content-center align-items-center" style="min-height: 400px">
+        <p-progressSpinner
+          [style]="{ width: '50px', height: '50px' }"
+          strokeWidth="3"
+        ></p-progressSpinner>
+      </div>
+    </div>
+  } @else if (planificaciones().length === 0) {
+    <div class="card-calm">
+      <div class="empty-state">
+        <i class="pi pi-wallet empty-icon"></i>
+        <h3>No tienes presupuestos creados</h3>
+        <p>Comienza creando tu primer presupuesto para controlar tus gastos por categoría</p>
+        <button
+          pButton
+          label="Crear Primer Presupuesto"
+          icon="pi pi-plus"
+          class="p-button-primary p-button-lg"
+          (click)="onCrearPlanificacion()"
+        ></button>
+      </div>
+    </div>
+  } @else {
+    <!-- Renderizar PlanificacionListComponent con todos los datos -->
+    <app-planificacion-list
+      [planificaciones]="planificaciones()"
+      [loading]="loading()"
+      (editar)="onEditarPlanificacion($event)"
+      (desactivar)="onDesactivarPlanificacion($event)"
+      (eliminar)="onEliminarPlanificacion($event)"
+      (verDetalle)="onVerDetalle($event)"
+    ></app-planificacion-list>
+  }
+</div>
+
+<!-- Formulario de creación/edición -->
+<app-planificacion-form
+  [(visible)]="mostrarFormulario"
+  [planificacionToEdit]="planificacionSeleccionada()"
+  (planificacionCreated)="onPlanificacionCreada()"
+  (planificacionUpdated)="onPlanificacionActualizada()"
+  (visibleChange)="onCancelarFormulario()"
+></app-planificacion-form>
+
+<!-- Modal de confirmación -->
+<app-planificacion-modal
+  [(visible)]="mostrarModal"
+  [modalType]="modalConfig.type"
+  [planificacion]="modalConfig.planificacion"
+  [title]="modalConfig.title"
+  [message]="modalConfig.message"
+  [confirmButtonLabel]="modalConfig.confirmButtonLabel"
+  [confirmButtonClass]="modalConfig.confirmButtonClass"
+  (confirmed)="onModalConfirmado()"
+  (visibleChange)="onCancelarModal()"
+></app-planificacion-modal>

@@ -1,0 +1,208 @@
+<p-dialog
+  [header]="tituloModal"
+  [(visible)]="visible"
+  [modal]="true"
+  [closable]="true"
+  [dismissableMask]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: '550px' }"
+  [appendTo]="'body'"
+  (onHide)="closeModal()"
+  styleClass="planificacion-modal"
+>
+  <div class="flex flex-column gap-4">
+    <!-- Información Básica -->
+    <div class="surface-ground p-3 border-round">
+      <h4 class="mt-0 mb-3 text-sm font-semibold text-500 uppercase">
+        Información del Presupuesto
+      </h4>
+
+      <!-- Categoría (Selector Modal) -->
+      <div class="field mb-3">
+        <label class="block font-medium mb-2">Categoría de Gasto *</label>
+        <div class="p-inputgroup cursor-pointer" (click)="showCategorySelector.set(true)">
+          <span class="p-inputgroup-addon">
+            <i class="pi pi-shopping-bag text-purple-500"></i>
+          </span>
+          <input
+            pInputText
+            readonly
+            [value]="categoriaSeleccionada?.nombre || 'Seleccionar Categoría'"
+            class="cursor-pointer"
+            [class.text-500]="!categoriaSeleccionada"
+          />
+          <button pButton icon="pi pi-search" type="button" class="p-button-outlined"></button>
+        </div>
+        <small class="text-500">Solo se muestran categorías de tipo gasto</small>
+      </div>
+
+      <!-- Nombre Personalizado (Opcional) -->
+      <div class="field mb-3">
+        <label for="nombrePersonalizado" class="block font-medium mb-2">Nombre Personalizado</label>
+        <input
+          pInputText
+          id="nombrePersonalizado"
+          [(ngModel)]="nombrePersonalizado"
+          placeholder="Ej: Presupuesto especial de comidas"
+          class="w-full"
+        />
+        <small class="text-500"
+          >Si no especificas, se usará: "{{
+            categoriaSeleccionada?.nombre || 'Sin categoría'
+          }}"</small
+        >
+      </div>
+
+      <!-- Monto y Frecuencia -->
+      <div class="formgrid grid mb-3">
+        <div class="field col-12 md:col-6">
+          <label for="monto" class="block font-medium mb-2">Límite del Presupuesto *</label>
+          <p-inputNumber
+            id="monto"
+            [(ngModel)]="montoTope"
+            mode="currency"
+            currency="COP"
+            locale="es-CO"
+            [minFractionDigits]="0"
+            [maxFractionDigits]="0"
+            placeholder="$ 0"
+            class="w-full"
+            inputStyleClass="w-full"
+          ></p-inputNumber>
+        </div>
+        <div class="field col-12 md:col-6">
+          <label class="block font-medium mb-2">Frecuencia</label>
+          <p-select
+            [options]="frecuencias"
+            [(ngModel)]="frecuenciaSeleccionada"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Selecciona una frecuencia"
+            (ngModelChange)="onFrecuenciaChange()"
+            class="w-full"
+            [style]="{ width: '100%' }"
+          ></p-select>
+        </div>
+      </div>
+
+      <!-- Fechas -->
+      <div class="formgrid grid mb-3">
+        <div class="field col-12 md:col-6">
+          <label class="block font-medium mb-2">Fecha Inicio *</label>
+          <p-datepicker
+            [(ngModel)]="fechaInicio"
+            dateFormat="dd/mm/yy"
+            [showIcon]="true"
+            placeholder="Seleccionar fecha"
+            styleClass="w-full"
+            appendTo="body"
+            (ngModelChange)="onFrecuenciaChange()"
+          ></p-datepicker>
+        </div>
+        <div class="field col-12 md:col-6">
+          <label class="block font-medium mb-2">Fecha Fin *</label>
+          <p-datepicker
+            [(ngModel)]="fechaFin"
+            dateFormat="dd/mm/yy"
+            [minDate]="fechaInicio"
+            [showIcon]="true"
+            placeholder="Seleccionar fecha"
+            styleClass="w-full"
+            appendTo="body"
+          ></p-datepicker>
+        </div>
+      </div>
+
+      <!-- Auto-renovación -->
+      <div class="field">
+        <div class="flex align-items-center gap-3">
+          <p-toggleswitch [(ngModel)]="autoRenovar"></p-toggleswitch>
+          <label for="autoRenovar" class="font-medium">Auto-renovar presupuesto</label>
+        </div>
+        <small class="text-500"
+          >Al finalizar el período, se creará automáticamente un nuevo presupuesto</small
+        >
+      </div>
+    </div>
+
+    <!-- Personalización -->
+    <div class="surface-ground p-3 border-round">
+      <h4 class="mt-0 mb-3 text-sm font-semibold text-500 uppercase">Personalización</h4>
+
+      <label class="block font-medium mb-2">Color</label>
+      <div class="flex align-items-center gap-3">
+        <!-- Círculo de Colores -->
+        <div class="color-wheel">
+          @for (color of coloresRueda; track color; let i = $index) {
+            <div
+              class="color-positioner"
+              [style.transform]="'rotate(' + i * 30 + 'deg) translateY(-40px)'"
+            >
+              <div
+                class="color-dot"
+                [class.selected]="colorSeleccionado === color"
+                [style.background]="color"
+                [title]="color"
+                (click)="colorSeleccionado = color"
+              ></div>
+            </div>
+          }
+        </div>
+        <!-- Preview -->
+        <div
+          class="flex-1 border-round p-3 text-center text-white font-bold shadow-2"
+          [style.background]="colorSeleccionado"
+        >
+          {{ colorSeleccionado }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Vista Previa -->
+    <div class="surface-ground p-3 border-round">
+      <h4 class="mt-0 mb-2 text-sm font-semibold text-500 uppercase">Vista Previa</h4>
+      <div class="flex align-items-center gap-3">
+        <div
+          class="flex align-items-center justify-content-center border-round text-white shadow-2"
+          [style.width]="'3rem'"
+          [style.height]="'3rem'"
+          [style.background]="colorSeleccionado"
+        >
+          <i class="pi pi-wallet text-2xl"></i>
+        </div>
+        <div class="flex-1">
+          <div class="font-bold text-lg">{{ nombreMostrado }}</div>
+          <div class="text-500 text-sm">
+            <i [class]="getFrecuenciaIcono(frecuenciaSeleccionada)"></i>
+            {{ getFrecuenciaTexto(frecuenciaSeleccionada) }} • {{ fechaInicio | date: 'dd MMM' }} -
+            {{ fechaFin | date: 'dd MMM yyyy' }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <ng-template pTemplate="footer">
+    <div class="flex justify-content-end gap-2">
+      <button pButton label="Cancelar" class="p-button-text" (click)="closeModal()"></button>
+      <button
+        pButton
+        [label]="planificacionToEdit ? 'Guardar Cambios' : 'Crear Presupuesto'"
+        icon="pi pi-check"
+        class="p-button-primary"
+        [loading]="saving()"
+        [disabled]="!esFormularioValido"
+        (click)="guardarPlanificacion()"
+      ></button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- Modal Selector de Categoría -->
+<app-category-selector-modal
+  [(visible)]="showCategorySelector"
+  type="EGRESO"
+  (onSelect)="onCategorySelected($event)"
+></app-category-selector-modal>
