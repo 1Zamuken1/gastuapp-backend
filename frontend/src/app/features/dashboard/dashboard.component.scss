@@ -139,13 +139,39 @@
   font-weight: var(--font-weight-medium);
 }
 
+// ==================== CHARTS GRID ====================
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-xl);
+}
+
+.chart-card {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.chart-container {
+  flex-grow: 1;
+  position: relative;
+  height: 300px; /* Altura fija para el contenedor del gráfico */
+  width: 100%;
+}
+
 // ==================== RESPONSIVE ====================
 @media (max-width: 768px) {
-  .cards-grid {
+  .cards-grid,
+  .charts-grid {
     grid-template-columns: 1fr;
   }
 
   .card-value {
     font-size: 1.5rem;
+  }
+  
+  .chart-container {
+    height: 250px;
   }
 }

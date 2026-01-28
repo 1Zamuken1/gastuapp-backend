@@ -27,7 +27,9 @@
 
       <!-- Logo y nombre -->
       <div class="navbar-brand">
-        <i class="pi pi-wallet text-2xl" style="color: var(--primary-500)"></i>
+        <div class="logo-container">
+          <img src="assets/logo-owl.png" alt="Logo" class="navbar-logo" />
+        </div>
         <span class="navbar-title">GastuApp</span>
       </div>
     </div>
@@ -61,6 +63,7 @@
             [routerLink]="item.route"
             routerLinkActive="active"
             class="nav-item"
+            [ngClass]="'nav-item-' + (item.id || 'default')"
             [pTooltip]="!sidebarExpanded() ? item.label : ''"
             tooltipPosition="right"
           >

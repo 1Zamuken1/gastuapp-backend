@@ -27,7 +27,7 @@
  */
 import { Component, signal } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
-import { CommonModule } from '@angular/common';
+import { CommonModule, NgClass } from '@angular/common';
 import { AuthService } from '../core/services/auth.service';
 
 // PrimeNG Modules
@@ -37,7 +37,15 @@ import { TooltipModule } from 'primeng/tooltip';
 @Component({
   selector: 'app-layout',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, ButtonModule, TooltipModule],
+  imports: [
+    CommonModule,
+    RouterOutlet,
+    RouterLink,
+    RouterLinkActive,
+    ButtonModule,
+    TooltipModule,
+    NgClass,
+  ],
   templateUrl: './layout.component.html',
   styleUrl: './layout.component.scss',
 })
@@ -47,11 +55,16 @@ export class LayoutComponent {
 
   // Items del menú de navegación
   menuItems = [
-    { label: 'Dashboard', icon: 'pi pi-home', route: '/dashboard' },
-    { label: 'Ingresos', icon: 'pi pi-arrow-circle-up', route: '/ingresos' },
-    { label: 'Egresos', icon: 'pi pi-arrow-circle-down', route: '/egresos' },
-    { label: 'Ahorros', icon: 'pi pi-briefcase', route: '/ahorros' },
-    { label: 'Presupuestos', icon: 'pi pi-wallet', route: '/planificaciones' },
+    { label: 'Dashboard', icon: 'pi pi-home', route: '/dashboard', id: 'dashboard' },
+    { label: 'Ingresos', icon: 'pi pi-arrow-circle-up', route: '/ingresos', id: 'ingresos' },
+    { label: 'Egresos', icon: 'pi pi-arrow-circle-down', route: '/egresos', id: 'egresos' },
+    { label: 'Ahorros', icon: 'pi pi-briefcase', route: '/ahorros', id: 'ahorros' },
+    {
+      label: 'Presupuestos',
+      icon: 'pi pi-wallet',
+      route: '/planificaciones',
+      id: 'planificaciones',
+    },
   ];
 
   constructor(public authService: AuthService) {}

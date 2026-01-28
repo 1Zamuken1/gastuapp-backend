@@ -82,6 +82,77 @@
         <span class="card-sublabel">Este mes</span>
       </div>
     </div>
+
+    <!-- ==================== GRÁFICOS ==================== -->
+    <div class="charts-grid">
+      <!-- 1. Ingresos vs Egresos -->
+      <div class="card-calm chart-card">
+        <div class="card-header mb-3">
+          <span class="card-label">Ingresos vs Egresos</span>
+          <i class="pi pi-chart-line card-icon"></i>
+        </div>
+        <div class="chart-container">
+          <p-chart
+            type="line"
+            [data]="lineChartData"
+            [options]="lineChartOptions"
+            height="100%"
+            width="100%"
+          ></p-chart>
+        </div>
+      </div>
+
+      <!-- 2. Planificaciones -->
+      <div class="card-calm chart-card">
+        <div class="card-header mb-3">
+          <span class="card-label">Planificaciones</span>
+          <i class="pi pi-chart-bar card-icon"></i>
+        </div>
+        <div class="chart-container">
+          <p-chart
+            type="bar"
+            [data]="barChartData"
+            [options]="barChartOptions"
+            height="100%"
+            width="100%"
+          ></p-chart>
+        </div>
+      </div>
+
+      <!-- 3. Metas de Ahorro -->
+      <div class="card-calm chart-card">
+        <div class="card-header mb-3">
+          <span class="card-label">Metas de Ahorro</span>
+          <i class="pi pi-chart-bar card-icon"></i>
+        </div>
+        <div class="chart-container">
+          <p-chart
+            type="bar"
+            [data]="stackedBarData"
+            [options]="stackedBarOptions"
+            height="100%"
+            width="100%"
+          ></p-chart>
+        </div>
+      </div>
+
+      <!-- 4. Principales Egresos -->
+      <div class="card-calm chart-card">
+        <div class="card-header mb-3">
+          <span class="card-label">Principales Egresos</span>
+          <i class="pi pi-chart-pie card-icon"></i>
+        </div>
+        <div class="chart-container">
+          <p-chart
+            type="doughnut"
+            [data]="doughnutData"
+            [options]="doughnutOptions"
+            height="100%"
+            width="100%"
+          ></p-chart>
+        </div>
+      </div>
+    </div>
   }
 
   <!-- ==================== ACCIONES RÁPIDAS ==================== -->
