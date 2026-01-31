@@ -1,0 +1,174 @@
+<!--
+  ProyeccionesComponent - Vista Principal (Replica Ahorros - Blue Theme)
+-->
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
+
+<div class="proyecciones-page">
+  <!-- ==================== HEADER ==================== -->
+  <div class="page-header">
+    <div class="header-left">
+      <h1 class="page-title flex align-items-center gap-2">
+        <i class="pi pi-chart-line proyecciones-icon"></i>
+        <span>Proyecciones Financieras</span>
+      </h1>
+      <p class="page-subtitle">Planifica tus ingresos y gastos recurrentes</p>
+    </div>
+
+    <div class="header-right">
+      <!-- Total General -->
+      <div class="total-card">
+        <span class="total-label">Proyectado (Total)</span>
+        <span class="total-value amount-positive">
+          {{ formatCurrency(totalProyectado()) }}
+        </span>
+      </div>
+
+      <button
+        pButton
+        type="button"
+        label="Nueva Proyección"
+        icon="pi pi-plus"
+        class="p-button-primary"
+        (click)="openCrear()"
+      ></button>
+    </div>
+  </div>
+
+  <!-- ==================== TOOLBAR ==================== -->
+  <div class="toolbar wrapper mb-4">
+    <div class="flex flex-wrap gap-3 align-items-center justify-content-between">
+      <!-- Búsqueda -->
+      <p-iconfield class="flex-grow-1" style="max-width: 300px">
+        <p-inputicon styleClass="pi pi-search"></p-inputicon>
+        <input
+          pInputText
+          type="text"
+          placeholder="Buscar proyección..."
+          [ngModel]="searchTerm()"
+          (ngModelChange)="onSearchChange($event)"
+          class="w-full"
+        />
+      </p-iconfield>
+
+      <!-- Ordenamiento -->
+      <div class="flex align-items-center gap-2">
+        <span class="text-sm text-500">Ordenar:</span>
+        <p-select
+          [options]="sortOptions"
+          [ngModel]="sortOption()"
+          (ngModelChange)="onSortChange($event)"
+          optionLabel="label"
+          optionValue="value"
+          [style]="{ minWidth: '180px' }"
+          appendTo="body"
+        ></p-select>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== CARDS CONTAINER ==================== -->
+  <div class="card-calm">
+    @if (loading()) {
+      <div class="skeleton-grid">
+        <p-skeleton width="100%" height="8rem" styleClass="mb-2"></p-skeleton>
+        <p-skeleton width="100%" height="8rem" styleClass="mb-2"></p-skeleton>
+      </div>
+    } @else if (proyeccionesFiltradas().length === 0) {
+      <div class="empty-state">
+        <i class="pi pi-chart-bar empty-icon"></i>
+        <h3>No hay proyecciones</h3>
+        <p>Crea tu primera proyección para automatizar tus finanzas</p>
+        <button
+          pButton
+          label="Crear mi primera proyección"
+          icon="pi pi-plus"
+          class="p-button-primary"
+          (click)="openCrear()"
+        ></button>
+      </div>
+    } @else {
+      <div class="grid">
+        @for (proyeccion of proyeccionesFiltradas(); track proyeccion.id) {
+          <div class="col-12 md:col-6 lg:col-4">
+            <div class="category-card" (click)="editar(proyeccion, $event)">
+              <!-- Card Content -->
+              <div
+                class="card-content flex flex-column gap-3 p-4 border-1 surface-border border-round transition-all shadow-2 h-full cursor-pointer"
+              >
+                <!-- Top: Icon, Name, Badge -->
+                <div class="flex justify-content-between align-items-start">
+                  <div class="flex align-items-center gap-3">
+                    <!-- Icono por defecto o de categoría si tuviera -->
+                    <div class="icon-wrapper" style="background: rgba(59, 130, 246, 0.1)">
+                      <i class="pi pi-calendar-clock text-2xl text-blue-500"></i>
+                    </div>
+                    <div>
+                      <span class="text-xl font-semibold text-900 block">{{
+                        proyeccion.nombre
+                      }}</span>
+                      <span class="text-sm text-500 block capitalize">{{
+                        proyeccion.frecuencia.toLowerCase()
+                      }}</span>
+                    </div>
+                  </div>
+                  <p-tag
+                    [value]="proyeccion.tipo"
+                    [severity]="proyeccion.tipo === 'INGRESO' ? 'success' : 'danger'"
+                    styleClass="text-xs"
+                  ></p-tag>
+                </div>
+
+                <!-- Middle: Amount -->
+                <div class="mt-2">
+                  <div class="text-2xl font-bold text-900">
+                    {{ formatCurrency(proyeccion.monto) }}
+                  </div>
+                  <div class="text-xs text-500 mt-1">
+                    Próxima: {{ proyeccion.fechaInicio | date: 'dd/MM/yyyy' }}
+                  </div>
+                </div>
+
+                <!-- Bottom: Actions -->
+                <div
+                  class="flex justify-content-between align-items-center mt-auto pt-3 border-top-1 surface-border"
+                >
+                  <span class="text-xs text-500" *ngIf="proyeccion.ultimaEjecucion">
+                    Última: {{ proyeccion.ultimaEjecucion | date: 'dd/MM' }}
+                  </span>
+                  <span class="text-xs text-500" *ngIf="!proyeccion.ultimaEjecucion">
+                    Nunca ejecutado
+                  </span>
+
+                  <div class="flex gap-2">
+                    <button
+                      pButton
+                      icon="pi pi-bolt"
+                      class="p-button-rounded p-button-text p-button-sm"
+                      pTooltip="Ejecutar Proyección"
+                      (click)="ejecutar(proyeccion, $event)"
+                    ></button>
+                    <button
+                      pButton
+                      icon="pi pi-trash"
+                      class="p-button-rounded p-button-text p-button-danger p-button-sm"
+                      pTooltip="Eliminar"
+                      (click)="eliminar(proyeccion, $event)"
+                    ></button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>
+
+<!-- MODAL CREAR/EDITAR -->
+<app-proyeccion-modal
+  [(visible)]="mostrarModalCrear"
+  [proyeccionToEdit]="proyeccionToEdit"
+  (proyeccionGuardada)="onProyeccionGuardada()"
+></app-proyeccion-modal>

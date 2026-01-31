@@ -59,6 +59,7 @@ export class LayoutComponent {
     { label: 'Ingresos', icon: 'pi pi-arrow-circle-up', route: '/ingresos', id: 'ingresos' },
     { label: 'Egresos', icon: 'pi pi-arrow-circle-down', route: '/egresos', id: 'egresos' },
     { label: 'Ahorros', icon: 'pi pi-briefcase', route: '/ahorros', id: 'ahorros' },
+    { label: 'Proyecciones', icon: 'pi pi-sync', route: '/proyecciones', id: 'proyecciones' },
     {
       label: 'Presupuestos',
       icon: 'pi pi-wallet',

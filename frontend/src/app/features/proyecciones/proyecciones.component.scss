@@ -1,0 +1,155 @@
+/**
+ * ProyeccionesComponent - Estilos SCSS (Replica Ahorros - Blue)
+ *
+ * ESTRUCTURA:
+ * - Header con título y total
+ * - Cards con estilos Calm Design
+ * - Estado vacío
+ *
+ * NOTA: Los colores primarios son manejados por el ThemeService (ProyeccionPreset - Blue)
+ */
+
+// ==================== PAGE ====================
+.proyecciones-page {
+  max-width: 1500px;
+  margin: 0 auto;
+}
+
+// ==================== HEADER ====================
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--spacing-lg);
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+}
+
+.header-left {
+  .page-title {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    margin: 0;
+  }
+
+  .proyecciones-icon {
+    color: var(--p-primary-color);
+    font-size: 1.75rem;
+  }
+  
+  .page-subtitle {
+    margin: 0.25rem 0 0 0;
+    color: var(--text-secondary);
+  }
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.total-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: color-mix(in srgb, var(--p-primary-color) 10%, transparent);
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--p-primary-color);
+}
+
+.total-label {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+}
+
+.total-value {
+  font-size: 1.25rem;
+  font-weight: var(--font-weight-bold);
+}
+
+.amount-positive {
+  color: var(--p-primary-color) !important;
+}
+
+// ==================== TOOLBAR ====================
+.toolbar {
+  padding: var(--spacing-md);
+  background: var(--surface-card);
+  border-radius: var(--border-radius-lg);
+  border: 1px solid var(--surface-border);
+}
+
+// ==================== CARDS ====================
+.category-card {
+  height: 100%;
+  
+  .card-content {
+    background: var(--surface-ground);
+    
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg) !important;
+      border-color: var(--p-primary-color) !important;
+    }
+  }
+}
+
+.icon-wrapper {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--border-radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// ==================== SKELETON ====================
+.skeleton-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+}
+
+// ==================== EMPTY STATE ====================
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-2xl);
+  text-align: center;
+}
+
+.empty-icon {
+  font-size: 4rem;
+  color: var(--surface-300);
+  margin-bottom: var(--spacing-md);
+}
+
+.empty-state h3 {
+  font-size: 1.25rem;
+  color: var(--surface-700);
+  margin-bottom: var(--spacing-xs);
+}
+
+.empty-state p {
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-lg);
+}
+
+// ==================== RESPONSIVE ====================
+@media (max-width: 768px) {
+  .page-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .header-right {
+    justify-content: space-between;
+  }
+}

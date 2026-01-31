@@ -86,6 +86,15 @@ export const routes: Routes = [
           import('./features/ahorros/ahorros.component').then((m) => m.AhorrosComponent),
         title: 'Ahorros - GastuApp',
       },
+      // Proyecciones
+      {
+        path: 'proyecciones',
+        loadComponent: () =>
+          import('./features/proyecciones/proyecciones.component').then(
+            (m) => m.ProyeccionesComponent,
+          ),
+        title: 'Proyecciones - GastuApp',
+      },
       // Planificaciones (Presupuestos)
       {
         path: 'planificaciones',

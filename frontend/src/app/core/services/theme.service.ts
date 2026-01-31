@@ -20,6 +20,7 @@ import {
   ExpensePreset,
   SavingsPreset,
   PlanificacionPreset,
+  ProyeccionPreset,
   DefaultPreset,
 } from '../config/theme-presets';
 
@@ -69,6 +70,18 @@ export class ThemeService {
   setPlanificacionTheme(): void {
     this.primeng.theme.set({
       preset: PlanificacionPreset,
+      options: {
+        darkModeSelector: '.dark-mode',
+      },
+    });
+  }
+
+  /**
+   * Activa el tema azul para el módulo de Proyecciones
+   */
+  setProyeccionTheme(): void {
+    this.primeng.theme.set({
+      preset: ProyeccionPreset,
       options: {
         darkModeSelector: '.dark-mode',
       },

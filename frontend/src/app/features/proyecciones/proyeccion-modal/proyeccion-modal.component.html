@@ -1,0 +1,127 @@
+<p-dialog
+  [header]="proyeccionToEdit ? 'Editar Proyección' : 'Nueva Proyección'"
+  [(visible)]="visible"
+  [modal]="true"
+  [style]="{ width: '450px' }"
+  styleClass="p-fluid"
+  [appendTo]="'body'"
+  [dismissableMask]="true"
+>
+  <ng-template #content>
+    <form [formGroup]="form" class="flex flex-column gap-4">
+      <!-- Nombre -->
+      <div class="field">
+        <label for="nombre" class="font-bold">Nombre</label>
+        <input pInputText id="nombre" formControlName="nombre" placeholder="Ej. Netflix, Salario" />
+        @if (form.get('nombre')?.invalid && form.get('nombre')?.touched) {
+          <small class="p-error block">Nombre requerido</small>
+        }
+      </div>
+
+      <!-- Monto -->
+      <div class="field">
+        <label for="monto" class="font-bold">Monto</label>
+        <p-inputNumber
+          id="monto"
+          formControlName="monto"
+          mode="currency"
+          currency="COP"
+          locale="es-CO"
+          placeholder="$ 0"
+          [min]="0"
+          [allowEmpty]="true"
+        ></p-inputNumber>
+        @if (form.get('monto')?.invalid && form.get('monto')?.touched) {
+          <small class="p-error block">Monto requerido</small>
+        }
+      </div>
+
+      <!-- Tipo -->
+      <div class="field">
+        <label for="tipo" class="font-bold">Tipo</label>
+        <p-select
+          id="tipo"
+          [options]="tipos"
+          formControlName="tipo"
+          optionLabel="label"
+          optionValue="value"
+        ></p-select>
+      </div>
+
+      <!-- Frecuencia -->
+      <div class="field">
+        <label for="frecuencia" class="font-bold">Frecuencia</label>
+        <p-select
+          id="frecuencia"
+          [options]="frecuencias"
+          formControlName="frecuencia"
+          optionLabel="label"
+          optionValue="value"
+        ></p-select>
+      </div>
+
+      <!-- Categoría -->
+      <div class="field">
+        <label for="categoria" class="font-bold">Categoría</label>
+        <p-select
+          id="categoria"
+          [options]="categoriasFiltradas()"
+          formControlName="categoriaId"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Seleccione una categoría"
+          [filter]="true"
+          filterBy="label"
+          appendTo="body"
+        >
+          <ng-template pTemplate="selectedItem" let-selectedOption>
+            <div class="flex align-items-center gap-2" *ngIf="selectedOption">
+              <span>{{ selectedOption.icon }}</span>
+              <span>{{ selectedOption.label }}</span>
+            </div>
+          </ng-template>
+          <ng-template let-cat pTemplate="item">
+            <div class="flex align-items-center gap-2">
+              <span>{{ cat.icon }}</span>
+              <span>{{ cat.label }}</span>
+            </div>
+          </ng-template>
+        </p-select>
+        @if (form.get('categoriaId')?.invalid && form.get('categoriaId')?.touched) {
+          <small class="p-error block">Categoría requerida</small>
+        }
+      </div>
+
+      <!-- Fecha Inicio -->
+      <div class="field">
+        <label for="fechaInicio" class="font-bold">Fecha Inicio</label>
+        <p-datePicker
+          id="fechaInicio"
+          formControlName="fechaInicio"
+          dateFormat="dd/mm/yy"
+          [showIcon]="true"
+          appendTo="body"
+        ></p-datePicker>
+      </div>
+    </form>
+  </ng-template>
+
+  <ng-template #footer>
+    <button
+      pButton
+      label="Cancelar"
+      icon="pi pi-times"
+      class="p-button-text"
+      (click)="cerrar()"
+    ></button>
+    <button
+      pButton
+      label="Guardar"
+      icon="pi pi-check"
+      class="p-button-primary"
+      [loading]="loading()"
+      [disabled]="form.invalid"
+      (click)="guardar()"
+    ></button>
+  </ng-template>
+</p-dialog>

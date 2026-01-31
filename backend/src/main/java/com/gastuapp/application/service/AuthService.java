@@ -4,7 +4,6 @@ import com.gastuapp.application.dto.request.LoginRequestDTO;
 import com.gastuapp.application.dto.request.RegistroRequestDTO;
 import com.gastuapp.application.dto.response.AuthResponseDTO;
 import com.gastuapp.application.dto.response.UsuarioResponseDTO;
-import com.gastuapp.application.mapper.UsuarioMapper;
 import com.gastuapp.domain.model.usuario.Usuario;
 import com.gastuapp.domain.port.usuario.UsuarioRepositoryPort;
 import com.gastuapp.infrastructure.security.jwt.JwtUtils;
