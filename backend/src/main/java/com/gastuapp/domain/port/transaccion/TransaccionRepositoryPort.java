@@ -24,80 +24,85 @@ import java.util.Optional;
  */
 public interface TransaccionRepositoryPort {
 
-    /**
-     * Guarda una transacción (create o update).
-     */
-    Transaccion save(Transaccion transaccion);
+        /**
+         * Guarda una transacción (create o update).
+         */
+        Transaccion save(Transaccion transaccion);
 
-    /**
-     * Busca una transacción por ID.
-     */
-    Optional<Transaccion> findById(Long id);
+        /**
+         * Busca una transacción por ID.
+         */
+        Optional<Transaccion> findById(Long id);
 
-    /**
-     * Lista todas las transacciones de un usuario.
-     */
-    List<Transaccion> findByUsuarioId(Long usuarioId);
+        /**
+         * Lista todas las transacciones de un usuario.
+         */
+        List<Transaccion> findByUsuarioId(Long usuarioId);
 
-    /**
-     * Lista transacciones por usuario y tipo.
-     */
-    List<Transaccion> findByUsuarioIdAndTipo(Long usuarioId, TipoTransaccion tipo);
+        /**
+         * Lista transacciones por usuario y tipo.
+         */
+        List<Transaccion> findByUsuarioIdAndTipo(Long usuarioId, TipoTransaccion tipo);
 
-    /**
-     * Lista transacciones por usuario y categoría.
-     */
-    List<Transaccion> findByUsuarioIdAndCategoriaId(Long usuarioId, Long categoriaId);
+        /**
+         * Lista transacciones por usuario y categoría.
+         */
+        List<Transaccion> findByUsuarioIdAndCategoriaId(Long usuarioId, Long categoriaId);
 
-    /**
-     * Lista transacciones por usuario y rango de fechas.
-     */
-    List<Transaccion> findByUsuarioIdAndFechaBetween(
-            Long usuarioId,
-            LocalDate fechaInicio,
-            LocalDate fechaFin);
+        /**
+         * Lista transacciones por usuario y rango de fechas.
+         */
+        List<Transaccion> findByUsuarioIdAndFechaBetween(
+                        Long usuarioId,
+                        LocalDate fechaInicio,
+                        LocalDate fechaFin);
 
-    /**
-     * Calcula la suma de transacciones por usuario y tipo.
-     * Usado para cálculo de balance.
-     */
-    BigDecimal sumByUsuarioIdAndTipo(Long usuarioId, TipoTransaccion tipo);
+        /**
+         * Calcula la suma de transacciones por usuario y tipo.
+         * Usado para cálculo de balance.
+         */
+        BigDecimal sumByUsuarioIdAndTipo(Long usuarioId, TipoTransaccion tipo);
 
-    /**
-     * Calcula el balance de un usuario.
-     * Balance = Ingresos - Egresos
-     */
-    BigDecimal calcularBalance(Long usuarioId);
+        /**
+         * Calcula el balance de un usuario.
+         * Balance = Ingresos - Egresos
+         */
+        BigDecimal calcularBalance(Long usuarioId);
 
-    /**
-     * Elimina una transacción por ID.
-     */
-    void deleteById(Long id);
+        /**
+         * Elimina una transacción por ID.
+         */
+        void deleteById(Long id);
 
-    /**
-     * Cuenta transacciones por usuario.
-     *
-     * Query generada:
-     * SELECT COUNT(*) FROM transacciones WHERE usuario_id = ?
-     *
-     * @param usuarioId ID del usuario
-     * @return Cantidad de transacciones
-     */
-    long countByUsuarioId(Long usuarioId);
+        /**
+         * Cuenta transacciones por usuario.
+         *
+         * Query generada:
+         * SELECT COUNT(*) FROM transacciones WHERE usuario_id = ?
+         *
+         * @param usuarioId ID del usuario
+         * @return Cantidad de transacciones
+         */
+        long countByUsuarioId(Long usuarioId);
 
-    /**
-     * Lista transacciones por usuario, categoría y rango de fechas.
-     * Usado para calcular montos gastados en presupuestos.
-     *
-     * @param usuarioId   ID del usuario
-     * @param categoriaId ID de la categoría
-     * @param fechaInicio Fecha inicio del período (inclusive)
-     * @param fechaFin    Fecha fin del período (inclusive)
-     * @return Lista de transacciones en el período y categoría
-     */
-    List<Transaccion> findByUsuarioIdAndCategoriaIdAndFechaBetween(
-            Long usuarioId, 
-            Long categoriaId, 
-            LocalDate fechaInicio, 
-            LocalDate fechaFin);
+        /**
+         * Lista transacciones por usuario, categoría y rango de fechas.
+         * Usado para calcular montos gastados en presupuestos.
+         *
+         * @param usuarioId   ID del usuario
+         * @param categoriaId ID de la categoría
+         * @param fechaInicio Fecha inicio del período (inclusive)
+         * @param fechaFin    Fecha fin del período (inclusive)
+         * @return Lista de transacciones en el período y categoría
+         */
+        List<Transaccion> findByUsuarioIdAndCategoriaIdAndFechaBetween(
+                        Long usuarioId,
+                        Long categoriaId,
+                        LocalDate fechaInicio,
+                        LocalDate fechaFin);
+
+        /**
+         * Lista transacciones asociadas a una proyección.
+         */
+        List<Transaccion> findByProyeccionId(Long proyeccionId);
 }

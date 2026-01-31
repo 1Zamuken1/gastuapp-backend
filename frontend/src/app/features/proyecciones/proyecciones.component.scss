@@ -37,7 +37,7 @@
     color: var(--p-primary-color);
     font-size: 1.75rem;
   }
-  
+
   .page-subtitle {
     margin: 0.25rem 0 0 0;
     color: var(--text-secondary);
@@ -55,9 +55,29 @@
   flex-direction: column;
   align-items: flex-end;
   padding: var(--spacing-sm) var(--spacing-md);
-  background: color-mix(in srgb, var(--p-primary-color) 10%, transparent);
+  background: var(--surface-card);
   border-radius: var(--border-radius-md);
-  border: 1px solid var(--p-primary-color);
+  border: 1px solid var(--surface-border);
+  min-width: 160px;
+
+  // Dark theme friendly colors - softer, less saturated
+  &.total-ingresos {
+    background: rgba(74, 222, 128, 0.08); // green-400 at 8% - softer
+    border-color: #4ade80; // green-400 - lighter green
+    
+    .total-value {
+      color: #86efac !important; // green-300 - very light green, easy on eyes
+    }
+  }
+
+  &.total-egresos {
+    background: rgba(251, 146, 60, 0.08); // orange-400 at 8% - softer
+    border-color: #fb923c; // orange-400 - lighter orange
+    
+    .total-value {
+      color: #fdba74 !important; // orange-300 - very light orange, easy on eyes
+    }
+  }
 }
 
 .total-label {
@@ -86,15 +106,50 @@
 // ==================== CARDS ====================
 .category-card {
   height: 100%;
-  
+
   .card-content {
     background: var(--surface-ground);
-    
+
     &:hover {
       transform: translateY(-2px);
       box-shadow: var(--shadow-lg) !important;
       border-color: var(--p-primary-color) !important;
     }
+  }
+
+  // Enhanced action buttons - larger and more visible
+  .card-action-btn {
+    width: 36px !important;
+    height: 36px !important;
+    background: var(--surface-200) !important;
+    border: 1px solid var(--surface-300) !important;
+    transition: all 0.2s ease !important;
+
+    .pi {
+      font-size: 1rem !important;
+    }
+
+    &:hover {
+      transform: scale(1.1);
+      background: var(--p-primary-color) !important;
+      border-color: var(--p-primary-color) !important;
+      color: white !important;
+    }
+  }
+
+  .card-action-btn.btn-execute:hover {
+    background: #3b82f6 !important;
+    border-color: #3b82f6 !important;
+  }
+
+  .card-action-btn.btn-edit:hover {
+    background: #6b7280 !important;
+    border-color: #6b7280 !important;
+  }
+
+  .card-action-btn.btn-delete:hover {
+    background: #ef4444 !important;
+    border-color: #ef4444 !important;
   }
 }
 

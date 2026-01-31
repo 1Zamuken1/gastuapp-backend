@@ -16,7 +16,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/proyecciones")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "*") // Necesario para CORS hasta que SecurityConfig funcione globalmente
 public class ProyeccionController {
 
     private final ProyeccionService proyeccionService;
@@ -70,5 +70,13 @@ public class ProyeccionController {
         Long usuarioId = getUsuarioId(request);
         TransaccionResponseDTO transaccion = proyeccionService.ejecutarProyeccion(id, usuarioId);
         return ResponseEntity.ok(transaccion);
+    }
+
+    @GetMapping("/{id}/historial")
+    public ResponseEntity<List<TransaccionResponseDTO>> getHistorial(
+            @PathVariable Long id,
+            HttpServletRequest request) {
+        Long usuarioId = getUsuarioId(request);
+        return ResponseEntity.ok(proyeccionService.listarHistorial(id, usuarioId));
     }
 }

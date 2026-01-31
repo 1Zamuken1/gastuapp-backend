@@ -2,12 +2,98 @@
 <html lang="es" class="dark-mode">
   <head>
     <meta charset="utf-8" />
-    <title>Frontend</title>
+    <title>GastuApp - Control de Finanzas Personales</title>
     <base href="/" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- SEO Meta Tags -->
+    <meta
+      name="description"
+      content="GastuApp es tu asistente de finanzas personales. Controla ingresos, egresos, ahorros y proyecciones financieras de manera fácil e intuitiva."
+    />
+    <meta
+      name="keywords"
+      content="finanzas personales, control gastos, ingresos, egresos, ahorros, presupuesto, proyecciones financieras, app finanzas"
+    />
+    <meta name="author" content="Juan Esteban Barrios Portela" />
+    <meta name="robots" content="index, follow" />
+
+    <!-- Viewport & Mobile -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="theme-color" content="#18181b" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="GastuApp" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="GastuApp - Control de Finanzas Personales" />
+    <meta
+      property="og:description"
+      content="Controla tus ingresos, egresos, ahorros y proyecciones financieras de manera fácil e intuitiva."
+    />
+    <meta property="og:image" content="/assets/og-image.png" />
+    <meta property="og:locale" content="es_CO" />
+    <meta property="og:site_name" content="GastuApp" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="GastuApp - Control de Finanzas Personales" />
+    <meta
+      name="twitter:description"
+      content="Tu asistente de finanzas personales. Fácil, intuitivo y elegante."
+    />
+    <meta name="twitter:image" content="/assets/og-image.png" />
+
+    <!-- Favicon & Icons -->
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+
+    <!-- Performance: Preconnect to external resources -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <!-- Structured Data (JSON-LD) -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "GastuApp",
+        "description": "Control de finanzas personales: ingresos, egresos, ahorros y proyecciones.",
+        "applicationCategory": "FinanceApplication",
+        "operatingSystem": "Web",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "COP"
+        }
+      }
+    </script>
   </head>
   <body>
-    <app-root></app-root>
+    <!-- Loading Placeholder for better perceived performance -->
+    <app-root>
+      <div
+        style="
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          height: 100vh;
+          background: #18181b;
+        "
+      >
+        <div style="text-align: center; color: #a1a1aa">
+          <div style="font-size: 2rem; margin-bottom: 1rem">🦉</div>
+          <div style="font-size: 0.875rem">Cargando GastuApp...</div>
+        </div>
+      </div>
+    </app-root>
+    <noscript>
+      <div style="padding: 2rem; text-align: center; background: #18181b; color: #f4f4f5">
+        <h1>GastuApp requiere JavaScript</h1>
+        <p>Por favor, habilita JavaScript en tu navegador para usar esta aplicación.</p>
+      </div>
+    </noscript>
   </body>
 </html>

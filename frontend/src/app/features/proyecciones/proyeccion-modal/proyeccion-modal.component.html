@@ -9,12 +9,39 @@
 >
   <ng-template #content>
     <form [formGroup]="form" class="flex flex-column gap-4">
-      <!-- Nombre -->
+      <!-- Tipo -->
       <div class="field">
-        <label for="nombre" class="font-bold">Nombre</label>
-        <input pInputText id="nombre" formControlName="nombre" placeholder="Ej. Netflix, Salario" />
-        @if (form.get('nombre')?.invalid && form.get('nombre')?.touched) {
-          <small class="p-error block">Nombre requerido</small>
+        <label for="tipo" class="font-bold">Tipo</label>
+        <p-select
+          id="tipo"
+          [options]="tipos"
+          formControlName="tipo"
+          optionLabel="label"
+          optionValue="value"
+        ></p-select>
+      </div>
+
+      <!-- Categoría (click to open modal) -->
+      <div class="field">
+        <label for="categoria" class="font-bold">Categoría</label>
+        <button
+          type="button"
+          pButton
+          class="p-button-outlined w-full text-left justify-content-start"
+          [class.p-button-success]="form.get('tipo')?.value === 'INGRESO'"
+          [class.p-button-warning]="form.get('tipo')?.value === 'EGRESO'"
+          (click)="abrirSelectorCategoria()"
+        >
+          @if (selectedCategory()) {
+            <span class="mr-2">{{ selectedCategory()?.icono }}</span>
+            <span>{{ selectedCategory()?.nombre }}</span>
+          } @else {
+            <i class="pi pi-folder-open mr-2"></i>
+            <span class="text-500">Seleccionar categoría...</span>
+          }
+        </button>
+        @if (form.get('categoriaId')?.invalid && form.get('categoriaId')?.touched) {
+          <small class="p-error block">Categoría requerida</small>
         }
       </div>
 
@@ -36,18 +63,6 @@
         }
       </div>
 
-      <!-- Tipo -->
-      <div class="field">
-        <label for="tipo" class="font-bold">Tipo</label>
-        <p-select
-          id="tipo"
-          [options]="tipos"
-          formControlName="tipo"
-          optionLabel="label"
-          optionValue="value"
-        ></p-select>
-      </div>
-
       <!-- Frecuencia -->
       <div class="field">
         <label for="frecuencia" class="font-bold">Frecuencia</label>
@@ -58,38 +73,6 @@
           optionLabel="label"
           optionValue="value"
         ></p-select>
-      </div>
-
-      <!-- Categoría -->
-      <div class="field">
-        <label for="categoria" class="font-bold">Categoría</label>
-        <p-select
-          id="categoria"
-          [options]="categoriasFiltradas()"
-          formControlName="categoriaId"
-          optionLabel="label"
-          optionValue="value"
-          placeholder="Seleccione una categoría"
-          [filter]="true"
-          filterBy="label"
-          appendTo="body"
-        >
-          <ng-template pTemplate="selectedItem" let-selectedOption>
-            <div class="flex align-items-center gap-2" *ngIf="selectedOption">
-              <span>{{ selectedOption.icon }}</span>
-              <span>{{ selectedOption.label }}</span>
-            </div>
-          </ng-template>
-          <ng-template let-cat pTemplate="item">
-            <div class="flex align-items-center gap-2">
-              <span>{{ cat.icon }}</span>
-              <span>{{ cat.label }}</span>
-            </div>
-          </ng-template>
-        </p-select>
-        @if (form.get('categoriaId')?.invalid && form.get('categoriaId')?.touched) {
-          <small class="p-error block">Categoría requerida</small>
-        }
       </div>
 
       <!-- Fecha Inicio -->
@@ -125,3 +108,10 @@
     ></button>
   </ng-template>
 </p-dialog>
+
+<!-- Category Selector Modal -->
+<app-category-selector-modal
+  [(visible)]="categorySelectorVisible"
+  [type]="form.get('tipo')?.value"
+  (onSelect)="onCategoriaSeleccionada($event)"
+></app-category-selector-modal>

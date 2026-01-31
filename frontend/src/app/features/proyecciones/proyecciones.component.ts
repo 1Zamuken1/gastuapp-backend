@@ -23,6 +23,7 @@ import { ThemeService } from '../../core/services/theme.service';
 
 // Child Components
 import { ProyeccionModalComponent } from './proyeccion-modal/proyeccion-modal.component';
+import { ProyeccionDetalleComponent } from './proyeccion-detalle/proyeccion-detalle.component';
 
 @Component({
   selector: 'app-proyecciones',
@@ -42,6 +43,7 @@ import { ProyeccionModalComponent } from './proyeccion-modal/proyeccion-modal.co
     InputIconModule,
     MenuModule,
     ProyeccionModalComponent,
+    ProyeccionDetalleComponent,
   ],
   templateUrl: './proyecciones.component.html',
   styleUrl: './proyecciones.component.scss',
@@ -64,9 +66,17 @@ export class ProyeccionesComponent implements OnInit, OnDestroy {
     { label: 'Frecuencia', value: 'frecuencia' },
   ];
 
-  // Computed: Total Proyectado (Mensual aprox)
-  totalProyectado = computed(() => {
-    return this.proyecciones().reduce((acc, p) => acc + (p.activo ? p.monto : 0), 0);
+  // Computed: Totales separados por tipo
+  totalIngresosProyectados = computed(() => {
+    return this.proyecciones()
+      .filter((p) => p.activo && p.tipo === 'INGRESO')
+      .reduce((acc, p) => acc + p.monto, 0);
+  });
+
+  totalEgresosProyectados = computed(() => {
+    return this.proyecciones()
+      .filter((p) => p.activo && p.tipo === 'EGRESO')
+      .reduce((acc, p) => acc + p.monto, 0);
   });
 
   // Computed: Filtered & Sorted
@@ -76,7 +86,7 @@ export class ProyeccionesComponent implements OnInit, OnDestroy {
     // Filter by search
     const term = this.searchTerm().toLowerCase();
     if (term) {
-      result = result.filter((p) => p.nombre.toLowerCase().includes(term));
+      result = result.filter((p) => (p.nombreCategoria || '').toLowerCase().includes(term));
     }
 
     // Sort
@@ -85,7 +95,7 @@ export class ProyeccionesComponent implements OnInit, OnDestroy {
       let comparison = 0;
       switch (field) {
         case 'nombre':
-          comparison = a.nombre.localeCompare(b.nombre);
+          comparison = (a.nombreCategoria || '').localeCompare(b.nombreCategoria || '');
           break;
         case 'monto':
           comparison = a.monto - b.monto;
@@ -102,7 +112,9 @@ export class ProyeccionesComponent implements OnInit, OnDestroy {
 
   // Modal states
   mostrarModalCrear = false;
+  mostrarModalDetalle = false;
   proyeccionToEdit: Proyeccion | null = null;
+  proyeccionSeleccionada: Proyeccion | null = null; // Para detalle
 
   // ========= SERVICES =========
   private proyeccionService = inject(ProyeccionService);
@@ -150,6 +162,16 @@ export class ProyeccionesComponent implements OnInit, OnDestroy {
     this.mostrarModalCrear = true;
   }
 
+  verDetalle(proyeccion: Proyeccion, event?: Event): void {
+    if (event) event.stopPropagation();
+    this.proyeccionSeleccionada = proyeccion;
+    this.mostrarModalDetalle = true;
+  }
+
+  onEjecucionRealizada(): void {
+    this.cargarProyecciones();
+  }
+
   editar(proyeccion: Proyeccion, event: Event): void {
     event.stopPropagation();
     this.proyeccionToEdit = proyeccion;
@@ -159,7 +181,7 @@ export class ProyeccionesComponent implements OnInit, OnDestroy {
   eliminar(proyeccion: Proyeccion, event: Event): void {
     event.stopPropagation();
     this.confirmationService.confirm({
-      message: `¿Estás seguro de eliminar la proyección "${proyeccion.nombre}"?`,
+      message: `¿Estás seguro de eliminar la proyección "${proyeccion.nombreCategoria || 'Sin categoría'}"?`,
       header: 'Confirmar Eliminación',
       icon: 'pi pi-exclamation-triangle',
       accept: () => {
@@ -187,7 +209,7 @@ export class ProyeccionesComponent implements OnInit, OnDestroy {
   ejecutar(proyeccion: Proyeccion, event: Event): void {
     event.stopPropagation();
     this.confirmationService.confirm({
-      message: `¿Ejecutar la proyección "${proyeccion.nombre}" y crear la transacción?`,
+      message: `¿Ejecutar la proyección "${proyeccion.nombreCategoria || 'Sin categoría'}" y crear la transacción?`,
       header: 'Confirmar Ejecución',
       icon: 'pi pi-bolt',
       accept: () => {

@@ -7,6 +7,8 @@ import {
   signal,
   computed,
   effect,
+  OnChanges,
+  SimpleChanges,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -27,7 +29,7 @@ import { Categoria, TipoCategoria } from '../../../core/models/categoria.model';
   templateUrl: './category-selector-modal.html',
   styleUrl: './category-selector-modal.scss',
 })
-export class CategorySelectorModal implements OnInit {
+export class CategorySelectorModal implements OnChanges {
   @Input() visible = false;
   @Output() visibleChange = new EventEmitter<boolean>();
 
@@ -41,57 +43,44 @@ export class CategorySelectorModal implements OnInit {
   // Computed: Categories filtered by type (and visual icon override) AND search term
   displayCategories = computed(() => {
     const term = this.searchTerm().toLowerCase().trim();
-    const targetType = this.type;
 
-    // 1. Filtrar por tipo y mapear el ícono visual estandarizado
-    let list = this.allCategories().filter((c) => c.tipo === targetType);
+    // El filtro por tipo ya se hace al cargar desde el backend,
+    // pero filtramos de nuevo por seguridad
+    let list = this.allCategories();
 
-    // 2. Filtrar por búsqueda
+    // Filtro de búsqueda seguro
     if (term) {
-      list = list.filter((c) => c.nombre.toLowerCase().includes(term));
+      list = list.filter((c) => (c.nombre || '').toLowerCase().includes(term));
     }
 
     return list;
   });
 
-  constructor(private categoriaService: CategoriaService) {
-    // Effect to reload if needed? No, we load all compatible on init usually.
-    // Or we could trigger load based on type change?
-    // Let's load ALL available categories on init to be robust.
-  }
+  constructor(private categoriaService: CategoriaService) {}
 
-  ngOnInit(): void {
-    this.loadCategories();
+  ngOnChanges(changes: SimpleChanges): void {
+    // Si cambia el tipo o se abre el modal, recargar categorías
+    if (changes['visible']?.currentValue === true || changes['type']) {
+      // Solo cargar si es visible para evitar cargas innecesarias
+      if (this.visible) {
+        this.loadCategories();
+      }
+    }
   }
 
   loadCategories(): void {
     this.loading.set(true);
-    // Asumimos que existe un método para obtener todas las disponibles
-    // Si no, podríamos listar por tipo separadamente.
-    // Usaremos listarDisponiblesParaUsuario(1) (Hardcoded user for now? Or get auth?).
-    // Better: CategoriaService probably has "listarPorTipo".
-    // Let's use listarPorTipo if dynamic based on current type, OR load all.
-    // To be safe and simple: Fetch ALL types and filter in frontend, or fetch by type?
-    // Let's fetch by type to avoid overfetching.
-
-    // Actually, "listarDisponiblesParaUsuario" brings everything.
-    // Let's assuming hardcoded user ID 1 for MVP context or similar.
-    // Re-checking CategoriaService: listarDisponiblesParaUsuario(usuarioId).
-    // I should get the user ID from AuthService? Or just hardcode 1 for this context as seen in controllers.
-    // Controller method "obtenerUsuarioIdAutenticado".
-    // Service method "listarDisponiblesParaUsuario(usuarioId)".
-    // I'll stick to a robust approach:
-    // If AuthService is available, use it. If not, maybe pass UserId as Input?
-    // Or assume the service handles 1L if not provided? No.
-    // I'll use 1L for now, or AuthService if I can find it.
-
-    // Load categories by type
+    // Cargar categorías según el tipo actual
     this.categoriaService.listarPorTipo(this.type).subscribe({
       next: (cats: Categoria[]) => {
         this.allCategories.set(cats);
         this.loading.set(false);
       },
-      error: () => this.loading.set(false),
+      error: (err) => {
+        console.error('Error loading categories', err);
+        this.allCategories.set([]); // Evitar estado inconsistente
+        this.loading.set(false);
+      },
     });
   }
 
@@ -108,7 +97,6 @@ export class CategorySelectorModal implements OnInit {
 
   // Visual Helper for Icon
   getIconForType(): string {
-    // Nuevos íconos: Visuales y elegantes (Cartera vs Bolsa de compras)
     return this.type === 'INGRESO' ? 'pi pi-wallet' : 'pi pi-shopping-bag';
   }
 

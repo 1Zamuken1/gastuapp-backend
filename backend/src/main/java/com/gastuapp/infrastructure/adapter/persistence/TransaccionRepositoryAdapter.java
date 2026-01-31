@@ -232,12 +232,13 @@ public class TransaccionRepositoryAdapter implements TransaccionRepositoryPort {
                 .collect(Collectors.toList());
     }
 
-    // ==================== MAPEO DE ENUMS ====================
+    @Override
+    public List<Transaccion> findByProyeccionId(Long proyeccionId) {
+        return jpaRepository.findByProyeccionId(proyeccionId).stream()
+                .map(mapper::toDomain)
+                .collect(Collectors.toList());
+    }
 
-    /**
-     * Mapea TipoTransaccion (Domain) a TipoTransaccionEnum (Entity).
-     * Método auxiliar para conversiones.
-     */
     private TransaccionEntity.TipoTransaccionEnum mapTipoToEntity(TipoTransaccion tipo) {
         if (tipo == null) {
             return null;

@@ -30,7 +30,6 @@ import java.time.LocalDate;
 public class Proyeccion {
 
     private Long id;
-    private String nombre;
     private BigDecimal monto;
     private TipoTransaccion tipo;
     private Long categoriaId;
@@ -44,9 +43,6 @@ public class Proyeccion {
      * Valida reglas de negocio básicas.
      */
     public void validar() {
-        if (nombre == null || nombre.trim().isEmpty()) {
-            throw new IllegalArgumentException("El nombre es obligatorio");
-        }
         if (monto == null || monto.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("El monto debe ser mayor a 0");
         }

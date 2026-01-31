@@ -188,6 +188,11 @@
   &.nav-item-planificaciones {
     @include nav-item-color(var(--surface-600), #a855f7);
   }
+
+  // PROYECCIONES (Azul)
+  &.nav-item-proyecciones {
+    @include nav-item-color(var(--surface-600), #3b82f6);
+  }
 }
 
 // ==================== CONTENIDO PRINCIPAL ====================

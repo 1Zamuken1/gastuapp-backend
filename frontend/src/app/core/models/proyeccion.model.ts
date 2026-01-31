@@ -10,7 +10,6 @@ export type Frecuencia =
 
 export interface Proyeccion {
   id?: number;
-  nombre: string;
   monto: number;
   tipo: TipoTransaccion;
   categoriaId: number;

@@ -20,7 +20,6 @@ public class ProyeccionMapper {
             return null;
 
         Proyeccion domain = new Proyeccion();
-        domain.setNombre(dto.getNombre());
         domain.setMonto(dto.getMonto());
         domain.setTipo(dto.getTipo());
         domain.setCategoriaId(dto.getCategoriaId());
@@ -38,7 +37,6 @@ public class ProyeccionMapper {
 
         ProyeccionResponseDTO dto = new ProyeccionResponseDTO();
         dto.setId(domain.getId());
-        dto.setNombre(domain.getNombre());
         dto.setMonto(domain.getMonto());
         dto.setTipo(domain.getTipo());
         dto.setCategoriaId(domain.getCategoriaId());

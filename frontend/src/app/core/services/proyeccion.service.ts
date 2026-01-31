@@ -44,4 +44,12 @@ export class ProyeccionService {
   ejecutarProyeccion(id: number): Observable<any> {
     return this.http.post(`${this.apiUrl}/${id}/ejecutar`, {});
   }
+
+  ejecutar(id: number): Observable<any> {
+    return this.ejecutarProyeccion(id);
+  }
+
+  getHistorial(id: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/${id}/historial`);
+  }
 }

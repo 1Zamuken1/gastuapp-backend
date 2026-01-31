@@ -10,17 +10,17 @@ public class ProyeccionEntityMapper {
     public Proyeccion toDomain(ProyeccionEntity entity) {
         if (entity == null)
             return null;
-        return new Proyeccion(
-                entity.getId(),
-                entity.getNombre(),
-                entity.getMonto(),
-                entity.getTipo(),
-                entity.getCategoriaId(),
-                entity.getUsuarioId(),
-                entity.getFrecuencia(),
-                entity.getFechaInicio(),
-                entity.getUltimaEjecucion(),
-                entity.getActivo());
+        Proyeccion domain = new Proyeccion();
+        domain.setId(entity.getId());
+        domain.setMonto(entity.getMonto());
+        domain.setTipo(entity.getTipo());
+        domain.setCategoriaId(entity.getCategoriaId());
+        domain.setUsuarioId(entity.getUsuarioId());
+        domain.setFrecuencia(entity.getFrecuencia());
+        domain.setFechaInicio(entity.getFechaInicio());
+        domain.setUltimaEjecucion(entity.getUltimaEjecucion());
+        domain.setActivo(entity.getActivo());
+        return domain;
     }
 
     public ProyeccionEntity toEntity(Proyeccion domain) {
@@ -28,7 +28,6 @@ public class ProyeccionEntityMapper {
             return null;
         ProyeccionEntity entity = new ProyeccionEntity();
         entity.setId(domain.getId());
-        entity.setNombre(domain.getNombre());
         entity.setMonto(domain.getMonto());
         entity.setTipo(domain.getTipo());
         entity.setCategoriaId(domain.getCategoriaId());

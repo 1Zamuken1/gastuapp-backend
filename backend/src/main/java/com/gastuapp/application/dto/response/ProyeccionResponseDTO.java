@@ -14,7 +14,6 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class ProyeccionResponseDTO {
     private Long id;
-    private String nombre;
     private BigDecimal monto;
     private TipoTransaccion tipo;
     private Long categoriaId;

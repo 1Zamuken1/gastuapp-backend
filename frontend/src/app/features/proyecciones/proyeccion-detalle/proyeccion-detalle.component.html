@@ -1,0 +1,159 @@
+<p-dialog
+  [header]="'Detalle de Proyección'"
+  [(visible)]="visible"
+  [modal]="true"
+  [style]="{ width: '800px' }"
+  styleClass="p-fluid proyeccion-detalle-dialog"
+  [appendTo]="'body'"
+  [dismissableMask]="true"
+  (onHide)="cerrar()"
+>
+  <div class="flex flex-column gap-4" *ngIf="proyeccion">
+    <!-- Header Card with Blue Theme -->
+    <div
+      class="surface-card p-4 border-round-xl shadow-1"
+      style="
+        background: linear-gradient(
+          135deg,
+          rgba(59, 130, 246, 0.1) 0%,
+          rgba(96, 165, 250, 0.05) 100%
+        );
+        border-left: 4px solid #3b82f6;
+      "
+    >
+      <div class="flex justify-content-between align-items-start flex-wrap gap-3">
+        <!-- Left: Info -->
+        <div class="flex align-items-center gap-3">
+          <!-- Category Icon Circle -->
+          <div
+            class="flex align-items-center justify-content-center border-circle"
+            style="width: 56px; height: 56px; background-color: rgba(59, 130, 246, 0.15)"
+          >
+            <span style="font-size: 1.75rem">{{ proyeccion.iconoCategoria || '📋' }}</span>
+          </div>
+
+          <div>
+            <h2 class="m-0 text-900 font-semibold">
+              {{ proyeccion.nombreCategoria || 'Sin categoría' }}
+            </h2>
+            <div class="flex flex-wrap gap-3 mt-2">
+              <span
+                class="px-2 py-1 border-round-lg text-sm font-medium"
+                [ngClass]="{
+                  'bg-green-100 text-green-700': proyeccion.tipo === 'INGRESO',
+                  'bg-orange-100 text-orange-700': proyeccion.tipo === 'EGRESO',
+                }"
+              >
+                <i class="pi pi-tag mr-1"></i
+                >{{ proyeccion.tipo === 'INGRESO' ? 'Ingreso' : 'Egreso' }}
+              </span>
+              <span class="text-600 flex align-items-center">
+                <i class="pi pi-calendar mr-1"></i>{{ proyeccion.frecuencia }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Amount & Action -->
+        <div class="flex flex-column align-items-end gap-2">
+          <div
+            class="text-2xl font-bold"
+            [ngClass]="{
+              'text-green-600': proyeccion.tipo === 'INGRESO',
+              'text-orange-600': proyeccion.tipo === 'EGRESO',
+            }"
+          >
+            {{ proyeccion.monto | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
+          </div>
+          <button
+            pButton
+            label="Ejecutar Ahora"
+            icon="pi pi-play"
+            class="p-button-rounded"
+            style="background-color: #3b82f6"
+            (click)="confirmarEjecucion()"
+            [loading]="executing()"
+          ></button>
+        </div>
+      </div>
+
+      <!-- Next execution info -->
+      <div
+        class="mt-3 pt-3 border-top-1 surface-border flex gap-4 text-sm text-600"
+        *ngIf="proyeccion.proximoCobro || proyeccion.ultimaEjecucion"
+      >
+        <span *ngIf="proyeccion.proximoCobro">
+          <i class="pi pi-clock mr-1"></i>
+          Próximo: {{ proyeccion.proximoCobro | date: 'dd/MM/yyyy' }}
+        </span>
+        <span *ngIf="proyeccion.ultimaEjecucion">
+          <i class="pi pi-check-circle mr-1 text-green-500"></i>
+          Última: {{ proyeccion.ultimaEjecucion | date: 'dd/MM/yyyy' }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Historial Section -->
+    <div class="surface-card border-round-xl p-3">
+      <h3 class="flex align-items-center gap-2 mt-0 mb-3 text-700">
+        <i class="pi pi-history text-primary"></i> Historial de Ejecuciones
+      </h3>
+
+      <p-table
+        [value]="historial()"
+        [loading]="loadingHistorial()"
+        [rows]="5"
+        [paginator]="historial().length > 5"
+        [sortField]="'fecha'"
+        [sortOrder]="-1"
+        styleClass="p-datatable-sm p-datatable-striped"
+      >
+        <ng-template pTemplate="header">
+          <tr>
+            <th style="width: 25%" pSortableColumn="fecha">
+              Fecha <p-sortIcon field="fecha"></p-sortIcon>
+            </th>
+            <th style="width: 35%">Descripción</th>
+            <th style="width: 20%" pSortableColumn="monto">
+              Monto <p-sortIcon field="monto"></p-sortIcon>
+            </th>
+            <th style="width: 20%">Categoría</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-tx>
+          <tr>
+            <td>{{ tx.fecha | date: 'dd/MM/yyyy' }}</td>
+            <td class="text-overflow-ellipsis overflow-hidden white-space-nowrap">
+              {{ tx.descripcion }}
+            </td>
+            <td
+              class="font-medium"
+              [ngClass]="{
+                'text-green-600': tx.tipo === 'INGRESO',
+                'text-orange-600': tx.tipo === 'EGRESO',
+              }"
+            >
+              {{ tx.monto | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
+            </td>
+            <td>
+              <span class="flex align-items-center gap-2">
+                <span>{{ tx.categoriaIcono }}</span>
+                <span>{{ tx.categoriaNombre }}</span>
+              </span>
+            </td>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="4" class="text-center p-4 text-500">
+              <i class="pi pi-inbox text-4xl mb-2 text-300 block"></i>
+              No hay ejecuciones registradas para esta proyección.
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+  </div>
+</p-dialog>
+
+<p-confirmDialog [style]="{ width: '450px' }"></p-confirmDialog>

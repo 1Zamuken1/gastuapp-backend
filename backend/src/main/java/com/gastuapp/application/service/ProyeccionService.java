@@ -6,6 +6,7 @@ import com.gastuapp.application.dto.response.ProyeccionResponseDTO;
 import com.gastuapp.application.dto.response.TransaccionResponseDTO;
 import com.gastuapp.application.mapper.ProyeccionMapper;
 import com.gastuapp.domain.model.proyeccion.Proyeccion;
+import com.gastuapp.domain.port.categoria.CategoriaRepositoryPort;
 import com.gastuapp.domain.port.proyeccion.ProyeccionRepositoryPort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,7 +20,7 @@ import java.util.stream.Collectors;
  *
  * FLUJO DE DATOS:
  * - RECIBE: DTOs desde Controller
- * - USA: ProyeccionRepositoryPort, TransaccionService
+ * - USA: ProyeccionRepositoryPort, TransaccionService, CategoriaRepositoryPort
  *
  * RESPONSABILIDAD:
  * Gestionar ciclo de vida de proyecciones y su ejecución manual.
@@ -33,6 +34,7 @@ import java.util.stream.Collectors;
 public class ProyeccionService {
 
     private final ProyeccionRepositoryPort proyeccionRepository;
+    private final CategoriaRepositoryPort categoriaRepository;
     private final ProyeccionMapper proyeccionMapper;
 
     // Inyección circular potencial evitada si TransaccionService no depende de
@@ -42,9 +44,11 @@ public class ProyeccionService {
 
     public ProyeccionService(
             ProyeccionRepositoryPort proyeccionRepository,
+            CategoriaRepositoryPort categoriaRepository,
             ProyeccionMapper proyeccionMapper,
             TransaccionService transaccionService) {
         this.proyeccionRepository = proyeccionRepository;
+        this.categoriaRepository = categoriaRepository;
         this.proyeccionMapper = proyeccionMapper;
         this.transaccionService = transaccionService;
     }
@@ -84,7 +88,6 @@ public class ProyeccionService {
         }
 
         // Actualizar campos
-        proyeccion.setNombre(dto.getNombre());
         proyeccion.setMonto(dto.getMonto());
         proyeccion.setTipo(dto.getTipo());
         proyeccion.setCategoriaId(dto.getCategoriaId());
@@ -113,13 +116,19 @@ public class ProyeccionService {
             throw new IllegalArgumentException("No se puede ejecutar una proyección inactiva");
         }
 
-        // 2. Crear DTO para la Transacción
+        // 2. Obtener nombre de categoría para la descripción
+        String nombreCategoria = categoriaRepository.findById(proyeccion.getCategoriaId())
+                .map(cat -> cat.getNombre())
+                .orElse("Sin categoría");
+
+        // 3. Crear DTO para la Transacción
         TransaccionRequestDTO transaccionDTO = new TransaccionRequestDTO();
         transaccionDTO.setMonto(proyeccion.getMonto());
         transaccionDTO.setTipo(proyeccion.getTipo());
-        transaccionDTO.setDescripcion("Ejecución de proyección: " + proyeccion.getNombre());
+        transaccionDTO.setDescripcion("Ejecución de proyección: " + nombreCategoria);
         transaccionDTO.setFecha(LocalDate.now());
         transaccionDTO.setCategoriaId(proyeccion.getCategoriaId());
+        transaccionDTO.setProyeccionId(proyeccion.getId());
 
         // 3. Crear Transacción usando el servicio existente (garantiza validaciones e
         // integridad)
@@ -130,5 +139,16 @@ public class ProyeccionService {
         proyeccionRepository.save(proyeccion);
 
         return nuevaTransaccion;
+    }
+
+    public List<TransaccionResponseDTO> listarHistorial(Long id, Long usuarioId) {
+        Proyeccion proyeccion = proyeccionRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Proyección no encontrada"));
+
+        if (!proyeccion.getUsuarioId().equals(usuarioId)) {
+            throw new IllegalArgumentException("No tiene permisos para ver el historial de esta proyección");
+        }
+
+        return transaccionService.listarPorProyeccion(id, usuarioId);
     }
 }

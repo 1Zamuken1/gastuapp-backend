@@ -48,7 +48,7 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
                 // Deshabilitar CSRF (API REST stateless)
-                .csrf(csrf -> csrf.disable())
+                .csrf(org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer::disable)
 
                 // Sesiones STATELESS
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -59,6 +59,9 @@ public class SecurityConfig {
                         .requestMatchers("/auth/**", "/api/auth/**").permitAll()
                         .requestMatchers("/health", "/api/health").permitAll()
                         .requestMatchers("/categorias/**", "/api/categorias/**").permitAll()
+
+                        // Permitir OPTIONS (CORS pre-flight) explícitamente
+                        .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
 
                         // Todos los demás requieren autenticación
                         .anyRequest().authenticated())

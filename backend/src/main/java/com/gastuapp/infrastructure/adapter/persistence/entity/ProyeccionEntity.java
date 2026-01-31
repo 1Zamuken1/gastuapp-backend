@@ -27,9 +27,6 @@ public class ProyeccionEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 100)
-    private String nombre;
-
     @Column(nullable = false, precision = 15, scale = 2)
     private BigDecimal monto;
 

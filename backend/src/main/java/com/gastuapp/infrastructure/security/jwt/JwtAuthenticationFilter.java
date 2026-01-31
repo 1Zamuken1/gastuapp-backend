@@ -92,38 +92,29 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             FilterChain filterChain) throws ServletException, IOException {
 
         try {
-            // 1. Extraer token del header
             String token = extractTokenFromRequest(request);
 
-            // 2. Si hay token y es válido
             if (token != null && jwtUtils.validateToken(token)) {
-                // 3. Extraer datos del token
                 String email = jwtUtils.getEmailFromToken(token);
-                Long userId = jwtUtils.getUserIdFromToken(token); // NUEVO
+                Long userId = jwtUtils.getUserIdFromToken(token);
 
-                // 4. Buscar usuario en BD (solo para verificar que sigue activo)
-                Usuario usuario = usuarioRepository.findById(userId).orElse(null); // CAMBIO: Buscar por ID
+                Usuario usuario = usuarioRepository.findById(userId).orElse(null);
 
-                // 5. Si usuario existe y está activo
                 if (usuario != null && usuario.getActivo()) {
-                    // 6. Crear autenticación con userId como principal
                     UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                            userId.toString(), // CAMBIO: Guardar userId como String
+                            userId.toString(),
                             null,
                             List.of(new SimpleGrantedAuthority("ROLE_" + usuario.getRol().name())));
 
                     authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
-                    // 7. Establecer en SecurityContext
                     SecurityContextHolder.getContext().setAuthentication(authentication);
-
                     logger.debug("Usuario autenticado: {} (id: {}) con rol: {}", email, userId, usuario.getRol());
                 }
             }
         } catch (Exception e) {
             logger.error("Error al autenticar el usuario: {}", e.getMessage());
         }
-        // 8. Continuar con la cadena de filtros
+
         filterChain.doFilter(request, response);
     }
 

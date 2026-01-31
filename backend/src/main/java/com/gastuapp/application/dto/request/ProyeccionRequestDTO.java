@@ -11,9 +11,6 @@ import java.time.LocalDate;
 @Data
 public class ProyeccionRequestDTO {
 
-    @NotBlank(message = "El nombre es obligatorio")
-    private String nombre;
-
     @NotNull(message = "El monto es obligatorio")
     @DecimalMin(value = "0.01", message = "El monto debe ser mayor a 0")
     private BigDecimal monto;
