@@ -7,7 +7,9 @@
   [draggable]="false"
   [resizable]="false"
   [style]="{ width: '450px' }"
+  [appendTo]="'body'"
   (onHide)="closeModal()"
+  (visibleChange)="onVisibleChange($event)"
   styleClass="planificacion-confirm-modal"
 >
   <div class="flex flex-column gap-4">
@@ -26,8 +28,10 @@
     <!-- Información del presupuesto (si existe) -->
     @if (planificacion) {
       <div class="surface-card p-3 border-round">
-        <h5 class="mt-0 mb-3 text-sm font-semibold text-500 uppercase">Información del Presupuesto</h5>
-        
+        <h5 class="mt-0 mb-3 text-sm font-semibold text-500 uppercase">
+          Información del Presupuesto
+        </h5>
+
         <div class="grid">
           <!-- Nombre y categoría -->
           <div class="col-12 mb-2">
@@ -39,7 +43,9 @@
                 <i class="pi pi-wallet"></i>
               </div>
               <div>
-                <div class="font-semibold">{{ planificacion.nombrePersonalizado || planificacion.categoriaNombre }}</div>
+                <div class="font-semibold">
+                  {{ planificacion.nombrePersonalizado || planificacion.categoriaNombre }}
+                </div>
                 <div class="text-500 text-sm">{{ planificacion.categoriaNombre }}</div>
               </div>
             </div>
@@ -59,7 +65,11 @@
           <div class="col-6 mb-2">
             <div class="text-500 text-sm mb-1">Estado:</div>
             <div class="flex align-items-center gap-1">
-              <i [class]="getEstadoIcono(planificacion.estado)" class="text-sm" [style.color]="getEstadoColor(planificacion.estado)"></i>
+              <i
+                [class]="getEstadoIcono(planificacion.estado)"
+                class="text-sm"
+                [style.color]="getEstadoColor(planificacion.estado)"
+              ></i>
               <span class="font-semibold" [style.color]="getEstadoColor(planificacion.estado)">
                 {{ getEstadoTexto(planificacion.estado) }}
               </span>
@@ -77,9 +87,11 @@
               <div class="flex-1">
                 <div class="relative">
                   <div class="progress-bar">
-                    <div 
+                    <div
                       class="progress-fill"
-                      [style.width.%]="calcularProgreso(planificacion.montoGastado, planificacion.montoTope)"
+                      [style.width.%]="
+                        calcularProgreso(planificacion.montoGastado, planificacion.montoTope)
+                      "
                       [style.background]="getProgressColor(planificacion.porcentajeUtilizacion)"
                     ></div>
                   </div>
@@ -127,17 +139,23 @@
   <!-- Footer -->
   <ng-template pTemplate="footer">
     <div class="flex justify-content-end gap-2">
-      <button 
-        pButton 
-        label="Cancelar" 
-        class="p-button-text p-button-secondary" 
+      <button
+        pButton
+        label="Cancelar"
+        class="p-button-text p-button-secondary"
         (click)="closeModal()"
         [disabled]="loading()"
       ></button>
       <button
         pButton
         [label]="getConfirmButtonLabel"
-        [icon]="modalType === 'delete' ? 'pi pi-trash' : modalType === 'deactivate' ? 'pi pi-pause' : 'pi pi-check'"
+        [icon]="
+          modalType === 'delete'
+            ? 'pi pi-trash'
+            : modalType === 'deactivate'
+              ? 'pi pi-pause'
+              : 'pi pi-check'
+        "
         [class]="getConfirmButtonClass"
         [loading]="loading()"
         [disabled]="loading()"

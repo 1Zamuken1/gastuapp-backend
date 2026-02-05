@@ -9,6 +9,7 @@
   [style]="{ width: '550px' }"
   [appendTo]="'body'"
   (onHide)="closeModal()"
+  (visibleChange)="onVisibleChange($event)"
   styleClass="planificacion-modal"
 >
   <div class="flex flex-column gap-4">

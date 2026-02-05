@@ -11,6 +11,7 @@
   [style]="{ width: '800px', maxHeight: '90vh' }"
   [appendTo]="'body'"
   (onHide)="closeModal()"
+  (visibleChange)="onVisibleChange($event)"
   styleClass="savings-detail-modal"
 >
   @if (meta) {
@@ -290,11 +291,13 @@
   header="Editar Abono"
   [(visible)]="mostrarEditarAbono"
   [modal]="true"
+  [closable]="true"
   [style]="{ width: '400px' }"
   [dismissableMask]="true"
   [draggable]="false"
   [resizable]="false"
   [appendTo]="'body'"
+  (onHide)="cancelarEdicionAbono()"
   styleClass="savings-detail-modal"
 >
   <div class="flex flex-column gap-3 pt-2">

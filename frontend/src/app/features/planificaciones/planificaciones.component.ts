@@ -47,8 +47,8 @@ export class PlanificacionesComponent implements OnInit {
   loading = signal(true);
   planificaciones = signal<Planificacion[]>([]);
   planificacionSeleccionada = signal<Planificacion | null>(null);
-  mostrarFormulario = false;
-  mostrarModal = false;
+  mostrarFormulario = signal(false);
+  mostrarModal = signal(false);
   modalConfig = {
     type: 'delete' as 'delete' | 'deactivate' | 'confirm',
     planificacion: null as Planificacion | null,
@@ -99,11 +99,11 @@ export class PlanificacionesComponent implements OnInit {
   // Event handlers
   onCrearPlanificacion(): void {
     this.planificacionSeleccionada.set(null);
-    this.mostrarFormulario = true;
+    this.mostrarFormulario.set(true);
   }
 
   onPlanificacionCreada(): void {
-    this.mostrarFormulario = false;
+    this.mostrarFormulario.set(false);
     this.cargarPlanificaciones();
     this.messageService.add({
       severity: 'success',
@@ -113,7 +113,7 @@ export class PlanificacionesComponent implements OnInit {
   }
 
   onPlanificacionActualizada(): void {
-    this.mostrarFormulario = false;
+    this.mostrarFormulario.set(false);
     this.cargarPlanificaciones();
     this.messageService.add({
       severity: 'success',
@@ -124,7 +124,7 @@ export class PlanificacionesComponent implements OnInit {
 
   onEditarPlanificacion(planificacion: Planificacion): void {
     this.planificacionSeleccionada.set(planificacion);
-    this.mostrarFormulario = true;
+    this.mostrarFormulario.set(true);
   }
 
   onVerDetalle(planificacion: Planificacion): void {
@@ -141,7 +141,7 @@ export class PlanificacionesComponent implements OnInit {
       confirmButtonLabel: 'Desactivar',
       confirmButtonClass: 'p-button-warning',
     };
-    this.mostrarModal = true;
+    this.mostrarModal.set(true);
   }
 
   onEliminarPlanificacion(planificacion: Planificacion): void {
@@ -153,11 +153,11 @@ export class PlanificacionesComponent implements OnInit {
       confirmButtonLabel: 'Eliminar',
       confirmButtonClass: 'p-button-danger',
     };
-    this.mostrarModal = true;
+    this.mostrarModal.set(true);
   }
 
   onModalConfirmado(): void {
-    this.mostrarModal = false;
+    this.mostrarModal.set(false);
     this.cargarPlanificaciones();
 
     const mensaje =
@@ -173,11 +173,11 @@ export class PlanificacionesComponent implements OnInit {
   }
 
   onCancelarFormulario(): void {
-    this.mostrarFormulario = false;
+    this.mostrarFormulario.set(false);
   }
 
   onCancelarModal(): void {
-    this.mostrarModal = false;
+    this.mostrarModal.set(false);
   }
 
   // Navegación

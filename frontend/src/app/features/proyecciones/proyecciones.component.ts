@@ -111,8 +111,8 @@ export class ProyeccionesComponent implements OnInit, OnDestroy {
   });
 
   // Modal states
-  mostrarModalCrear = false;
-  mostrarModalDetalle = false;
+  mostrarModalCrear = signal(false);
+  mostrarModalDetalle = signal(false);
   proyeccionToEdit: Proyeccion | null = null;
   proyeccionSeleccionada: Proyeccion | null = null; // Para detalle
 
@@ -159,13 +159,13 @@ export class ProyeccionesComponent implements OnInit, OnDestroy {
   // ========= ACTIONS =========
   openCrear(): void {
     this.proyeccionToEdit = null;
-    this.mostrarModalCrear = true;
+    this.mostrarModalCrear.set(true);
   }
 
   verDetalle(proyeccion: Proyeccion, event?: Event): void {
     if (event) event.stopPropagation();
     this.proyeccionSeleccionada = proyeccion;
-    this.mostrarModalDetalle = true;
+    this.mostrarModalDetalle.set(true);
   }
 
   onEjecucionRealizada(): void {
@@ -175,7 +175,7 @@ export class ProyeccionesComponent implements OnInit, OnDestroy {
   editar(proyeccion: Proyeccion, event: Event): void {
     event.stopPropagation();
     this.proyeccionToEdit = proyeccion;
-    this.mostrarModalCrear = true;
+    this.mostrarModalCrear.set(true);
   }
 
   eliminar(proyeccion: Proyeccion, event: Event): void {
@@ -236,7 +236,7 @@ export class ProyeccionesComponent implements OnInit, OnDestroy {
 
   onProyeccionGuardada(): void {
     this.cargarProyecciones();
-    this.mostrarModalCrear = false;
+    this.mostrarModalCrear.set(false);
   }
 
   // ========= HELPERS =========

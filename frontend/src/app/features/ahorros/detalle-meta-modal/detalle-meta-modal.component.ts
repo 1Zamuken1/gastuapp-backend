@@ -72,7 +72,7 @@ export class DetalleMetaModalComponent implements OnChanges {
   savingAbono = signal(false);
 
   // Editar Abono
-  mostrarEditarAbono = false;
+  mostrarEditarAbono = signal(false);
   abonoAEditar: Ahorro | null = null;
   abonoEditMonto: number | null = null;
   abonoEditDescripcion = '';
@@ -126,6 +126,13 @@ export class DetalleMetaModalComponent implements OnChanges {
     this.visible = false;
     this.visibleChange.emit(false);
     this.resetFormAbono();
+  }
+
+  // Called when PrimeNG dialog changes visible state (e.g., clicking mask)
+  onVisibleChange(isVisible: boolean): void {
+    if (!isVisible) {
+      this.visibleChange.emit(false);
+    }
   }
 
   toggleFormAbono(): void {
@@ -238,11 +245,11 @@ export class DetalleMetaModalComponent implements OnChanges {
     this.abonoAEditar = abono;
     this.abonoEditMonto = abono.monto;
     this.abonoEditDescripcion = abono.descripcion;
-    this.mostrarEditarAbono = true;
+    this.mostrarEditarAbono.set(true);
   }
 
   cancelarEdicionAbono(): void {
-    this.mostrarEditarAbono = false;
+    this.mostrarEditarAbono.set(false);
     this.abonoAEditar = null;
     this.abonoEditMonto = null;
     this.abonoEditDescripcion = '';

@@ -2,110 +2,129 @@
   [header]="proyeccionToEdit ? 'Editar Proyección' : 'Nueva Proyección'"
   [(visible)]="visible"
   [modal]="true"
-  [style]="{ width: '450px' }"
-  styleClass="p-fluid"
-  [appendTo]="'body'"
+  [closable]="true"
   [dismissableMask]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: '500px' }"
+  [appendTo]="'body'"
+  (onHide)="cerrar()"
+  (visibleChange)="onVisibleChange($event)"
+  styleClass="proyeccion-modal"
 >
-  <ng-template #content>
-    <form [formGroup]="form" class="flex flex-column gap-4">
-      <!-- Tipo -->
-      <div class="field">
-        <label for="tipo" class="font-bold">Tipo</label>
-        <p-select
-          id="tipo"
-          [options]="tipos"
-          formControlName="tipo"
-          optionLabel="label"
-          optionValue="value"
-        ></p-select>
-      </div>
+  <div class="flex flex-column gap-4">
+    <form [formGroup]="form">
+      <!-- Información Básica -->
+      <div class="surface-ground p-3 border-round mb-3">
+        <h4 class="mt-0 mb-3 text-sm font-semibold text-500 uppercase">Información Básica</h4>
 
-      <!-- Categoría (click to open modal) -->
-      <div class="field">
-        <label for="categoria" class="font-bold">Categoría</label>
-        <button
-          type="button"
-          pButton
-          class="p-button-outlined w-full text-left justify-content-start"
-          [class.p-button-success]="form.get('tipo')?.value === 'INGRESO'"
-          [class.p-button-warning]="form.get('tipo')?.value === 'EGRESO'"
-          (click)="abrirSelectorCategoria()"
-        >
-          @if (selectedCategory()) {
-            <span class="mr-2">{{ selectedCategory()?.icono }}</span>
-            <span>{{ selectedCategory()?.nombre }}</span>
-          } @else {
-            <i class="pi pi-folder-open mr-2"></i>
-            <span class="text-500">Seleccionar categoría...</span>
+        <!-- Tipo -->
+        <div class="field mb-3">
+          <label for="tipo" class="block font-medium mb-2">Tipo *</label>
+          <p-select
+            id="tipo"
+            [options]="tipos"
+            formControlName="tipo"
+            optionLabel="label"
+            optionValue="value"
+            class="w-full"
+            [style]="{ width: '100%' }"
+          ></p-select>
+        </div>
+
+        <!-- Categoría (click to open modal) -->
+        <div class="field mb-3">
+          <label for="categoria" class="block font-medium mb-2">Categoría *</label>
+          <button
+            type="button"
+            pButton
+            class="p-button-outlined w-full text-left justify-content-start"
+            [class.p-button-success]="form.get('tipo')?.value === 'INGRESO'"
+            [class.p-button-warning]="form.get('tipo')?.value === 'EGRESO'"
+            (click)="abrirSelectorCategoria()"
+          >
+            @if (selectedCategory()) {
+              <span class="mr-2">{{ selectedCategory()?.icono }}</span>
+              <span>{{ selectedCategory()?.nombre }}</span>
+            } @else {
+              <i class="pi pi-folder-open mr-2"></i>
+              <span class="text-500">Seleccionar categoría...</span>
+            }
+          </button>
+          @if (form.get('categoriaId')?.invalid && form.get('categoriaId')?.touched) {
+            <small class="p-error block">Categoría requerida</small>
           }
-        </button>
-        @if (form.get('categoriaId')?.invalid && form.get('categoriaId')?.touched) {
-          <small class="p-error block">Categoría requerida</small>
-        }
+        </div>
+
+        <!-- Monto -->
+        <div class="field mb-0">
+          <label for="monto" class="block font-medium mb-2">Monto *</label>
+          <p-inputNumber
+            id="monto"
+            formControlName="monto"
+            mode="currency"
+            currency="COP"
+            locale="es-CO"
+            placeholder="$ 0"
+            [min]="0"
+            [allowEmpty]="true"
+            class="w-full"
+            inputStyleClass="w-full"
+          ></p-inputNumber>
+          @if (form.get('monto')?.invalid && form.get('monto')?.touched) {
+            <small class="p-error block">Monto requerido</small>
+          }
+        </div>
       </div>
 
-      <!-- Monto -->
-      <div class="field">
-        <label for="monto" class="font-bold">Monto</label>
-        <p-inputNumber
-          id="monto"
-          formControlName="monto"
-          mode="currency"
-          currency="COP"
-          locale="es-CO"
-          placeholder="$ 0"
-          [min]="0"
-          [allowEmpty]="true"
-        ></p-inputNumber>
-        @if (form.get('monto')?.invalid && form.get('monto')?.touched) {
-          <small class="p-error block">Monto requerido</small>
-        }
-      </div>
+      <!-- Recurrencia -->
+      <div class="surface-ground p-3 border-round">
+        <h4 class="mt-0 mb-3 text-sm font-semibold text-500 uppercase">Recurrencia</h4>
 
-      <!-- Frecuencia -->
-      <div class="field">
-        <label for="frecuencia" class="font-bold">Frecuencia</label>
-        <p-select
-          id="frecuencia"
-          [options]="frecuencias"
-          formControlName="frecuencia"
-          optionLabel="label"
-          optionValue="value"
-        ></p-select>
-      </div>
+        <!-- Frecuencia -->
+        <div class="field mb-3">
+          <label for="frecuencia" class="block font-medium mb-2">Frecuencia</label>
+          <p-select
+            id="frecuencia"
+            [options]="frecuencias"
+            formControlName="frecuencia"
+            optionLabel="label"
+            optionValue="value"
+            class="w-full"
+            [style]="{ width: '100%' }"
+          ></p-select>
+        </div>
 
-      <!-- Fecha Inicio -->
-      <div class="field">
-        <label for="fechaInicio" class="font-bold">Fecha Inicio</label>
-        <p-datePicker
-          id="fechaInicio"
-          formControlName="fechaInicio"
-          dateFormat="dd/mm/yy"
-          [showIcon]="true"
-          appendTo="body"
-        ></p-datePicker>
+        <!-- Fecha Inicio -->
+        <div class="field mb-0">
+          <label for="fechaInicio" class="block font-medium mb-2">Fecha Inicio</label>
+          <p-datePicker
+            id="fechaInicio"
+            formControlName="fechaInicio"
+            dateFormat="dd/mm/yy"
+            [showIcon]="true"
+            appendTo="body"
+            styleClass="w-full"
+          ></p-datePicker>
+        </div>
       </div>
     </form>
-  </ng-template>
+  </div>
 
-  <ng-template #footer>
-    <button
-      pButton
-      label="Cancelar"
-      icon="pi pi-times"
-      class="p-button-text"
-      (click)="cerrar()"
-    ></button>
-    <button
-      pButton
-      label="Guardar"
-      icon="pi pi-check"
-      class="p-button-primary"
-      [loading]="loading()"
-      [disabled]="form.invalid"
-      (click)="guardar()"
-    ></button>
+  <!-- Footer -->
+  <ng-template pTemplate="footer">
+    <div class="flex justify-content-end gap-2">
+      <button pButton label="Cancelar" class="p-button-text" (click)="cerrar()"></button>
+      <button
+        pButton
+        label="Guardar"
+        icon="pi pi-check"
+        class="p-button-primary"
+        [loading]="loading()"
+        [disabled]="form.invalid"
+        (click)="guardar()"
+      ></button>
+    </div>
   </ng-template>
 </p-dialog>
 

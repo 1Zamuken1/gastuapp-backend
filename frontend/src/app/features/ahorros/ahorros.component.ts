@@ -104,8 +104,8 @@ export class AhorrosComponent implements OnInit, OnDestroy {
   });
 
   // Modal states
-  mostrarModalCrear = false;
-  mostrarModalDetalle = false;
+  mostrarModalCrear = signal(false);
+  mostrarModalDetalle = signal(false);
   metaSeleccionada: MetaAhorro | null = null;
   metaToEdit: MetaAhorro | null = null;
 
@@ -132,7 +132,7 @@ export class AhorrosComponent implements OnInit, OnDestroy {
       next: (data) => {
         this.metas.set(data);
         // Actualizar referencia en modal detalle si está abierto
-        if (this.mostrarModalDetalle && this.metaSeleccionada) {
+        if (this.mostrarModalDetalle() && this.metaSeleccionada) {
           const updated = data.find((m) => m.id === this.metaSeleccionada!.id);
           if (updated) {
             this.metaSeleccionada = updated;
@@ -192,7 +192,7 @@ export class AhorrosComponent implements OnInit, OnDestroy {
   // ========= MODALS =========
   openCrearMeta(): void {
     this.metaToEdit = null;
-    this.mostrarModalCrear = true;
+    this.mostrarModalCrear.set(true);
   }
 
   onMetaCreated(): void {
@@ -201,7 +201,7 @@ export class AhorrosComponent implements OnInit, OnDestroy {
 
   verDetalle(meta: MetaAhorro): void {
     this.metaSeleccionada = meta;
-    this.mostrarModalDetalle = true;
+    this.mostrarModalDetalle.set(true);
   }
 
   onAbonoRegistrado(): void {
@@ -210,13 +210,13 @@ export class AhorrosComponent implements OnInit, OnDestroy {
 
   onMetaDeleted(): void {
     this.cargarMetas();
-    this.mostrarModalDetalle = false;
+    this.mostrarModalDetalle.set(false);
     this.metaSeleccionada = null;
   }
 
   onMetaEditRequested(meta: MetaAhorro): void {
     this.metaToEdit = meta;
-    this.mostrarModalCrear = true;
-    this.mostrarModalDetalle = false;
+    this.mostrarModalCrear.set(true);
+    this.mostrarModalDetalle.set(false);
   }
 }

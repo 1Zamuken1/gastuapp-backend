@@ -132,6 +132,13 @@ export class CrearMetaModalComponent implements OnInit {
     this.visibleChange.emit(false);
   }
 
+  // Called when PrimeNG dialog changes visible state (e.g., clicking mask)
+  onVisibleChange(isVisible: boolean): void {
+    if (!isVisible) {
+      this.visibleChange.emit(false);
+    }
+  }
+
   guardarMeta(): void {
     if (!this.nombre || !this.montoObjetivo) {
       return;

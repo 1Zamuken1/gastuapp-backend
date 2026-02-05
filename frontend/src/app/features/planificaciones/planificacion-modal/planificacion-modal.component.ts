@@ -7,16 +7,16 @@ import { ButtonModule } from 'primeng/button';
 
 // Core
 import { PlanificacionService } from '../../../core/services/planificacion.service';
-import { Planificacion, EstadoPlanificacion, PlanificacionUtils } from '../../../core/models/planificacion.model';
+import {
+  Planificacion,
+  EstadoPlanificacion,
+  PlanificacionUtils,
+} from '../../../core/models/planificacion.model';
 
 @Component({
   selector: 'app-planificacion-modal',
   standalone: true,
-  imports: [
-    CommonModule,
-    DialogModule,
-    ButtonModule,
-  ],
+  imports: [CommonModule, DialogModule, ButtonModule],
   templateUrl: './planificacion-modal.component.html',
   styleUrl: './planificacion-modal.component.scss',
 })
@@ -28,7 +28,7 @@ export class PlanificacionModalComponent {
   @Input() message = '';
   @Input() confirmButtonLabel = 'Confirmar';
   @Input() confirmButtonClass = 'p-button-danger';
-  
+
   @Output() visibleChange = new EventEmitter<boolean>();
   @Output() confirmed = new EventEmitter<void>();
 
@@ -38,7 +38,7 @@ export class PlanificacionModalComponent {
 
   get modalTitle(): string {
     if (this.title) return this.title;
-    
+
     switch (this.modalType) {
       case 'delete':
         return 'Eliminar Presupuesto';
@@ -53,9 +53,9 @@ export class PlanificacionModalComponent {
 
   get modalMessage(): string {
     if (this.message) return this.message;
-    
+
     if (!this.planificacion) return '';
-    
+
     switch (this.modalType) {
       case 'delete':
         return `¿Estás seguro que deseas eliminar el presupuesto "${this.planificacion.nombrePersonalizado || this.planificacion.categoriaNombre}"? Esta acción no se puede deshacer.`;
@@ -94,6 +94,13 @@ export class PlanificacionModalComponent {
     this.visibleChange.emit(false);
   }
 
+  // Called when PrimeNG dialog changes visible state (e.g., clicking mask)
+  onVisibleChange(isVisible: boolean): void {
+    if (!isVisible) {
+      this.visibleChange.emit(false);
+    }
+  }
+
   onConfirm(): void {
     if (!this.planificacion) return;
 
@@ -113,7 +120,7 @@ export class PlanificacionModalComponent {
           },
         });
         break;
-        
+
       case 'deactivate':
         this.planificacionService.desactivarPlanificacion(this.planificacion.publicId).subscribe({
           next: () => {
@@ -127,7 +134,7 @@ export class PlanificacionModalComponent {
           },
         });
         break;
-        
+
       case 'confirm':
       default:
         this.loading.set(false);

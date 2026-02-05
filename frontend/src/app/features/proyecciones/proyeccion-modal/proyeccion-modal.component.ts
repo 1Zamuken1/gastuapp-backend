@@ -199,6 +199,13 @@ export class ProyeccionModalComponent implements OnChanges {
     this.categorySelectorVisible = false;
   }
 
+  // Called when PrimeNG dialog changes visible state (e.g., clicking mask)
+  onVisibleChange(isVisible: boolean): void {
+    if (!isVisible) {
+      this.visibleChange.emit(false);
+    }
+  }
+
   cerrar() {
     this.visible = false;
     this.visibleChange.emit(false);
