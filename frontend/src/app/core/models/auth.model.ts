@@ -1,16 +1,17 @@
 /**
- * Modelo: Usuario y Auth
+ * Modelo: Usuario y Auth (Supabase Auth)
  *
  * FLUJO DE DATOS:
- * - RECIBE DATOS DE: Backend API (AuthResponseDTO, UsuarioResponseDTO)
+ * - RECIBE DATOS DE: Supabase Auth SDK y Backend API
  * - USADO POR: AuthService, componentes de usuario
  *
  * RESPONSABILIDAD:
  * Define las estructuras de autenticación y usuario en el frontend.
+ * Adaptado para trabajar con tokens de Supabase Auth.
  *
  * @author Juan Esteban Barrios Portela
- * @version 1.0
- * @since 2026-01-21
+ * @version 2.0
+ * @since 2026-02-12
  */
 
 /**
@@ -19,11 +20,11 @@
 export type RolUsuario = 'ADMIN' | 'USER' | 'USER_HIJO';
 
 /**
- * Respuesta del login/register
+ * Respuesta del backend GET /auth/me
  * Corresponde a AuthResponseDTO del backend
  */
 export interface AuthResponse {
-  token: string;
+  token: string | null;
   type: string; // 'Bearer'
   publicId: string;
   email: string;
@@ -31,7 +32,7 @@ export interface AuthResponse {
 }
 
 /**
- * DTO para login
+ * DTO para login (Supabase Auth)
  */
 export interface LoginRequest {
   email: string;
@@ -39,7 +40,8 @@ export interface LoginRequest {
 }
 
 /**
- * DTO para registro
+ * DTO para registro (Supabase Auth)
+ * Los campos adicionales se envían como metadata de usuario
  */
 export interface RegistroRequest {
   nombre: string;
@@ -53,11 +55,12 @@ export interface RegistroRequest {
 }
 
 /**
- * Información del usuario decodificada del JWT
+ * Información del usuario autenticado
+ * Extraída de la sesión de Supabase + datos del backend
  */
 export interface UsuarioToken {
   email: string;
   publicId: string;
   rol: RolUsuario;
-  userId: number;
+  userId: string; // Cambiado de number a string (Supabase UUID)
 }

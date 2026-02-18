@@ -39,8 +39,7 @@ public class Usuario {
 
     // Expresión regular para validar email
     private static final Pattern EMAIL_PATTERN = Pattern.compile(
-            "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$"
-    );
+            "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
 
     // ==================== ATRIBUTOS ====================
 
@@ -68,6 +67,9 @@ public class Usuario {
 
     // OAuth (FUTURO)
     private String googleId;
+
+    // Supabase Auth
+    private String supabaseUid;
 
     // ==================== LÓGICA DE NEGOCIO ====================
 
@@ -150,14 +152,12 @@ public class Usuario {
     private void validarRelacionPadreHijo() {
         if (rol == RolUsuario.USER_HIJO && tutorId == null) {
             throw new IllegalArgumentException(
-                    "Un usuario hijo debe tener un tutor asignado"
-            );
+                    "Un usuario hijo debe tener un tutor asignado");
         }
 
         if ((rol == RolUsuario.USER || rol == RolUsuario.ADMIN) && tutorId != null) {
             throw new IllegalArgumentException(
-                    "Un usuario normal o admin no puede tener tutor"
-            );
+                    "Un usuario normal o admin no puede tener tutor");
         }
     }
 

@@ -1,23 +1,18 @@
 /**
- * Component: LoginComponent
+ * Component: LoginComponent (Supabase Auth)
  *
  * FLUJO DE DATOS:
  * - RECIBE: Credenciales del usuario desde formulario
- * - LLAMA A: AuthService.login()
+ * - LLAMA A: AuthService.login() (Supabase Auth)
  * - REDIRIGE: A /dashboard si éxito
  *
  * RESPONSABILIDAD:
  * Página de inicio de sesión.
- * Valida credenciales y gestiona el flujo de autenticación.
- *
- * NOTA:
- * Este es un componente básico de login para poder probar
- * la navegación. Se puede mejorar con formularios reactivos
- * y validaciones más avanzadas.
+ * Valida credenciales via Supabase Auth.
  *
  * @author Juan Esteban Barrios Portela
- * @version 1.0
- * @since 2026-01-21
+ * @version 2.0
+ * @since 2026-02-12
  */
 import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -69,9 +64,9 @@ export class LoginComponent {
   ) {}
 
   /**
-   * Envía las credenciales al backend
+   * Envía las credenciales a Supabase Auth
    */
-  onSubmit(): void {
+  async onSubmit(): Promise<void> {
     // Validación básica
     if (!this.email || !this.password) {
       this.errorMessage.set('Por favor completa todos los campos');
@@ -86,24 +81,18 @@ export class LoginComponent {
       password: this.password,
     };
 
-    this.authService.login(credentials).subscribe({
-      next: () => {
-        this.messageService.add({
-          severity: 'success',
-          summary: '¡Bienvenido!',
-          detail: 'Inicio de sesión exitoso',
-        });
-        this.router.navigate(['/dashboard']);
-      },
-      error: (err: any) => {
-        console.error('Error de login:', err);
-        this.loading.set(false);
-        this.errorMessage.set(
-          err.status === 401
-            ? 'Credenciales incorrectas'
-            : 'Error al iniciar sesión. Intenta nuevamente.',
-        );
-      },
-    });
+    const result = await this.authService.login(credentials);
+
+    if (result.success) {
+      this.messageService.add({
+        severity: 'success',
+        summary: '¡Bienvenido!',
+        detail: 'Inicio de sesión exitoso',
+      });
+      this.router.navigate(['/dashboard']);
+    } else {
+      this.loading.set(false);
+      this.errorMessage.set(result.error || 'Error al iniciar sesión. Intenta nuevamente.');
+    }
   }
 }

@@ -1,160 +1,222 @@
 /**
- * Service: AuthService
+ * Service: AuthService (Supabase Auth)
  *
  * FLUJO DE DATOS:
  * - RECIBE: Credenciales desde componentes Login/Register
- * - LLAMA A: Backend /api/auth/* endpoints
- * - ALMACENA: Token JWT en localStorage
- * - PROVEE: Estado de autenticación a toda la aplicación
+ * - LLAMA A: Supabase Auth SDK para autenticación
+ * - ALMACENA: Sesión gestionada por Supabase (localStorage)
+ * - PROVEE: Estado de autenticación a toda la aplicación via signals
  *
  * RESPONSABILIDAD:
- * Gestiona toda la lógica de autenticación.
- * Maneja tokens JWT (almacenar, recuperar, eliminar).
+ * Gestiona toda la lógica de autenticación usando Supabase Auth.
+ * Maneja la sesión de Supabase (tokens, refresh, persistencia).
  * Expone signals reactivos para estado de auth.
  *
  * MÉTODOS PRINCIPALES:
- * - login(): Autenticar usuario
- * - register(): Crear nueva cuenta
- * - logout(): Cerrar sesión
+ * - login(): Autenticar usuario via Supabase
+ * - register(): Crear nueva cuenta en Supabase Auth
+ * - logout(): Cerrar sesión en Supabase
  * - isAuthenticated(): Verificar si hay sesión activa
- * - getToken(): Obtener token actual
+ * - getToken(): Obtener access_token actual de Supabase
  *
  * @author Juan Esteban Barrios Portela
- * @version 1.0
- * @since 2026-01-21
+ * @version 2.0
+ * @since 2026-02-12
  */
-import { Injectable, signal, computed } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { Injectable, signal, computed, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
-import { Observable, tap, catchError, throwError } from 'rxjs';
-import { environment } from '../../../environments/environment';
-import { AuthResponse, LoginRequest, RegistroRequest, UsuarioToken } from '../models/auth.model';
+import { supabase } from '../config/supabase.client';
+import { LoginRequest, RegistroRequest, UsuarioToken, RolUsuario } from '../models/auth.model';
+import { Session, AuthChangeEvent, Subscription } from '@supabase/supabase-js';
 
 @Injectable({
   providedIn: 'root',
 })
-export class AuthService {
-  // URL base del API
-  private readonly apiUrl = `${environment.apiUrl}/auth`;
+export class AuthService implements OnDestroy {
+  // Signal reactivo para la sesión de Supabase
+  private sessionSignal = signal<Session | null>(null);
 
-  // Key para localStorage
-  private readonly tokenKey = environment.tokenKey;
-
-  // Signal reactivo para el token
-  private tokenSignal = signal<string | null>(this.getStoredToken());
+  // Subscription al listener de auth state
+  private authSubscription: Subscription | null = null;
 
   // Computed: verificar si está autenticado
-  public isAuthenticated = computed(() => !!this.tokenSignal());
+  public isAuthenticated = computed(() => !!this.sessionSignal());
 
-  // Computed: obtener datos del usuario del token
+  // Computed: obtener datos del usuario de la sesión
   public currentUser = computed<UsuarioToken | null>(() => {
-    const token = this.tokenSignal();
-    if (!token) return null;
-    return this.decodeToken(token);
+    const session = this.sessionSignal();
+    if (!session) return null;
+    return this.extractUserFromSession(session);
   });
 
-  constructor(
-    private http: HttpClient,
-    private router: Router,
-  ) {}
+  constructor(private router: Router) {
+    this.initializeAuth();
+  }
+
+  ngOnDestroy(): void {
+    this.authSubscription?.unsubscribe();
+  }
+
+  // ==================== INICIALIZACIÓN ====================
+
+  /**
+   * Inicializa la autenticación:
+   * 1. Recupera la sesión existente (si hay una)
+   * 2. Escucha cambios de estado de auth (login, logout, refresh)
+   */
+  private async initializeAuth(): Promise<void> {
+    // 1. Recuperar sesión existente
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    this.sessionSignal.set(session);
+
+    // 2. Escuchar cambios de auth state
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event: AuthChangeEvent, session: Session | null) => {
+      this.sessionSignal.set(session);
+
+      // Si la sesión expiró o se cerró, redirigir a login
+      if (event === 'SIGNED_OUT') {
+        this.router.navigate(['/login']);
+      }
+    });
+    this.authSubscription = subscription;
+  }
 
   // ==================== MÉTODOS PÚBLICOS ====================
 
   /**
-   * Inicia sesión con email y password.
+   * Inicia sesión con Supabase Auth.
    *
    * FLUJO:
-   * 1. Envía credenciales al backend
-   * 2. Recibe token JWT
-   * 3. Almacena token en localStorage
-   * 4. Actualiza signal de autenticación
+   * 1. Envía credenciales a Supabase Auth
+   * 2. Supabase valida y retorna sesión con JWT
+   * 3. El onAuthStateChange actualiza el sessionSignal
    *
    * @param credentials Email y password
-   * @returns Observable con respuesta de auth
+   * @returns Promise con resultado de auth
+   * @throws Error si las credenciales son inválidas
    */
-  login(credentials: LoginRequest): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/login`, credentials).pipe(
-      tap((response) => this.handleAuthSuccess(response)),
-      catchError((error) => this.handleAuthError(error)),
-    );
+  async login(credentials: LoginRequest): Promise<{ success: boolean; error?: string }> {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: credentials.email,
+      password: credentials.password,
+    });
+
+    if (error) {
+      console.error('Error de login Supabase:', error.message);
+      return {
+        success: false,
+        error: this.translateSupabaseError(error.message),
+      };
+    }
+
+    return { success: true };
   }
 
   /**
-   * Registra un nuevo usuario.
-   * El backend hace auto-login y retorna token.
+   * Registra un nuevo usuario en Supabase Auth.
+   *
+   * FLUJO:
+   * 1. Crea usuario en Supabase Auth con email/password
+   * 2. Envía datos adicionales como user_metadata
+   * 3. El trigger en la BD sincroniza a public.usuarios
+   * 4. El onAuthStateChange actualiza el sessionSignal
    *
    * @param userData Datos del nuevo usuario
-   * @returns Observable con respuesta de auth
+   * @returns Promise con resultado de registro
    */
-  register(userData: RegistroRequest): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/register`, userData).pipe(
-      tap((response) => this.handleAuthSuccess(response)),
-      catchError((error) => this.handleAuthError(error)),
-    );
+  async register(userData: RegistroRequest): Promise<{ success: boolean; error?: string }> {
+    const { data, error } = await supabase.auth.signUp({
+      email: userData.email,
+      password: userData.password,
+      options: {
+        data: {
+          // Estos datos se guardan en auth.users.raw_user_meta_data
+          // El trigger handle_new_user() los usa para crear el registro en public.usuarios
+          nombre: userData.nombre,
+          apellido: userData.apellido,
+          telefono: userData.telefono || null,
+          tipologia: userData.tipologia || 'OTRO',
+          profesion: userData.profesion || null,
+          institucion: userData.institucion || null,
+        },
+      },
+    });
+
+    if (error) {
+      console.error('Error de registro Supabase:', error.message);
+      return {
+        success: false,
+        error: this.translateSupabaseError(error.message),
+      };
+    }
+
+    // Verificar si requiere confirmación de email
+    if (data.user && !data.session) {
+      return {
+        success: true,
+        error: 'Se ha enviado un email de confirmación. Revisa tu bandeja de entrada.',
+      };
+    }
+
+    return { success: true };
   }
 
   /**
-   * Cierra la sesión actual.
-   * Elimina token y redirige a login.
+   * Cierra la sesión actual en Supabase Auth.
+   * Supabase limpia automáticamente el localStorage.
+   * El onAuthStateChange detecta SIGNED_OUT y redirige a login.
    */
-  logout(): void {
-    localStorage.removeItem(this.tokenKey);
-    this.tokenSignal.set(null);
-    this.router.navigate(['/login']);
+  async logout(): Promise<void> {
+    await supabase.auth.signOut();
+    // sessionSignal se actualiza via onAuthStateChange
   }
 
   /**
-   * Obtiene el token actual.
+   * Obtiene el access_token actual de Supabase.
    * Usado por el interceptor HTTP.
    *
-   * @returns Token JWT o null
+   * @returns Token JWT de Supabase o null
    */
   getToken(): string | null {
-    return this.tokenSignal();
+    return this.sessionSignal()?.access_token ?? null;
   }
 
   // ==================== MÉTODOS PRIVADOS ====================
 
   /**
-   * Recupera token almacenado en localStorage
+   * Extrae información del usuario de la sesión de Supabase.
+   * Combina datos del token con user_metadata.
    */
-  private getStoredToken(): string | null {
-    if (typeof localStorage === 'undefined') return null;
-    return localStorage.getItem(this.tokenKey);
+  private extractUserFromSession(session: Session): UsuarioToken {
+    const user = session.user;
+    const metadata = user.user_metadata || {};
+
+    return {
+      email: user.email || '',
+      publicId: user.id, // UUID de Supabase = supabase_uid
+      rol: (metadata['rol'] as RolUsuario) || 'USER',
+      userId: user.id,
+    };
   }
 
   /**
-   * Maneja respuesta exitosa de autenticación
+   * Traduce errores de Supabase a mensajes en español.
    */
-  private handleAuthSuccess(response: AuthResponse): void {
-    localStorage.setItem(this.tokenKey, response.token);
-    this.tokenSignal.set(response.token);
-  }
+  private translateSupabaseError(error: string): string {
+    const errorMap: Record<string, string> = {
+      'Invalid login credentials': 'Credenciales incorrectas',
+      'Email not confirmed': 'Email no confirmado. Revisa tu bandeja de entrada.',
+      'User already registered': 'Este email ya está registrado',
+      'Password should be at least 6 characters': 'La contraseña debe tener al menos 6 caracteres',
+      'Signup requires a valid password': 'Se requiere una contraseña válida',
+      'Unable to validate email address: invalid format': 'Formato de email inválido',
+      'Email rate limit exceeded': 'Demasiados intentos. Espera unos minutos.',
+    };
 
-  /**
-   * Maneja errores de autenticación
-   */
-  private handleAuthError(error: any): Observable<never> {
-    console.error('Error de autenticación:', error);
-    return throwError(() => error);
-  }
-
-  /**
-   * Decodifica el payload del token JWT
-   * NOTA: No valida la firma, solo extrae datos
-   */
-  private decodeToken(token: string): UsuarioToken | null {
-    try {
-      const payload = token.split('.')[1];
-      const decoded = JSON.parse(atob(payload));
-      return {
-        email: decoded.sub,
-        publicId: decoded.publicId,
-        rol: decoded.rol,
-        userId: decoded.userId,
-      };
-    } catch {
-      return null;
-    }
+    return errorMap[error] || `Error de autenticación: ${error}`;
   }
 }

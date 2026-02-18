@@ -18,54 +18,44 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.UUID;
 
 /**
- * JWT Authentication Filter
+ * JWT Authentication Filter (Supabase Auth)
  *
  * FLUJO DE DATOS:
  * - INTERCEPTA: Cada HTTP Request antes de llegar al Controller
- * - VALIDA: Token JWT en header "Authorization: Bearer <token>"
+ * - VALIDA: Token JWT de Supabase en header "Authorization: Bearer <token>"
  * - ESTABLECE: SecurityContext con usuario autenticado
  * - CONTINÚA: Request hacia el Controller si token válido
  *
- * RESPONSABILIDAD:
- * Filtro de Spring Security que valida tokens JWT en cada request.
- * Extrae información del usuario del token y la establece en el
- * SecurityContext.
- * Permite que los Controllers accedan al usuario autenticado.
+ * ESTRATEGIA DE VALIDACIÓN (Dual):
+ * 1. Intenta validar con SupabaseJwtUtils (tokens de Supabase Auth)
+ * - Extrae el UUID del usuario del claim 'sub'
+ * - Busca el usuario local por supabaseUid
+ * 2. Si falla, intenta validar con JwtUtils legado (tokens antiguos)
+ * - Mantiene compatibilidad durante la migración
+ * - Busca el usuario local por userId (BIGINT)
  *
- * FLUJO DE EJECUCIÓN:
- * 1. Extraer token del header "Authorization"
- * 2. Validar token con JwtUtils
- * 3. Extraer email del token
- * 4. Buscar usuario en BD
- * 5. Crear Authentication y establecer en SecurityContext
- * 6. Continuar con la cadena de filtros
- *
- * ENDPOINTS AFECTADOS:
- * - Todos los endpoints excepto los públicos definidos en SecurityConfig
- * - Si token inválido/ausente: request continúa sin autenticación
- * - SecurityConfig decide si permite o bloquea el acceso
- *
- * SEGURIDAD:
- * - No arroja excepciones si token inválido (solo no autentica)
- * - Logging de errores para debugging
- * - Validación de usuario activo en BD
+ * Una vez completada la migración, se puede remover el fallback a JwtUtils.
  *
  * @author Juan Esteban Barrios Portela
- * @version 1.0
- * @since 2025-01-20
+ * @version 2.0
+ * @since 2026-02-12
  */
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private static final Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 
-    private final JwtUtils jwtUtils;
+    private final SupabaseJwtUtils supabaseJwtUtils;
+    private final JwtUtils jwtUtils; // Legado - mantener durante migración
     private final UsuarioRepositoryPort usuarioRepository;
 
     public JwtAuthenticationFilter(
+            SupabaseJwtUtils supabaseJwtUtils,
             JwtUtils jwtUtils,
             @Lazy UsuarioRepositoryPort usuarioRepository) {
+        this.supabaseJwtUtils = supabaseJwtUtils;
         this.jwtUtils = jwtUtils;
         this.usuarioRepository = usuarioRepository;
     }
@@ -75,15 +65,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
      *
      * FLUJO:
      * 1. Extraer token del header "Authorization: Bearer <token>"
-     * 2. Validar token con JwtUtils
-     * 3. Extraer email del token
-     * 4. Buscar usuario en BD
+     * 2. Intentar validar con SupabaseJwtUtils
+     * 3. Si falla, intentar validar con JwtUtils legado
+     * 4. Buscar usuario en BD según el tipo de token
      * 5. Crear Authentication con rol del usuario
      * 6. Establecer en SecurityContext
-     *
-     * @param request     HTTP Request
-     * @param response    HTTP Response
-     * @param filterChain Cadena de filtros
      */
     @Override
     protected void doFilterInternal(
@@ -91,31 +77,111 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             HttpServletResponse response,
             FilterChain filterChain) throws ServletException, IOException {
 
+        String requestURI = request.getRequestURI();
+        String method = request.getMethod();
+
         try {
             String token = extractTokenFromRequest(request);
 
-            if (token != null && jwtUtils.validateToken(token)) {
-                String email = jwtUtils.getEmailFromToken(token);
-                Long userId = jwtUtils.getUserIdFromToken(token);
+            if (token != null) {
+                logger.info("[AUTH] {} {} - Token recibido (longitud: {})", method, requestURI, token.length());
 
-                Usuario usuario = usuarioRepository.findById(userId).orElse(null);
-
-                if (usuario != null && usuario.getActivo()) {
-                    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                            userId.toString(),
-                            null,
-                            List.of(new SimpleGrantedAuthority("ROLE_" + usuario.getRol().name())));
-
-                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
-                    logger.debug("Usuario autenticado: {} (id: {}) con rol: {}", email, userId, usuario.getRol());
+                // Estrategia 1: Validar como token de Supabase
+                boolean supabaseValid = false;
+                try {
+                    supabaseValid = supabaseJwtUtils.validateToken(token);
+                    logger.info("[AUTH] {} {} - Validación Supabase: {}", method, requestURI, supabaseValid);
+                } catch (Exception e) {
+                    logger.error("[AUTH] {} {} - Error en validación Supabase: {}", method, requestURI, e.getMessage(),
+                            e);
                 }
+
+                if (supabaseValid) {
+                    authenticateWithSupabaseToken(token, request);
+                }
+                // Estrategia 2: Fallback a validación legada (durante migración)
+                else {
+                    boolean legacyValid = jwtUtils.validateToken(token);
+                    logger.info("[AUTH] {} {} - Validación legada: {}", method, requestURI, legacyValid);
+                    if (legacyValid) {
+                        authenticateWithLegacyToken(token, request);
+                    } else {
+                        logger.warn("[AUTH] {} {} - Token NO validado por ninguna estrategia", method, requestURI);
+                    }
+                }
+            } else {
+                logger.debug("[AUTH] {} {} - Sin token Authorization", method, requestURI);
             }
         } catch (Exception e) {
-            logger.error("Error al autenticar el usuario: {}", e.getMessage());
+            logger.error("[AUTH] {} {} - ERROR GENERAL: {}", method, requestURI, e.getMessage(), e);
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    /**
+     * Autentica un usuario usando un token de Supabase Auth.
+     */
+    private void authenticateWithSupabaseToken(String token, HttpServletRequest request) {
+        try {
+            UUID supabaseUid = supabaseJwtUtils.getSupabaseUid(token);
+            String email = supabaseJwtUtils.getEmail(token);
+            logger.info("[AUTH-SUPABASE] Buscando usuario con supabase_uid: {} (email: {})", supabaseUid, email);
+
+            Usuario usuario = usuarioRepository.findBySupabaseUid(supabaseUid.toString()).orElse(null);
+
+            if (usuario == null) {
+                logger.error("[AUTH-SUPABASE] ❌ Usuario NO encontrado en BD para supabase_uid: {}", supabaseUid);
+                return;
+            }
+
+            if (!usuario.getActivo()) {
+                logger.warn("[AUTH-SUPABASE] ⚠️ Usuario inactivo: {} (supabase_uid: {})", email, supabaseUid);
+                return;
+            }
+
+            // IMPORTANTE: Usar el ID interno (Long) como principal, NO el supabase_uid
+            // (UUID)
+            // Los controladores hacen Long.parseLong(authentication.getName()) para obtener
+            // el usuarioId
+            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                    usuario.getId().toString(),
+                    null,
+                    List.of(new SimpleGrantedAuthority("ROLE_" + usuario.getRol().name())));
+
+            authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            logger.info("[AUTH-SUPABASE] ✅ Usuario autenticado: {} (supabase_uid: {}, rol: {}, id: {}, principal: {})",
+                    email, supabaseUid, usuario.getRol(), usuario.getId(), usuario.getId());
+        } catch (Exception e) {
+            logger.error("[AUTH-SUPABASE] ❌ Error autenticando token Supabase: {}", e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Autentica un usuario usando un token JWT legado (pre-migración).
+     * Este método se mantendrá durante la transición y se eliminará
+     * una vez completada la migración a Supabase Auth.
+     *
+     * @param token   Token JWT legado válido
+     * @param request HTTP Request para detalle de autenticación
+     */
+    private void authenticateWithLegacyToken(String token, HttpServletRequest request) {
+        String email = jwtUtils.getEmailFromToken(token);
+        Long userId = jwtUtils.getUserIdFromToken(token);
+
+        Usuario usuario = usuarioRepository.findById(userId).orElse(null);
+
+        if (usuario != null && usuario.getActivo()) {
+            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                    userId.toString(),
+                    null,
+                    List.of(new SimpleGrantedAuthority("ROLE_" + usuario.getRol().name())));
+
+            authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            logger.debug("Usuario autenticado (legado): {} (id: {}) con rol: {}", email, userId, usuario.getRol());
+        }
     }
 
     /**
@@ -130,7 +196,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String bearerToken = request.getHeader("Authorization");
 
         if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7); // Remover "Bearer "
+            return bearerToken.substring(7);
         }
 
         return null;

@@ -1,13 +1,15 @@
 /**
- * Component: RegisterComponent
+ * Component: RegisterComponent (Supabase Auth)
  *
  * RESPONSABILIDAD:
- * Permite registrar nuevos usuarios en el sistema.
+ * Permite registrar nuevos usuarios en el sistema via Supabase Auth.
  * Utiliza Reactive Forms para validaciones complejas.
+ * Los datos adicionales (nombre, tipología, etc.) se envían como user_metadata
+ * que el trigger de BD usa para crear el registro en public.usuarios.
  *
  * @author Juan Esteban Barrios Portela
- * @version 1.0
- * @since 2026-01-22
+ * @version 2.0
+ * @since 2026-02-12
  */
 import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -58,7 +60,6 @@ export class RegisterComponent {
   steps: MenuItem[] = [{ label: 'Datos Personales' }, { label: 'Perfil' }, { label: 'Detalles' }];
 
   // Tipologías con Iconos (PrimeIcons)
-  // Orden: Estudiante de primeras como solicitado
   tipologias = [
     {
       label: 'Estudiante',
@@ -123,7 +124,7 @@ export class RegisterComponent {
       telefono: ['', [Validators.required]],
 
       // Step 2
-      tipologia: ['', [Validators.required]], // Inicialmente vacío para forzar selección
+      tipologia: ['', [Validators.required]],
 
       // Step 3
       profesion: ['', [Validators.required]],
@@ -131,15 +132,13 @@ export class RegisterComponent {
     });
   }
 
-  // ================= NAVIGAITON =================
+  // ================= NAVIGATION =================
 
   nextStep(): void {
     if (this.currentStep() === 0) {
-      // Validar Paso 1
       const fields = ['nombre', 'apellido', 'email', 'password', 'telefono'];
       if (!this.validateFields(fields)) return;
     } else if (this.currentStep() === 1) {
-      // Validar Paso 2
       if (!this.validateFields(['tipologia'])) {
         this.messageService.add({
           severity: 'warn',
@@ -163,8 +162,6 @@ export class RegisterComponent {
 
   selectTipologia(valor: string): void {
     this.registerForm.patchValue({ tipologia: valor });
-    // Auto avanzar opcional (o esperar a next)
-    // this.nextStep();
   }
 
   // ================= AUTOCOMPLETE =================
@@ -177,7 +174,11 @@ export class RegisterComponent {
 
   // ================= SUBMIT =================
 
-  onSubmit(): void {
+  /**
+   * Registra al usuario via Supabase Auth.
+   * Los datos adicionales se envían como user_metadata.
+   */
+  async onSubmit(): Promise<void> {
     if (this.registerForm.invalid) {
       this.registerForm.markAllAsTouched();
       this.messageService.add({
@@ -191,25 +192,34 @@ export class RegisterComponent {
     this.loading.set(true);
     const request: RegistroRequest = this.registerForm.value;
 
-    this.authService.register(request).subscribe({
-      next: () => {
-        this.messageService.add({
-          severity: 'success',
-          summary: '¡Bienvenido a GastuApp!',
-          detail: 'Cuenta creada exitosamente.',
-        });
-        setTimeout(() => this.router.navigate(['/dashboard']), 1500);
-      },
-      error: (err) => {
-        console.error('Error registro:', err);
-        this.loading.set(false);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: err.error?.message || 'No se pudo crear la cuenta.',
-        });
-      },
-    });
+    const result = await this.authService.register(request);
+
+    if (result.success && !result.error) {
+      // Registro exitoso con auto-login
+      this.messageService.add({
+        severity: 'success',
+        summary: '¡Bienvenido a GastuApp!',
+        detail: 'Cuenta creada exitosamente.',
+      });
+      setTimeout(() => this.router.navigate(['/dashboard']), 1500);
+    } else if (result.success && result.error) {
+      // Registro exitoso pero requiere confirmación de email
+      this.loading.set(false);
+      this.messageService.add({
+        severity: 'info',
+        summary: 'Revisa tu email',
+        detail: result.error,
+        life: 8000,
+      });
+    } else {
+      // Error en registro
+      this.loading.set(false);
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: result.error || 'No se pudo crear la cuenta.',
+      });
+    }
   }
 
   // Helper validation

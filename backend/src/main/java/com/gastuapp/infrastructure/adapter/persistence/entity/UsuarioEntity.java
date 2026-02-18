@@ -33,21 +33,21 @@ import java.util.UUID;
  *
  * TABLA EN BD:
  * CREATE TABLE usuarios (
- *   id BIGSERIAL PRIMARY KEY,
- *   public_id VARCHAR(36) UNIQUE NOT NULL,
- *   nombre VARCHAR(100) NOT NULL,
- *   apellido VARCHAR(100) NOT NULL,
- *   email VARCHAR(255) UNIQUE NOT NULL,
- *   telefono VARCHAR(20),
- *   password VARCHAR(255) NOT NULL,
- *   rol VARCHAR(20) NOT NULL,
- *   activo BOOLEAN DEFAULT true,
- *   fecha_creacion TIMESTAMP NOT NULL,
- *   tipologia VARCHAR(20),
- *   profesion VARCHAR(255),
- *   institucion VARCHAR(255),
- *   tutor_id BIGINT REFERENCES usuarios(id),
- *   google_id VARCHAR(255)
+ * id BIGSERIAL PRIMARY KEY,
+ * public_id VARCHAR(36) UNIQUE NOT NULL,
+ * nombre VARCHAR(100) NOT NULL,
+ * apellido VARCHAR(100) NOT NULL,
+ * email VARCHAR(255) UNIQUE NOT NULL,
+ * telefono VARCHAR(20),
+ * password VARCHAR(255) NOT NULL,
+ * rol VARCHAR(20) NOT NULL,
+ * activo BOOLEAN DEFAULT true,
+ * fecha_creacion TIMESTAMP NOT NULL,
+ * tipologia VARCHAR(20),
+ * profesion VARCHAR(255),
+ * institucion VARCHAR(255),
+ * tutor_id BIGINT REFERENCES usuarios(id),
+ * google_id VARCHAR(255)
  * );
  *
  * @author Juan Esteban Barrios Portela
@@ -139,7 +139,8 @@ public class UsuarioEntity {
 
     /**
      * Tipología del usuario (información demográfica).
-     * Almacenado como String en BD: "ESTUDIANTE", "TRABAJADOR", "INDEPENDIENTE", "OTRO"
+     * Almacenado como String en BD: "ESTUDIANTE", "TRABAJADOR", "INDEPENDIENTE",
+     * "OTRO"
      */
     @Column(name = "tipologia", length = 20)
     @Enumerated(EnumType.STRING)
@@ -167,6 +168,16 @@ public class UsuarioEntity {
 
     @Column(name = "google_id", unique = true, length = 255)
     private String googleId;
+
+    // ==================== SUPABASE AUTH ====================
+
+    /**
+     * UUID del usuario en Supabase Auth (auth.users.id).
+     * Se usa para vincular el usuario local con Supabase Auth
+     * y para las políticas RLS en la base de datos.
+     */
+    @Column(name = "supabase_uid", unique = true)
+    private UUID supabaseUid;
 
     // ==================== LIFECYCLE CALLBACKS ====================
 

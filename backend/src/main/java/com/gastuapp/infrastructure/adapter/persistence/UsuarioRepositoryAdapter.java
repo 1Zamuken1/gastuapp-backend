@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -27,8 +28,10 @@ import java.util.stream.Collectors;
  * Convierte entre modelos de Domain y entidades de BD.
  *
  * ARQUITECTURA HEXAGONAL:
- * Este es un "Adapter de salida" (Output Adapter) que implementa un Port del Domain.
- * Permite que el Domain persista datos SIN conocer detalles de JPA o PostgreSQL.
+ * Este es un "Adapter de salida" (Output Adapter) que implementa un Port del
+ * Domain.
+ * Permite que el Domain persista datos SIN conocer detalles de JPA o
+ * PostgreSQL.
  *
  * CONVERSIONES:
  * - Domain (Usuario) → Entity (UsuarioEntity) → PostgreSQL
@@ -54,12 +57,13 @@ public class UsuarioRepositoryAdapter implements UsuarioRepositoryPort {
      */
     public UsuarioRepositoryAdapter(
             UsuarioJpaRepository jpaRepository,
-            UsuarioEntityMapper mapper){
+            UsuarioEntityMapper mapper) {
         this.jpaRepository = jpaRepository;
         this.mapper = mapper;
     }
 
-    //   ============ Operaciones CRUD ============
+    // ============ Operaciones CRUD ============
+
     /**
      * Guarda un usuario (create o update).
      *
@@ -74,14 +78,9 @@ public class UsuarioRepositoryAdapter implements UsuarioRepositoryPort {
      * @return Usuario guardado con id asignado
      */
     @Override
-    public Usuario save(Usuario usuario){
-        // 1. Convertir Domain -> Entity
+    public Usuario save(Usuario usuario) {
         UsuarioEntity entity = mapper.toEntity(usuario);
-
-        // 2. Guardar en BD (JPA genera un id si es nuevo)
         UsuarioEntity savedEntity = jpaRepository.save(entity);
-
-        // 3. Convertir Entity -> Domain y retornar
         return mapper.toDomain(savedEntity);
     }
 
@@ -89,14 +88,39 @@ public class UsuarioRepositoryAdapter implements UsuarioRepositoryPort {
      * Busca un usuario por su ID interno.
      *
      * NOTA: Este método usa el id interno (BIGINT).
-     * Para búsquedas desde APIs, mejor usar findByPublicId() si está disponible.
+     * Para búsquedas desde APIs, mejor usar findByPublicId().
      *
      * @param id ID interno del usuario
      * @return Optional con el usuario si existe
      */
     @Override
-    public Optional<Usuario> findById(Long id){
+    public Optional<Usuario> findById(Long id) {
         return jpaRepository.findById(id)
+                .map(mapper::toDomain);
+    }
+
+    /**
+     * Busca un usuario por su publicId (UUID).
+     *
+     * @param publicId UUID del usuario
+     * @return Optional con el usuario si existe
+     */
+    @Override
+    public Optional<Usuario> findByPublicId(String publicId) {
+        return jpaRepository.findByPublicId(publicId)
+                .map(mapper::toDomain);
+    }
+
+    /**
+     * Busca un usuario por su Supabase Auth UUID.
+     * Usado por el filtro de autenticación para vincular tokens de Supabase.
+     *
+     * @param supabaseUid UUID del usuario en Supabase Auth (como String)
+     * @return Optional con el usuario si existe
+     */
+    @Override
+    public Optional<Usuario> findBySupabaseUid(String supabaseUid) {
+        return jpaRepository.findBySupabaseUid(UUID.fromString(supabaseUid))
                 .map(mapper::toDomain);
     }
 
@@ -108,7 +132,7 @@ public class UsuarioRepositoryAdapter implements UsuarioRepositoryPort {
      * @return Optional con el usuario si existe
      */
     @Override
-    public Optional<Usuario> findByEmail(String email){
+    public Optional<Usuario> findByEmail(String email) {
         return jpaRepository.findByEmail(email)
                 .map(mapper::toDomain);
     }
@@ -120,7 +144,7 @@ public class UsuarioRepositoryAdapter implements UsuarioRepositoryPort {
      * @return Optional con el usuario si existe
      */
     @Override
-    public Optional<Usuario> findByTelefono(String telefono){
+    public Optional<Usuario> findByTelefono(String telefono) {
         return jpaRepository.findByTelefono(telefono)
                 .map(mapper::toDomain);
     }
@@ -129,9 +153,6 @@ public class UsuarioRepositoryAdapter implements UsuarioRepositoryPort {
 
     /**
      * Busca todos los usuarios hijos de un tutor.
-     *
-     * IMPORTANTE: Este método usa el id interno (tutorId es BIGINT).
-     * El Service debe pasar el id interno, no el publicId.
      *
      * @param tutorId ID interno del tutor
      * @return Lista de usuarios hijos
@@ -155,7 +176,7 @@ public class UsuarioRepositoryAdapter implements UsuarioRepositoryPort {
                 .collect(Collectors.toList());
     }
 
-    //  ============ VALIDACIONES DE EXISTENCIA ============
+    // ============ VALIDACIONES DE EXISTENCIA ============
 
     /**
      * Verifica si existe un usuario con ese email.
@@ -179,18 +200,11 @@ public class UsuarioRepositoryAdapter implements UsuarioRepositoryPort {
         return jpaRepository.existsByTelefono(telefono);
     }
 
-    //  ============ ELIMINACIÓN (SOFT DELETE) ============
+    // ============ ELIMINACIÓN (SOFT DELETE) ============
 
     /**
      * Elimina un usuario por su ID (soft delete).
      * No borra físicamente de la BD, solo marca activo = false.
-     *
-     * FLUJO:
-     * 1. Buscar usuario por id
-     * 2. Marcar activo = false
-     * 3. Guardar cambios
-     *
-     * Si el usuario no existe, no hace nada (operación idempotente).
      *
      * @param id ID interno del usuario a eliminar
      */
@@ -202,23 +216,7 @@ public class UsuarioRepositoryAdapter implements UsuarioRepositoryPort {
         });
     }
 
-    //  ============ MÉTODOS ADICIONALES (NO EN PORT) ============
-
-    /**
-     * Busca un usuario por su publicId (UUID).
-     * Este método NO está en el Port, pero es útil para APIs públicas.
-     *
-     * USO RECOMENDADO:
-     * En lugar de exponer findById(Long id) en APIs públicas,
-     * los Controllers deberían buscar por publicId.
-     *
-     * @param publicId UUID del usuario
-     * @return Optional con el usuario si existe
-     */
-    public Optional<Usuario> findByPublicId(String publicId) {
-        return jpaRepository.findByPublicId(publicId)
-                .map(mapper::toDomain);
-    }
+    // ============ MÉTODOS ADICIONALES ============
 
     /**
      * Verifica si existe un usuario con ese publicId.

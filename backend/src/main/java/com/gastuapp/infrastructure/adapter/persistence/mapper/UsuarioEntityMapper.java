@@ -6,6 +6,8 @@ import com.gastuapp.domain.model.usuario.Usuario;
 import com.gastuapp.infrastructure.adapter.persistence.entity.UsuarioEntity;
 import org.springframework.stereotype.Component;
 
+import java.util.UUID;
+
 /**
  * Entity Mapper: UsuarioEntityMapper
  *
@@ -25,7 +27,8 @@ import org.springframework.stereotype.Component;
  *
  * MAPEO DE ENUMS:
  * - RolUsuario (Domain) ↔ UsuarioEntity.RolUsuarioEnum (Infrastructure)
- * - TipologiaUsuario (Domain) ↔ UsuarioEntity.TipologiaUsuarioEnum (Infrastructure)
+ * - TipologiaUsuario (Domain) ↔ UsuarioEntity.TipologiaUsuarioEnum
+ * (Infrastructure)
  *
  * NOTAS:
  * - El 'id' y 'publicId' se mapean directamente
@@ -44,13 +47,14 @@ public class UsuarioEntityMapper {
      * Usado cuando se lee de la base de datos.
      *
      * FLUJO:
-     * PostgreSQL → JpaRepository → UsuarioEntity → [ESTE MÉTODO] → Usuario → Service
+     * PostgreSQL → JpaRepository → UsuarioEntity → [ESTE MÉTODO] → Usuario →
+     * Service
      *
      * @param entity UsuarioEntity de la BD
      * @return Usuario del Domain (null si entity es null)
      */
-    public Usuario toDomain(UsuarioEntity entity){
-        if (entity == null){
+    public Usuario toDomain(UsuarioEntity entity) {
+        if (entity == null) {
             return null;
         }
 
@@ -82,6 +86,9 @@ public class UsuarioEntityMapper {
         // Relación padre-hijo
         usuario.setTutorId(entity.getTutorId());
 
+        // Supabase Auth
+        usuario.setSupabaseUid(entity.getSupabaseUid() != null ? entity.getSupabaseUid().toString() : null);
+
         return usuario;
     }
 
@@ -91,13 +98,14 @@ public class UsuarioEntityMapper {
      * Usado cuando se va a guardar en la base de datos.
      *
      * FLUJO:
-     * Service → Usuario → [ESTE MÉTODO] → UsuarioEntity → JpaRepository → PostgreSQL
+     * Service → Usuario → [ESTE MÉTODO] → UsuarioEntity → JpaRepository →
+     * PostgreSQL
      *
      * @param usuario Usuario del Domain
      * @return UsuarioEntity para la BD (null si usuario es null)
      */
-    public UsuarioEntity toEntity(Usuario usuario){
-        if (usuario == null){
+    public UsuarioEntity toEntity(Usuario usuario) {
+        if (usuario == null) {
             return null;
         }
 
@@ -132,10 +140,13 @@ public class UsuarioEntityMapper {
         // OAuth
         entity.setGoogleId(usuario.getGoogleId());
 
+        // Supabase Auth
+        entity.setSupabaseUid(usuario.getSupabaseUid() != null ? UUID.fromString(usuario.getSupabaseUid()) : null);
+
         return entity;
     }
 
-    //  ============ Update entity ============
+    // ============ Update entity ============
     /**
      * Actualiza una UsuarioEntity existente con datos de Usuario.
      * Usado para operaciones de UPDATE (no se cambia el ID ni publicId).
@@ -145,13 +156,14 @@ public class UsuarioEntityMapper {
      * - SÍ actualiza: todos los demás campos
      *
      * FLUJO:
-     * Service → Usuario actualizado → [ESTE MÉTODO] → UsuarioEntity actualizada → JpaRepository → PostgreSQL
+     * Service → Usuario actualizado → [ESTE MÉTODO] → UsuarioEntity actualizada →
+     * JpaRepository → PostgreSQL
      *
-     * @param entity UsuarioEntity existente (con id de BD)
+     * @param entity  UsuarioEntity existente (con id de BD)
      * @param usuario Usuario con datos nuevos
      */
-    public void  updateEntity(UsuarioEntity entity, Usuario usuario){
-        if (entity == null || usuario == null){
+    public void updateEntity(UsuarioEntity entity, Usuario usuario) {
+        if (entity == null || usuario == null) {
             return;
         }
 
@@ -184,16 +196,16 @@ public class UsuarioEntityMapper {
         entity.setGoogleId(usuario.getGoogleId());
     }
 
-    //  ============ Mapeo de Enums  ============
+    // ============ Mapeo de Enums ============
     /**
      * Convierte RolUsuarioEnum (Entity) a RolUsuario (Domain).
      */
-    private RolUsuario mapRolToDomain(UsuarioEntity.RolUsuarioEnum rolEnum){
-        if (rolEnum == null){
+    private RolUsuario mapRolToDomain(UsuarioEntity.RolUsuarioEnum rolEnum) {
+        if (rolEnum == null) {
             return null;
         }
 
-        return switch (rolEnum){
+        return switch (rolEnum) {
             case ADMIN -> RolUsuario.ADMIN;
             case USER -> RolUsuario.USER;
             case USER_HIJO -> RolUsuario.USER_HIJO;
@@ -203,12 +215,12 @@ public class UsuarioEntityMapper {
     /**
      * Convierte RolUsuario (Domain) a RolUsuarioEnum (Entity).
      */
-    private UsuarioEntity.RolUsuarioEnum mapRolToEntity(RolUsuario rol){
-        if (rol == null){
+    private UsuarioEntity.RolUsuarioEnum mapRolToEntity(RolUsuario rol) {
+        if (rol == null) {
             return null;
         }
 
-        return switch (rol){
+        return switch (rol) {
             case ADMIN -> UsuarioEntity.RolUsuarioEnum.ADMIN;
             case USER -> UsuarioEntity.RolUsuarioEnum.USER;
             case USER_HIJO -> UsuarioEntity.RolUsuarioEnum.USER_HIJO;
@@ -218,12 +230,12 @@ public class UsuarioEntityMapper {
     /**
      * Convierte TipologiaUsuarioEnum (Entity) a TipologiaUsuario (Domain).
      */
-    private TipologiaUsuario mapTipologiaToDomain(UsuarioEntity.TipologiaUsuarioEnum tipologiaEnum){
-        if (tipologiaEnum == null){
+    private TipologiaUsuario mapTipologiaToDomain(UsuarioEntity.TipologiaUsuarioEnum tipologiaEnum) {
+        if (tipologiaEnum == null) {
             return null;
         }
 
-        return switch (tipologiaEnum){
+        return switch (tipologiaEnum) {
             case ESTUDIANTE -> TipologiaUsuario.ESTUDIANTE;
             case TRABAJADOR -> TipologiaUsuario.TRABAJADOR;
             case INDEPENDIENTE -> TipologiaUsuario.INDEPENDIENTE;

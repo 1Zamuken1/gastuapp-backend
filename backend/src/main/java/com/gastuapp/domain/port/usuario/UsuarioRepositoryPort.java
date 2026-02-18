@@ -14,11 +14,13 @@ import java.util.Optional;
  *
  * RESPONSABILIDAD:
  * Define el contrato para operaciones de persistencia de Usuario.
- * Establece QUÉ operaciones están disponibles, pero NO define CÓMO se implementan.
+ * Establece QUÉ operaciones están disponibles, pero NO define CÓMO se
+ * implementan.
  *
  * ARQUITECTURA HEXAGONAL:
  * Este es un "Puerto de salida" (Output Port) del Domain hacia Infrastructure.
- * Permite que el Domain solicite persistencia sin conocer detalles técnicos (JPA, SQL, etc.)
+ * Permite que el Domain solicite persistencia sin conocer detalles técnicos
+ * (JPA, SQL, etc.)
  *
  * @author Juan Esteban Barrios Portela
  * @version 1.0
@@ -30,7 +32,8 @@ public interface UsuarioRepositoryPort {
      * Guarda un usuario (create o update).
      *
      * FLUJO:
-     * UsuarioService → UsuarioRepositoryPort → UsuarioRepositoryAdapter → JPA → PostgreSQL
+     * UsuarioService → UsuarioRepositoryPort → UsuarioRepositoryAdapter → JPA →
+     * PostgreSQL
      *
      * @param usuario Usuario a guardar (Domain model)
      * @return Usuario guardado con ID asignado (Domain model)
@@ -41,8 +44,10 @@ public interface UsuarioRepositoryPort {
      * Busca un usuario por su ID.
      *
      * FLUJO:
-     * UsuarioService → UsuarioRepositoryPort → UsuarioRepositoryAdapter → JPA → PostgreSQL
-     * PostgreSQL → JPA → UsuarioRepositoryAdapter → UsuarioRepositoryPort → UsuarioService
+     * UsuarioService → UsuarioRepositoryPort → UsuarioRepositoryAdapter → JPA →
+     * PostgreSQL
+     * PostgreSQL → JPA → UsuarioRepositoryAdapter → UsuarioRepositoryPort →
+     * UsuarioService
      *
      * @param id ID del usuario
      * @return Optional con el usuario si existe, vacío si no
@@ -57,6 +62,16 @@ public interface UsuarioRepositoryPort {
      * @return Optional con el usuario si existe
      */
     Optional<Usuario> findByPublicId(String publicId);
+
+    /**
+     * Busca un usuario por su Supabase Auth UUID.
+     * Usado por el filtro de autenticación para vincular tokens de Supabase
+     * con usuarios locales.
+     *
+     * @param supabaseUid UUID del usuario en Supabase Auth (como String)
+     * @return Optional con el usuario si existe
+     */
+    Optional<Usuario> findBySupabaseUid(String supabaseUid);
 
     /**
      * Busca un usuario por su email.
@@ -116,7 +131,8 @@ public interface UsuarioRepositoryPort {
      * No borra físicamente de la BD, solo marca activo = false.
      *
      * FLUJO:
-     * UsuarioService → UsuarioRepositoryPort → UsuarioRepositoryAdapter → JPA → PostgreSQL
+     * UsuarioService → UsuarioRepositoryPort → UsuarioRepositoryAdapter → JPA →
+     * PostgreSQL
      * (PostgreSQL: UPDATE usuarios SET activo = false WHERE id = ?)
      *
      * @param id ID del usuario a eliminar

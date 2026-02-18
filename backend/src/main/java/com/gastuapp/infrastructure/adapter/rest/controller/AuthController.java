@@ -4,9 +4,13 @@ import com.gastuapp.application.dto.request.LoginRequestDTO;
 import com.gastuapp.application.dto.request.RegistroRequestDTO;
 import com.gastuapp.application.dto.response.AuthResponseDTO;
 import com.gastuapp.application.service.AuthService;
+import com.gastuapp.domain.model.usuario.Usuario;
+import com.gastuapp.domain.port.usuario.UsuarioRepositoryPort;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -47,9 +51,11 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthService authService;
+    private final UsuarioRepositoryPort usuarioRepository;
 
-    public AuthController(AuthService authService) {
+    public AuthController(AuthService authService, UsuarioRepositoryPort usuarioRepository) {
         this.authService = authService;
+        this.usuarioRepository = usuarioRepository;
     }
 
     // ==================== REGISTER ====================
@@ -85,6 +91,11 @@ public class AuthController {
      * @param dto RegistroRequestDTO con datos del nuevo usuario
      * @return ResponseEntity con AuthResponseDTO (201 Created)
      */
+    /**
+     * @deprecated Usar Supabase Auth (supabase.auth.signUp()) desde el frontend.
+     *             Este endpoint se mantendrá durante la migración.
+     */
+    @Deprecated(since = "2.0", forRemoval = true)
     @PostMapping("/register")
     public ResponseEntity<AuthResponseDTO> register(@Valid @RequestBody RegistroRequestDTO dto) {
         AuthResponseDTO response = authService.register(dto);
@@ -118,6 +129,12 @@ public class AuthController {
      * @param dto LoginRequestDTO con email y password
      * @return ResponseEntity con AuthResponseDTO (200 OK)
      */
+    /**
+     * @deprecated Usar Supabase Auth (supabase.auth.signInWithPassword()) desde el
+     *             frontend.
+     *             Este endpoint se mantendrá durante la migración.
+     */
+    @Deprecated(since = "2.0", forRemoval = true)
     @PostMapping("/login")
     public ResponseEntity<AuthResponseDTO> login(@Valid @RequestBody LoginRequestDTO dto) {
         AuthResponseDTO response = authService.login(dto);
@@ -134,5 +151,59 @@ public class AuthController {
     @GetMapping("/health")
     public ResponseEntity<String> health() {
         return ResponseEntity.ok("AuthController funcionando correctamente");
+    }
+
+    // ==================== SUPABASE AUTH ====================
+
+    /**
+     * Retorna la información del usuario autenticado.
+     * Funciona con tokens de Supabase Auth.
+     *
+     * FLUJO:
+     * Cliente → GET /api/auth/me (con Bearer token de Supabase)
+     * → JwtAuthenticationFilter valida token
+     * → SecurityContext contiene el supabaseUid
+     * → [ESTE MÉTODO] busca el usuario por supabaseUid
+     * → Retorna datos del usuario
+     *
+     * @return AuthResponseDTO con datos del usuario autenticado
+     */
+    @GetMapping("/me")
+    public ResponseEntity<AuthResponseDTO> getCurrentUser() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        if (auth == null || !auth.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        String principal = auth.getName();
+
+        // Intentar buscar por supabaseUid (UUID format)
+        Usuario usuario = null;
+        try {
+            java.util.UUID.fromString(principal);
+            usuario = usuarioRepository.findBySupabaseUid(principal).orElse(null);
+        } catch (IllegalArgumentException e) {
+            // No es UUID, intentar como userId legado
+            try {
+                Long userId = Long.parseLong(principal);
+                usuario = usuarioRepository.findById(userId).orElse(null);
+            } catch (NumberFormatException ignored) {
+                // No es ni UUID ni Long
+            }
+        }
+
+        if (usuario == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+
+        AuthResponseDTO response = new AuthResponseDTO(
+                null, // No generamos token, el frontend ya lo tiene de Supabase
+                "Bearer",
+                usuario.getPublicId(),
+                usuario.getEmail(),
+                usuario.getRol().name());
+
+        return ResponseEntity.ok(response);
     }
 }

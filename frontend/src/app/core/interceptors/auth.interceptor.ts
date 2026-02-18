@@ -1,25 +1,22 @@
 /**
- * HTTP Interceptor: AuthInterceptor
+ * HTTP Interceptor: AuthInterceptor (Supabase Auth)
  *
  * FLUJO DE DATOS:
- * - INTERCEPTA: Todas las peticiones HTTP salientes
- * - MODIFICA: Agrega header Authorization con token JWT
- * - EXCLUYE: Endpoints públicos (/auth/login, /auth/register)
+ * - INTERCEPTA: Todas las peticiones HTTP salientes al backend
+ * - MODIFICA: Agrega header Authorization con access_token de Supabase
+ * - EXCLUYE: Endpoints públicos (/auth/health)
  *
  * RESPONSABILIDAD:
  * Interceptor funcional (Angular 21 style) que agrega automáticamente
- * el token JWT a todas las peticiones que requieren autenticación.
+ * el token JWT de Supabase a todas las peticiones que requieren autenticación.
  *
- * FUNCIONAMIENTO:
- * 1. Verifica si la URL es pública (no requiere auth)
- * 2. Si es pública, deja pasar sin modificar
- * 3. Si requiere auth, obtiene token de AuthService
- * 4. Clona la petición agregando header Authorization
- * 5. Envía la petición modificada
+ * NOTA: Las llamadas a Supabase Auth (signIn, signUp) se hacen
+ * directamente via el SDK de Supabase, NO via HttpClient, por lo
+ * que este interceptor NO las afecta.
  *
  * @author Juan Esteban Barrios Portela
- * @version 1.0
- * @since 2026-01-21
+ * @version 2.0
+ * @since 2026-02-12
  */
 import { HttpInterceptorFn, HttpRequest, HttpHandlerFn } from '@angular/common/http';
 import { inject } from '@angular/core';
@@ -28,10 +25,10 @@ import { AuthService } from '../services/auth.service';
 /**
  * URLs que NO requieren token de autenticación
  */
-const PUBLIC_URLS = ['/auth/login', '/auth/register', '/auth/health', '/health'];
+const PUBLIC_URLS = ['/auth/health', '/health'];
 
 /**
- * Interceptor funcional para agregar JWT a peticiones.
+ * Interceptor funcional para agregar JWT de Supabase a peticiones.
  *
  * USO:
  * Se registra en app.config.ts con provideHttpClient(withInterceptors([authInterceptor]))
@@ -55,7 +52,7 @@ export const authInterceptor: HttpInterceptorFn = (
     return next(req);
   }
 
-  // Obtener token
+  // Obtener token de Supabase (access_token)
   const token = authService.getToken();
 
   if (!token) {

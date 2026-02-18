@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * JPA Repository: UsuarioJpaRepository
@@ -35,7 +36,8 @@ import java.util.Optional;
  *
  * NOTA IMPORTANTE:
  * Esta interfaz trabaja con 'id' interno (Long), no con 'publicId'.
- * El RepositoryAdapter se encarga de convertir publicId → id cuando sea necesario.
+ * El RepositoryAdapter se encarga de convertir publicId → id cuando sea
+ * necesario.
  *
  * @author Juan Esteban Barrios Portela
  * @version 1.0
@@ -79,6 +81,18 @@ public interface UsuarioJpaRepository extends JpaRepository<UsuarioEntity, Long>
      * @return Optional con el usuario si existe
      */
     Optional<UsuarioEntity> findByTelefono(String telefono);
+
+    /**
+     * Busca un usuario por su Supabase Auth UUID.
+     * Usado para vincular tokens de Supabase con usuarios locales.
+     *
+     * Query generada:
+     * SELECT * FROM usuarios WHERE supabase_uid = ?
+     *
+     * @param supabaseUid UUID del usuario en Supabase Auth
+     * @return Optional con el usuario si existe
+     */
+    Optional<UsuarioEntity> findBySupabaseUid(UUID supabaseUid);
 
     // ============ Existencia ============
     /**
@@ -141,7 +155,8 @@ public interface UsuarioJpaRepository extends JpaRepository<UsuarioEntity, Long>
     List<UsuarioEntity> findByActivoTrue();
 
     /**
-     * Lista todos los usuarios activos ordenados por fecha de creación (más recientes primero).
+     * Lista todos los usuarios activos ordenados por fecha de creación (más
+     * recientes primero).
      *
      * Query generada:
      * SELECT * FROM usuarios WHERE activo = true ORDER BY fecha_creacion DESC

@@ -13,4 +13,8 @@ export const environment = {
   tokenKey: 'gastuapp_token',
 
   defaultPageSize: 10,
+
+  // Supabase Auth
+  supabaseUrl: 'https://wqwtgmxvynuruwbusxjh.supabase.co',
+  supabaseAnonKey: 'TU_SUPABASE_ANON_KEY_AQUI',
 };
