@@ -6,6 +6,7 @@ import com.gastuapp.application.service.UsuarioService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -231,8 +232,20 @@ public class UsuarioController {
      */
     private Long obtenerUsuarioIdAutenticado() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String userIdStr = authentication.getName(); // Ahora es userId como String
-        return Long.parseLong(userIdStr);
+
+        // AnonymousAuthenticationToken tiene isAuthenticated()=true pero NO es un
+        // usuario real
+        if (authentication == null || !authentication.isAuthenticated()
+                || authentication instanceof AnonymousAuthenticationToken) {
+            throw new IllegalStateException("Usuario no autenticado");
+        }
+
+        String userIdStr = authentication.getName();
+        try {
+            return Long.parseLong(userIdStr);
+        } catch (NumberFormatException e) {
+            throw new IllegalStateException("ID de usuario inválido en token JWT: " + userIdStr);
+        }
     }
 
     /**

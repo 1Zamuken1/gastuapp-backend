@@ -1,7 +1,7 @@
 # CONTEXTO ACTUALIZADO - GASTUAPP V2.0
 
-**Última actualización:** 21 de enero de 2025  
-**Estado:** Backend Fase 1 completado - Listo para iniciar Frontend
+**Última actualización:** 22 de febrero de 2026
+**Estado:** Backend + Frontend funcionales con Supabase Auth integrado
 
 ---
 
@@ -12,6 +12,7 @@
 **GastuApp** es un gestor de finanzas personales con enfoque en **conciencia financiera activa** basado en el **Calm Design Framework**.
 
 **Filosofía del producto:**
+
 - Tracking manual recomendado (conciencia activa) + automático opcional
 - Gamificación positiva (badges, progreso, celebraciones)
 - Sin ansiedad financiera (diseño calmado, sin alertas agresivas)
@@ -22,22 +23,68 @@
 ## STACK TECNOLÓGICO
 
 ### Backend (Actual)
+
 - **Framework:** Spring Boot 4.0.1
 - **Java:** 21
 - **Base de datos:** PostgreSQL (Supabase)
 - **Arquitectura:** Hexagonal (Ports & Adapters)
-- **Seguridad:** JWT con HS256
+- **Seguridad:** Supabase Auth (ES256/JWKS) + fallback JWT HS256 legacy
 - **ORM:** JPA/Hibernate
 
-### Frontend (Por iniciar)
-- **Framework:** Angular 20
+### Frontend (Implementado)
+
+- **Framework:** Angular 19
 - **Librería UI:** PrimeNG
-- **Estilo:** Calm Design Framework
+- **Estilo:** Calm Design Framework (tema oscuro, colores por módulo)
+- **Auth:** Supabase JS (@supabase/supabase-js v2)
+- **HTTP:** Angular HttpClient + interceptor JWT
 
 ### IA (Futuro - Fase 3)
+
 - **Provider:** GROQ (Llama 3)
 - **Tipo:** AI Agent con function calling
-- **Skills:** Implementados como contexto (ver carpeta `/mnt/skills/user/`)
+
+---
+
+## AUTENTICACIÓN (ESTADO ACTUAL)
+
+### Flujo Completo
+
+```
+Usuario → Supabase Auth (ES256) → Frontend (Angular)
+                                       │
+                              Authorization: Bearer <supabase_token>
+                                       │
+                              Spring Boot (JwtAuthenticationFilter)
+                                       │
+                         ┌─────────────┴──────────────┐
+                         ▼                              ▼
+               SupabaseJwtUtils               JwtUtils (legacy)
+               (ES256 / JWKS)                 (HS256 / secret)
+                         │
+                  findBySupabaseUid()
+                         │
+               principal = usuario.getId() [Long]
+                         │
+               SecurityContextHolder
+```
+
+### Detalles Clave
+
+- **Supabase firma tokens con ES256** (no HS256). Las claves públicas se obtienen desde:
+  `https://<project>.supabase.co/auth/v1/.well-known/jwks.json`
+- **`SupabaseJwtUtils`** valida tokens ES256 usando JWKS cacheado
+- **`JwtAuthenticationFilter`** tiene estrategia dual:
+  1. Intenta validar con SupabaseJwtUtils (Supabase tokens)
+  2. Fallback a JwtUtils (tokens legacy HS256 propios)
+- **El principal en SecurityContext es el ID interno (Long)** — no el supabase_uid (UUID). Los controllers hacen `Long.parseLong(authentication.getName())`
+- La tabla `usuarios` tiene columna `supabase_uid UUID` que vincula con `auth.users.id` de Supabase
+
+### Registro/Login
+
+- El registro y login se hacen **directamente contra Supabase Auth** desde el frontend
+- El backend solo valida el token, no genera tokens propios para usuarios Supabase
+- `AuthController` aún tiene endpoints legacy pero no son usados por el flujo principal
 
 ---
 
@@ -47,213 +94,84 @@
 
 ```
 src/main/java/com/gastuapp/
-├── domain/                          # Capa de Dominio (Core)
-│   ├── model/                       # Modelos puros (sin JPA)
-│   │   ├── usuario/
-│   │   │   ├── Usuario.java
-│   │   │   ├── RolUsuario.java (ADMIN, USER, USER_HIJO)
-│   │   │   ├── TipologiaUsuario.java
-│   │   │   ├── TipoOnboarding.java
-│   │   │   └── ConfiguracionUsuario.java
-│   │   ├── categoria/
-│   │   │   ├── Categoria.java
-│   │   │   └── TipoCategoria.java
-│   │   └── transaccion/
-│   │       ├── Transaccion.java
-│   │       └── TipoTransaccion.java (INGRESO, EGRESO)
-│   └── port/                        # Interfaces (Ports)
-│       ├── usuario/UsuarioRepositoryPort.java
-│       ├── categoria/CategoriaRepositoryPort.java
-│       └── transaccion/TransaccionRepositoryPort.java
+├── domain/
+│   ├── model/
+│   │   ├── usuario/         (Usuario, RolUsuario, TipologiaUsuario, ConfiguracionUsuario)
+│   │   ├── categoria/       (Categoria, TipoCategoria)
+│   │   ├── transaccion/     (Transaccion, TipoTransaccion)
+│   │   ├── ahorro/          (MetaAhorro, Ahorro, CuotaAhorro)
+│   │   ├── planificacion/   (Presupuesto/Planificacion)
+│   │   ├── proyeccion/      (Proyeccion)
+│   │   ├── badge/           (pendiente)
+│   │   ├── notificacion/    (pendiente)
+│   │   └── suscripcion/     (pendiente)
+│   └── port/
+│       └── [Entidad]RepositoryPort.java
 │
-├── application/                     # Capa de Aplicación
-│   ├── service/                     # Lógica de negocio
+├── application/
+│   ├── service/
 │   │   ├── AuthService.java
 │   │   ├── UsuarioService.java
 │   │   ├── CategoriaService.java
-│   │   └── TransaccionService.java
-│   ├── mapper/                      # Mappers DTO ↔ Domain
-│   │   ├── UsuarioMapper.java
-│   │   ├── CategoriaMapper.java
-│   │   └── TransaccionMapper.java
-│   └── dto/
-│       ├── request/                 # DTOs de entrada
-│       │   ├── LoginRequestDTO.java
-│       │   ├── RegistroRequestDTO.java
-│       │   ├── CrearHijoRequestDTO.java
-│       │   ├── AdminCrearUsuarioRequestDTO.java
-│       │   └── TransaccionRequestDTO.java
-│       └── response/                # DTOs de salida
-│           ├── AuthResponseDTO.java
-│           ├── UsuarioResponseDTO.java
-│           ├── CategoriaResponseDTO.java
-│           └── TransaccionResponseDTO.java
+│   │   ├── TransaccionService.java
+│   │   ├── AhorroService.java
+│   │   ├── PresupuestoService.java
+│   │   ├── PresupuestoScheduler.java
+│   │   └── ProyeccionService.java
+│   ├── mapper/
+│   └── dto/ (request/ + response/)
 │
-└── infrastructure/                  # Capa de Infraestructura
+└── infrastructure/
     ├── adapter/
-    │   ├── persistence/             # Persistencia (PostgreSQL)
-    │   │   ├── entity/              # Entidades JPA
-    │   │   │   ├── UsuarioEntity.java
-    │   │   │   ├── ConfiguracionUsuarioEntity.java
-    │   │   │   ├── CategoriaEntity.java
-    │   │   │   └── TransaccionEntity.java
-    │   │   ├── repository/          # Spring Data JPA
-    │   │   │   ├── UsuarioJpaRepository.java
-    │   │   │   ├── ConfiguracionUsuarioJpaRepository.java
-    │   │   │   ├── CategoriaJpaRepository.java
-    │   │   │   └── TransaccionJpaRepository.java
-    │   │   ├── mapper/              # Mappers Entity ↔ Domain
-    │   │   │   ├── UsuarioEntityMapper.java
-    │   │   │   ├── ConfiguracionUsuarioEntityMapper.java
-    │   │   │   ├── CategoriaEntityMapper.java
-    │   │   │   └── TransaccionEntityMapper.java
-    │   │   └── UsuarioRepositoryAdapter.java
-    │   │       CategoriaRepositoryAdapter.java
-    │   │       TransaccionRepositoryAdapter.java
-    │   └── rest/                    # REST API
-    │       ├── controller/
-    │       │   ├── AuthController.java
-    │       │   ├── UsuarioController.java
-    │       │   ├── CategoriaController.java
-    │       │   ├── TransaccionController.java
-    │       │   └── HealthController.java
-    │       └── exception/           # Manejo de errores
-    │           ├── GlobalExceptionHandler.java
-    │           ├── ErrorResponse.java
-    │           └── UsuarioNotFoundException.java
-    ├── config/                      # Configuración
-    │   ├── SecurityConfig.java      # Spring Security + JWT
-    │   ├── JwtProperties.java       # Propiedades JWT
-    │   └── DataSeeder.java          # Seed de categorías
-    └── security/
-        └── jwt/
-            ├── JwtUtils.java        # Generación/validación JWT
-            └── JwtAuthenticationFilter.java
+    │   ├── persistence/entity/
+    │   │   ├── UsuarioEntity.java          (con supabase_uid UUID)
+    │   │   ├── ConfiguracionUsuarioEntity.java
+    │   │   ├── CategoriaEntity.java
+    │   │   ├── TransaccionEntity.java
+    │   │   ├── MetaAhorroEntity.java
+    │   │   ├── AhorroEntity.java
+    │   │   ├── CuotaAhorroEntity.java
+    │   │   ├── PresupuestoEntity.java
+    │   │   └── ProyeccionEntity.java
+    │   └── rest/controller/
+    │       ├── AuthController.java
+    │       ├── UsuarioController.java
+    │       ├── CategoriaController.java
+    │       ├── TransaccionController.java
+    │       ├── AhorroController.java
+    │       ├── PresupuestoController.java
+    │       ├── ProyeccionController.java
+    │       └── HealthController.java
+    ├── config/
+    │   ├── SecurityConfig.java
+    │   ├── JwtProperties.java
+    │   └── DataSeeder.java
+    └── security/jwt/
+        ├── JwtUtils.java               (HS256 legacy)
+        ├── SupabaseJwtUtils.java       (ES256 / JWKS)
+        └── JwtAuthenticationFilter.java
 ```
-
----
-
-## ROLES Y PERMISOS
-
-### Tipos de Usuario
-
-| Rol | Descripción | Permisos |
-|-----|-------------|----------|
-| **ADMIN** | Administrador del sistema | Gestión de usuarios, sin acceso a datos financieros |
-| **USER** | Usuario normal (padre) | Acceso completo + puede crear/supervisar hijos |
-| **USER_HIJO** | Usuario hijo (menor) | Acceso restringido, supervisado por padre |
-
-### Reglas de Supervisión Padre-Hijo
-
-**Padre (USER):**
-- ✅ Puede ver TODOS los datos de sus hijos
-- ✅ Puede crear cuentas de hijos (USER_HIJO)
-- ✅ Puede gestionar permisos de sus hijos (Futuro)
-
-**Hijo (USER_HIJO):**
-- ❌ NO puede ver datos del padre
-- ✅ Solo ve sus propios datos
-- ✅ Tiene funciones limitadas según configuración del padre
-
----
-
-## ESTADO ACTUAL DEL BACKEND
-
-### ✅ COMPLETADO (Commits 1-19)
-
-#### **Commit 1-10: Infraestructura Base**
-- ✅ Setup inicial Spring Boot 4.0.1 + PostgreSQL (Supabase)
-- ✅ Configuración JPA/Hibernate
-- ✅ Arquitectura hexagonal base
-- ✅ Health endpoint
-
-#### **Commit 11-15: Módulo Usuario**
-- ✅ Domain: Usuario, RolUsuario, TipologiaUsuario
-- ✅ Infrastructure: UsuarioEntity + JpaRepository + Adapter
-- ✅ Application: DTOs + Mapper + UsuarioService
-- ✅ REST: UsuarioController
-- ✅ Funcionalidades:
-  - Registro público (rol USER automático)
-  - Login con email/password
-  - CRUD de perfil propio
-  - Crear/listar hijos (USER_HIJO)
-  - Admin: gestión de usuarios
-
-#### **Commit 16: Autenticación JWT**
-- ✅ JwtUtils (generación/validación)
-- ✅ JwtAuthenticationFilter
-- ✅ SecurityConfig
-- ✅ AuthService (login/register)
-- ✅ Tokens incluyen: email, publicId, rol, userId
-- ✅ Optimización: userId en JWT para evitar consultas a BD
-
-#### **Commit 17-18: Módulo Categorías**
-- ✅ Domain: Categoria, TipoCategoria
-- ✅ Infrastructure: CategoriaEntity + Repository + Adapter
-- ✅ Application: DTOs + Mapper + CategoriaService
-- ✅ REST: CategoriaController
-- ✅ DataSeeder: 15 categorías predefinidas
-  - **Egresos (9):** Comida, Transporte, Salud, Entretenimiento, Educación, Hogar, Ropa, Servicios, Otros gastos
-  - **Ingresos (6):** Salario, Freelance, Inversiones, Regalos, Mesada, Otros ingresos
-
-#### **Commit 19: Módulo Transacciones (COMPLETO)**
-- ✅ Domain: Transaccion, TipoTransaccion
-- ✅ Infrastructure: TransaccionEntity + Repository + Adapter
-- ✅ Application: DTOs + Mapper + TransaccionService (10 casos de uso)
-- ✅ REST: TransaccionController (10 endpoints)
-- ✅ Funcionalidades:
-  - CRUD completo de transacciones
-  - Filtros: tipo, categoría, rango de fechas
-  - Cálculo de balance (ingresos - egresos)
-  - Resumen financiero
-  - Validación: categoría compatible con tipo
-  - Enriquecimiento: ResponseDTO incluye nombre e ícono de categoría
-
-### ⏸️ PENDIENTE EN BACKEND
-
-#### **ConfiguracionUsuario**
-- Estructura Domain/Entity/Repository completa
-- Falta: Service + Controller + Endpoints
-- Endpoints pendientes:
-  - GET /api/usuarios/me/configuracion
-  - PUT /api/usuarios/me/configuracion
-
-#### **Cuenta Bancaria**
-- Todo por implementar
-- Relaciones: Usuario (1:N), Transaccion (1:N)
-
-#### **Presupuesto**
-- Todo por implementar
-- Relaciones: Usuario, Categoria, periodo (mensual/anual)
-
-#### **Meta de Ahorro**
-- Todo por implementar
-- Progreso calculado automáticamente
-
-#### **Suscripción**
-- Todo por implementar
-- Detección automática (Fase 2)
-
-#### **Proyección Financiera**
-- Todo por implementar (Fase 3)
-- Transacciones automáticas basadas en patrones
 
 ---
 
 ## ENDPOINTS IMPLEMENTADOS
 
 ### Base URL
+
 ```
 http://localhost:8080/api
 ```
 
-### Autenticación (Público)
+### Auth (Mixto - principalmente legacy)
+
 ```
-POST   /auth/register           # Registro público (rol USER)
-POST   /auth/login              # Login con JWT
+POST   /auth/register           # Registro legacy (sin Supabase)
+POST   /auth/login              # Login legacy (sin Supabase)
+GET    /health                  # Estado del servidor
 ```
 
 ### Usuarios (Autenticado)
+
 ```
 GET    /usuarios/me             # Perfil del usuario autenticado
 PUT    /usuarios/me             # Actualizar perfil propio
@@ -261,73 +179,100 @@ DELETE /usuarios/me             # Eliminar cuenta propia
 GET    /usuarios/{publicId}     # Ver perfil (con validación de permisos)
 POST   /usuarios/hijo           # Crear hijo (solo USER)
 GET    /usuarios/hijos          # Listar hijos del usuario (solo USER)
-```
-
-### Admin (Solo ADMIN)
-```
-GET    /admin/usuarios                  # Listar todos los usuarios
-POST   /admin/usuarios                  # Crear usuario con rol específico
-DELETE /admin/usuarios/{publicId}       # Eliminar usuario
+GET    /admin/usuarios          # Listar todos (solo ADMIN)
 ```
 
 ### Categorías (Autenticado)
+
 ```
-GET    /categorias                      # Listar categorías predefinidas
-GET    /categorias/{id}                 # Obtener categoría por ID
-GET    /categorias/tipo/{tipo}          # Listar por tipo (INGRESO/EGRESO)
+GET    /categorias                      # Listar todas las categorías
+GET    /categorias/{id}                 # Por ID
+GET    /categorias/tipo/{tipo}          # Por tipo (INGRESO/EGRESO)
 ```
 
 ### Transacciones (Autenticado)
+
 ```
-POST   /transacciones                   # Crear transacción
-GET    /transacciones                   # Listar transacciones del usuario
-GET    /transacciones/{id}              # Obtener transacción por ID
-PUT    /transacciones/{id}              # Actualizar transacción
-DELETE /transacciones/{id}              # Eliminar transacción
-GET    /transacciones/tipo/{tipo}       # Filtrar por tipo
-GET    /transacciones/categoria/{id}    # Filtrar por categoría
-GET    /transacciones/rango             # Filtrar por rango de fechas
-GET    /transacciones/balance           # Calcular balance del usuario
-GET    /transacciones/resumen           # Resumen financiero completo
+POST   /transacciones
+GET    /transacciones
+GET    /transacciones/{id}
+PUT    /transacciones/{id}
+DELETE /transacciones/{id}
+GET    /transacciones/tipo/{tipo}
+GET    /transacciones/categoria/{id}
+GET    /transacciones/rango
+GET    /transacciones/balance
+GET    /transacciones/resumen
 ```
 
-### Health Check
+### Ahorros (Autenticado)
+
 ```
-GET    /health                          # Estado del servidor
+POST   /ahorros/metas                   # Crear meta de ahorro
+GET    /ahorros/metas                   # Listar metas
+GET    /ahorros/metas/{id}
+PUT    /ahorros/metas/{id}
+DELETE /ahorros/metas/{id}
+POST   /ahorros/metas/{id}/cuotas       # Registrar cuota
+GET    /ahorros/metas/{id}/cuotas
+GET    /ahorros/metas/{id}/progreso     # Progreso calculado
+GET    /ahorros/resumen                 # Resumen global de ahorros
+```
+
+### Presupuestos/Planificaciones (Autenticado)
+
+```
+POST   /presupuestos-planificaciones
+GET    /presupuestos-planificaciones
+GET    /presupuestos-planificaciones/{id}
+PUT    /presupuestos-planificaciones/{id}
+DELETE /presupuestos-planificaciones/{id}
+GET    /presupuestos-planificaciones/activas    # ⚠️ Retorna 409 (bug a resolver)
+```
+
+### Proyecciones (Autenticado)
+
+```
+GET    /proyecciones
+GET    /proyecciones/{id}
+POST   /proyecciones
 ```
 
 ---
 
-## SEGURIDAD JWT
+## ESTADO DEL FRONTEND
 
-### Estructura del Token
+### Módulos Implementados
 
-**Claims incluidos:**
-```json
-{
-  "sub": "user@example.com",          // Email del usuario
-  "publicId": "550e8400-e29b-41d4...", // UUID público
-  "rol": "USER",                       // Rol del usuario
-  "userId": 123,                       // ID interno (NUEVO - optimización)
-  "iat": 1705750000,                   // Issued at
-  "exp": 1705836400,                   // Expiration
-  "iss": "GastuApp"                    // Issuer
-}
-```
+| Módulo                       | Ruta                  | Estado                      |
+| ---------------------------- | --------------------- | --------------------------- |
+| **Auth**                     | `/login`, `/register` | ✅ Completo (Supabase Auth) |
+| **Dashboard**                | `/dashboard`          | ✅ Completo                 |
+| **Transacciones** (Ingresos) | `/ingresos`           | ✅ Completo                 |
+| **Transacciones** (Egresos)  | `/egresos`            | ✅ Completo                 |
+| **Ahorros**                  | `/ahorros`            | ✅ Completo                 |
+| **Planificaciones**          | `/planificaciones`    | ✅ Completo                 |
+| **Proyecciones**             | `/proyecciones`       | ✅ Completo                 |
 
-### Configuración Actual
-- **Algoritmo:** HS256
-- **Secret:** Configurado en `application.properties`
-- **Expiración:** 24 horas (desarrollo)
-- **Optimización:** userId en token para evitar consultas a BD
+### Servicios Core
 
-### Flujo de Autenticación
-1. Usuario hace login → Backend genera JWT con userId
-2. Frontend guarda token en localStorage
-3. Cada request incluye header: `Authorization: Bearer <token>`
-4. JwtAuthenticationFilter valida token y extrae userId
-5. userId se guarda en SecurityContext
-6. Controllers obtienen userId directamente (sin consulta a BD)
+- **`AuthService`** — gestión Supabase Auth, señales de sesión, token
+- **`auth.interceptor.ts`** — añade `Authorization: Bearer <token>` a todas las requests al backend
+- **`supabase.client.ts`** — instancia singleton con lock personalizado (evita NavigatorLockAcquireTimeoutError)
+
+### PWA
+
+- `public/manifest.webmanifest` — configurado correctamente
+
+---
+
+## ROLES Y PERMISOS
+
+| Rol           | Descripción                               |
+| ------------- | ----------------------------------------- |
+| **ADMIN**     | Administrador del sistema                 |
+| **USER**      | Usuario normal (adulto/padre)             |
+| **USER_HIJO** | Usuario hijo (menor de edad, supervisado) |
 
 ---
 
@@ -335,104 +280,40 @@ GET    /health                          # Estado del servidor
 
 ### Tablas Implementadas
 
-#### **usuarios**
-```sql
-CREATE TABLE usuarios (
-  id BIGSERIAL PRIMARY KEY,
-  public_id VARCHAR(36) UNIQUE NOT NULL,
-  nombre VARCHAR(100) NOT NULL,
-  apellido VARCHAR(100) NOT NULL,
-  email VARCHAR(255) UNIQUE NOT NULL,
-  telefono VARCHAR(20),
-  password VARCHAR(255) NOT NULL,
-  rol VARCHAR(20) NOT NULL,
-  activo BOOLEAN DEFAULT true,
-  fecha_creacion TIMESTAMP NOT NULL,
-  tipologia VARCHAR(20),
-  profesion VARCHAR(255),
-  institucion VARCHAR(255),
-  tutor_id BIGINT REFERENCES usuarios(id),
-  google_id VARCHAR(255) UNIQUE
-);
-```
-
-#### **configuracion_usuario**
-```sql
-CREATE TABLE configuracion_usuario (
-  id BIGSERIAL PRIMARY KEY,
-  usuario_id BIGINT UNIQUE NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
-  notificaciones_activas BOOLEAN DEFAULT true,
-  celebraciones_activas BOOLEAN DEFAULT true,
-  onboarding_completado VARCHAR(20) DEFAULT 'NO_COMPLETADO',
-  idioma_preferido VARCHAR(5) DEFAULT 'es',
-  modo_oscuro BOOLEAN DEFAULT false
-);
-```
-
-#### **categorias**
-```sql
-CREATE TABLE categorias (
-  id BIGSERIAL PRIMARY KEY,
-  nombre VARCHAR(50) NOT NULL,
-  icono VARCHAR(50),
-  tipo VARCHAR(20) NOT NULL,
-  predefinida BOOLEAN DEFAULT false,
-  usuario_id BIGINT REFERENCES usuarios(id)
-);
-```
-
-#### **transacciones**
-```sql
-CREATE TABLE transacciones (
-  id BIGSERIAL PRIMARY KEY,
-  monto DECIMAL(15,2) NOT NULL,
-  tipo VARCHAR(20) NOT NULL,
-  descripcion VARCHAR(500) NOT NULL,
-  fecha DATE NOT NULL,
-  fecha_creacion TIMESTAMP NOT NULL,
-  categoria_id BIGINT NOT NULL REFERENCES categorias(id),
-  usuario_id BIGINT NOT NULL REFERENCES usuarios(id),
-  proyeccion_id BIGINT REFERENCES proyecciones(id),
-  es_automatica BOOLEAN DEFAULT false
-);
-```
-
-### Tablas Pendientes
-- `cuentas_bancarias`
-- `presupuestos`
+- `usuarios` — con columna `supabase_uid UUID UNIQUE` y RLS habilitado
+- `configuracion_usuario`
+- `categorias` — 15 categorías predefinidas (DataSeeder)
+- `transacciones`
 - `metas_ahorro`
-- `suscripciones`
-- `proyecciones` (Fase 3)
+- `ahorros`
+- `cuotas_ahorro`
+- `presupuestos_planificaciones`
+- `proyecciones`
+
+### Seguridad BD
+
+- RLS habilitado en todas las tablas (ver `docs/sql/001_enable_rls.sql`)
+- Trigger `handle_new_user()` sincroniza `auth.users` → `public.usuarios`
+- Plan de rollback disponible en `docs/sql/002_rollback_rls.sql`
 
 ---
 
 ## CONVENCIONES DEL PROYECTO
 
-### Nomenclatura
+### Nomenclatura Backend
 
-**Clases Domain:**
-- Modelos: `Usuario.java`, `Transaccion.java`
-- Enums: `RolUsuario.java`, `TipoTransaccion.java`
+- Modelos domain: `Usuario.java`, `Transaccion.java`
 - Ports: `[Entidad]RepositoryPort.java`
-
-**Clases Infrastructure:**
 - Entities: `[Entidad]Entity.java`
 - Repositories: `[Entidad]JpaRepository.java`
 - Adapters: `[Entidad]RepositoryAdapter.java`
-- Mappers: `[Entidad]EntityMapper.java`
-
-**Clases Application:**
+- Mappers: `[Entidad]EntityMapper.java` / `[Entidad]Mapper.java`
 - Services: `[Entidad]Service.java`
-- DTOs Request: `[Operacion]RequestDTO.java`
-- DTOs Response: `[Entidad]ResponseDTO.java`
-- Mappers: `[Entidad]Mapper.java`
-
-**Clases REST:**
+- DTOs: `[Operacion]RequestDTO.java` / `[Entidad]ResponseDTO.java`
 - Controllers: `[Entidad]Controller.java`
 
-### Documentación
+### Documentación de Clases
 
-**Cada clase debe tener:**
 ```java
 /**
  * [Tipo]: [Nombre]
@@ -443,7 +324,7 @@ CREATE TABLE transacciones (
  * - USADO POR: [Clases que lo usan]
  *
  * RESPONSABILIDAD:
- * [Descripción de la responsabilidad]
+ * [Descripción]
  *
  * @author Juan Esteban Barrios Portela
  * @version 1.0
@@ -453,79 +334,44 @@ CREATE TABLE transacciones (
 
 ### Commits
 
-**Formato:**
 ```
-feat: [título conciso]
+feat/fix/refactor: [título conciso]
 
-[Descripción estructurada sin emojis]
+[Descripción estructurada en español]
 
-Funcionalidades:
-- Lista de funcionalidades
-
-Arquitectura:
-- Detalles de arquitectura
-
-[Otras secciones relevantes]
-
-Validaciones/Optimizaciones/etc.
+Módulo/Área:
+- ítem
+- ítem
 ```
 
 ---
 
 ## PRÓXIMOS PASOS
 
-### PLAN INMEDIATO: FRONTEND (Commits 20-25)
+### Inmediato (este sprint)
 
-**Commit 20: Setup Angular 20 + PrimeNG**
-- Crear proyecto Angular 20
-- Instalar PrimeNG + dependencias
-- Configurar estilos globales (Calm Design Framework)
-- Configurar routing
-- Configurar HttpClient + interceptors JWT
+1. **Fix 409 en `/presupuestos-planificaciones/activas`**
+   - Investigar lógica en `PresupuestoController` y `PresupuestoService`
+   - El 409 Conflict sugiere un problema de estado/lógica, no de auth
 
-**Commit 21: Módulo de Autenticación**
-- Componente Login
-- Componente Register
-- AuthService (llamadas al backend)
-- Guard de autenticación
-- Interceptor JWT
-- Manejo de tokens en localStorage
+2. **ConfiguracionUsuario** (pendiente de Service + Controller)
+   - La Entity y Repository ya existen
+   - Endpoints por crear:
+     - `GET  /api/usuarios/me/configuracion`
+     - `PUT  /api/usuarios/me/configuracion`
 
-**Commit 22: Dashboard Principal**
-- Componente Dashboard
-- Card de balance actual
-- Card de resumen (ingresos/egresos)
-- Navegación básica (sidebar/navbar)
-- Layout responsive
+### Descartado / Pospuesto indefinidamente
 
-**Commit 23: Transacciones - Listar**
-- Componente lista de transacciones
-- PrimeNG DataTable
-- Filtros (tipo, categoría, fecha)
-- Paginación
+- **Cuentas Bancarias con API externa** — APIs bancarias en Colombia (Belvo, Open Banking) requieren certificación SFC, contratos costosos y verificaciones legales. No viable para un proyecto personal.
+- **Suscripciones con detección automática** — requiere datos bancarios en tiempo real. Mismo problema que cuentas bancarias.
+- **IA / Proyecciones automáticas** — Fase 3, futuro lejano
 
-**Commit 24: Transacciones - Crear/Editar**
-- Dialog crear transacción
-- Dialog editar transacción
-- Formularios reactivos
-- Selector de categorías con íconos
+### Posible en próximos sprints
 
-**Commit 25: Transacciones - Eliminar + Balance**
-- Confirmación de eliminación
-- Visualización de balance
-- Gráfico ingresos vs egresos
-
-### DESPUÉS DEL FRONTEND BÁSICO
-
-**Opción A: Volver al Backend**
-- ConfiguracionUsuario (endpoints)
-- Cuenta Bancaria (completo)
-- Presupuesto (completo)
-
-**Opción B: Continuar Frontend**
-- Módulo de perfil
-- Módulo de categorías personalizadas
-- Módulo de cuentas bancarias
+- **Cuentas manuales** — el usuario registra sus cuentas y saldos manualmente (sin API bancaria)
+- **Suscripciones manuales** — tracking manual de pagos recurrentes (Netflix, gym, etc.)
+- **ConfiguracionUsuario UI** — pantalla de perfil/configuración en el frontend
+- **Notificaciones** — sistema de alertas dentro de la app
 
 ---
 
@@ -533,64 +379,46 @@ Validaciones/Optimizaciones/etc.
 
 ### Backend (Spring Boot)
 
-**application.properties:**
 ```properties
 # Base de datos (Supabase)
 spring.datasource.url=jdbc:postgresql://aws-1-sa-east-1.pooler.supabase.com:6543/postgres
-spring.datasource.username=postgres.wqwtgmxvynuruwbusxjh
-spring.datasource.password=[TU_PASSWORD]
+spring.datasource.username=postgres.<project_id>
+spring.datasource.password=[PASSWORD]
 
-# JWT
-jwt.secret=[TU_SECRET_KEY_256_BITS]
+# Supabase Auth
+supabase.url=https://<project_id>.supabase.co
+supabase.jwt-secret=[JWT_SECRET_DEL_DASHBOARD]
+
+# JWT legacy (mantener durante migración)
+jwt.secret=[SECRET_KEY_256_BITS]
 jwt.expiration=86400000
 jwt.issuer=GastuApp
 
 # JPA
 spring.jpa.hibernate.ddl-auto=update
-spring.jpa.show-sql=true
-
-# Server
 server.port=8080
 server.servlet.context-path=/api
 ```
 
 ### Frontend (Angular)
 
-**Configuración de entorno:**
 ```typescript
 // src/environments/environment.ts
 export const environment = {
   production: false,
-  apiUrl: 'http://localhost:8080/api'
+  apiUrl: "http://localhost:8080/api",
+  supabaseUrl: "https://<project_id>.supabase.co",
+  supabaseAnonKey: "<anon_key>",
 };
 ```
 
 ---
 
-## SKILLS DE IA DISPONIBLES
+## METADATA
 
-Tienes 3 skills personalizados implementados en `/mnt/skills/user/`:
+**Desarrollador:** Juan Esteban Barrios Portela
+**Proyecto:** GastuApp v2.0
+**Inicio:** Enero 2025
+**Última actualización:** 22 de febrero de 2026
 
-1. **ai-agent-function-calling:** Implementación de AI Agent con function calling
-2. **postgresql-spring-boot:** Guía de PostgreSQL + JPA
-3. **hexagonal-spring-boot:** Arquitectura hexagonal en Spring Boot
-
-Estos skills están disponibles como contexto para Claude y deben ser consultados cuando sean relevantes.
-
----
-
-## CONTACTO Y METADATA
-
-**Desarrollador:** Juan Esteban Barrios Portela  
-**Proyecto:** GastuApp v2.0  
-**Inicio:** Enero 2025  
-**Estado:** Backend Fase 1 completado - Frontend en inicio  
-**Repositorio:** [Pendiente de definir]
-
----
-
-**NOTA IMPORTANTE:** Este documento debe actualizarse después de cada fase importante del proyecto para mantener el contexto claro en futuros chats.
-
----
-
-_Última actualización: 21 de enero de 2025 - Post Commit 19_
+> **NOTA:** Actualizar este documento después de cada fase importante del proyecto.

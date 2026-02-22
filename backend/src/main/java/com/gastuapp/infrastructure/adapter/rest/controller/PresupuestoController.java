@@ -7,6 +7,7 @@ import com.gastuapp.application.service.PresupuestoService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -34,7 +35,8 @@ import java.util.List;
  * - PUT /api/presupuestos-planificaciones/{publicId}/desactivar → Desactivar
  * - GET /api/presupuestos-planificaciones/activas → Listar activas
  * - GET /api/presupuestos-planificaciones/cercanos → Cercanos a exceder
- * - POST /api/presupuestos-planificaciones/actualizar-montos → Sincronizar montos
+ * - POST /api/presupuestos-planificaciones/actualizar-montos → Sincronizar
+ * montos
  *
  * SEGURIDAD:
  * - Todos los endpoints requieren JWT válido
@@ -67,34 +69,34 @@ public class PresupuestoController {
      *
      * REQUEST BODY:
      * {
-     *   "montoTope": 500000.00,
-     *   "fechaInicio": "2026-01-01",
-     *   "fechaFin": "2026-01-31",
-     *   "frecuencia": "MENSUAL",
-     *   "autoRenovar": true,
-     *   "categoriaId": 5
+     * "montoTope": 500000.00,
+     * "fechaInicio": "2026-01-01",
+     * "fechaFin": "2026-01-31",
+     * "frecuencia": "MENSUAL",
+     * "autoRenovar": true,
+     * "categoriaId": 5
      * }
      *
      * RESPONSE (201 Created):
      * {
-     *   "id": 123,
-     *   "publicId": "550e8400-e29b-41d4-a716-446655440000",
-     *   "montoTope": 500000.00,
-     *   "montoGastado": 120000.00,
-     *   "montoRestante": 380000.00,
-     *   "porcentajeUtilizacion": 24.0,
-     *   "fechaInicio": "2026-01-01",
-     *   "fechaFin": "2026-01-31",
-     *   "frecuencia": "MENSUAL",
-     *   "estado": "ACTIVA",
-     *   "autoRenovar": true,
-     *   "fechaCreacion": "2026-01-01T08:00:00",
-     *   "categoriaId": 5,
-     *   "categoriaNombre": "Comida y bebidas",
-     *   "categoriaIcono": "🍔",
-     *   "estaVigente": true,
-     *   "estaExcedido": false,
-     *   "diasRestantes": 4
+     * "id": 123,
+     * "publicId": "550e8400-e29b-41d4-a716-446655440000",
+     * "montoTope": 500000.00,
+     * "montoGastado": 120000.00,
+     * "montoRestante": 380000.00,
+     * "porcentajeUtilizacion": 24.0,
+     * "fechaInicio": "2026-01-01",
+     * "fechaFin": "2026-01-31",
+     * "frecuencia": "MENSUAL",
+     * "estado": "ACTIVA",
+     * "autoRenovar": true,
+     * "fechaCreacion": "2026-01-01T08:00:00",
+     * "categoriaId": 5,
+     * "categoriaNombre": "Comida y bebidas",
+     * "categoriaIcono": "🍔",
+     * "estaVigente": true,
+     * "estaExcedido": false,
+     * "diasRestantes": 4
      * }
      *
      * @param dto CrearPresupuestoRequestDTO con datos del presupuesto
@@ -155,8 +157,8 @@ public class PresupuestoController {
      *
      * REQUEST BODY (parcial):
      * {
-     *   "montoTope": 600000.00,
-     *   "autoRenovar": false
+     * "montoTope": 600000.00,
+     * "autoRenovar": false
      * }
      *
      * RESPONSE (200 OK):
@@ -168,9 +170,9 @@ public class PresupuestoController {
      */
     @PutMapping("/{publicId}")
     public ResponseEntity<PresupuestoResponseDTO> actualizarPresupuesto(
-            @PathVariable String publicId, 
+            @PathVariable String publicId,
             @Valid @RequestBody ActualizarPresupuestoRequestDTO dto) {
-        
+
         Long usuarioId = obtenerUsuarioIdAutenticado();
         PresupuestoResponseDTO presupuesto = presupuestoService.actualizarPresupuesto(publicId, dto, usuarioId);
         return ResponseEntity.ok(presupuesto);
@@ -219,7 +221,8 @@ public class PresupuestoController {
         return ResponseEntity.ok(presupuestos);
     }
 
-    // ==================== LISTAR PRESUPUESTOS CERCANOS A EXCEDER ====================
+    // ==================== LISTAR PRESUPUESTOS CERCANOS A EXCEDER
+    // ====================
 
     /**
      * Lista presupuestos que están cerca de exceder el tope.
@@ -240,9 +243,10 @@ public class PresupuestoController {
     @GetMapping("/cercanos")
     public ResponseEntity<List<PresupuestoResponseDTO>> listarPresupuestosCercanos(
             @RequestParam(defaultValue = "80.0") Double porcentaje) {
-        
+
         Long usuarioId = obtenerUsuarioIdAutenticado();
-        List<PresupuestoResponseDTO> presupuestos = presupuestoService.listarPresupuestosPorExceder(usuarioId, porcentaje);
+        List<PresupuestoResponseDTO> presupuestos = presupuestoService.listarPresupuestosPorExceder(usuarioId,
+                porcentaje);
         return ResponseEntity.ok(presupuestos);
     }
 
@@ -257,8 +261,8 @@ public class PresupuestoController {
      *
      * RESPONSE (200 OK):
      * {
-     *   "message": "Montos sincronizados exitosamente",
-     *   "presupuestosActualizados": 5
+     * "message": "Montos sincronizados exitosamente",
+     * "presupuestosActualizados": 5
      * }
      *
      * @return ResponseEntity con mensaje de confirmación
@@ -281,48 +285,22 @@ public class PresupuestoController {
      */
     private Long obtenerUsuarioIdAutenticado() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        
-        if (authentication == null || !authentication.isAuthenticated()) {
+
+        // AnonymousAuthenticationToken tiene isAuthenticated()=true pero NO es un
+        // usuario real
+        if (authentication == null || !authentication.isAuthenticated()
+                || authentication instanceof AnonymousAuthenticationToken) {
             throw new IllegalStateException("Usuario no autenticado");
         }
 
-        // El JwtFilter establece el userId como principal (String)
+        // El JwtFilter establece el userId interno (Long) como principal (String)
         String userIdStr = authentication.getName();
-        
+
         try {
             return Long.parseLong(userIdStr);
         } catch (NumberFormatException e) {
-            throw new IllegalStateException("ID de usuario inválido en token JWT");
+            throw new IllegalStateException("ID de usuario inválido en token JWT: " + userIdStr);
         }
     }
 
-    // ==================== MANEJO DE ERRORES ====================
-
-    /**
-     * Manejo centralizado de IllegalArgumentException.
-     * Convierte validaciones de negocio en respuestas HTTP 400.
-     */
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<String> handleIllegalArgumentException(IllegalArgumentException ex) {
-        return ResponseEntity.badRequest().body(ex.getMessage());
-    }
-
-    /**
-     * Manejo centralizado de IllegalStateException.
-     * Convierte errores de estado en respuestas HTTP 409.
-     */
-    @ExceptionHandler(IllegalStateException.class)
-    public ResponseEntity<String> handleIllegalStateException(IllegalStateException ex) {
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
-    }
-
-    /**
-     * Manejo centralizado de RuntimeException.
-     * Convierte errores inesperados en respuestas HTTP 500.
-     */
-    @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<String> handleRuntimeException(RuntimeException ex) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("Error interno del servidor: " + ex.getMessage());
-    }
 }
